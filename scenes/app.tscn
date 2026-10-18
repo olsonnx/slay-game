@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://qq1akm6ks4q2"]
+
+[ext_resource type="Script" uid="uid://gk147cqofnli" path="res://src/app/app.gd" id="1"]
+
+[node name="SlayApp" type="Node" unique_id=1910786886]
+script = ExtResource("1")

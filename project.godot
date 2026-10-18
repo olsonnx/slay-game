@@ -1,0 +1,60 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Slay & Reign"
+run/main_scene="res://scenes/app.tscn"
+config/use_custom_user_dir=true
+config/custom_user_dir_name="Godot/app_userdata/SlayGame"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+config/icon="res://assets/icon.svg"
+config/custom_user_dir_name.linux="godot/app_userdata/SlayGame"
+
+[audio]
+
+buses/default_bus_layout="res://resources/audio/default_bus_layout.tres"
+
+[autoload]
+
+Languages="*res://src/settings/language_settings.gd"
+Sound="*res://src/audio/audio_manager.gd"
+Video="*res://src/settings/video_settings.gd"
+Gameplay="*res://src/settings/gameplay_settings.gd"
+Keys="*res://src/settings/key_settings.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=820
+window/size/window_width_override=1280
+window/size/window_height_override=820
+window/stretch/mode="canvas_items"
+window/size/min_width=960
+window/size/min_height=620
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/localization_export/plugin.cfg")
+
+[gui]
+
+timers/tooltip_delay_sec=0.65
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
+
+[rendering]
+
+rendering_device/driver.windows="d3d12"
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+anti_aliasing/quality/msaa_3d=2

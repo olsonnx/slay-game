@@ -1,0 +1,304 @@
+extends RefCounted
+const Loc = preload("res://src/localization/text.gd")
+## HUD formatting, context menus, statistics, world tooltips and action overlays.
+const Catalog = preload("res://src/game/game_catalog.gd")
+const Rules = preload("res://src/game/kingdom_rules.gd")
+const Spells = preload("res://src/game/spell_catalog.gd")
+var session
+var hud
+var board
+var actions: Dictionary
+var tip_signature: Array = []
+var tip_revision := 0
+
+func invalidate_tip() -> void:
+	tip_revision += 1
+
+func _init(state, view_hud, board_view, commands: Dictionary) -> void:
+	session = state
+	hud = view_hud
+	board = board_view
+	actions = commands
+
+func open_shop(kind: String) -> void:
+	if actions["commands_locked"].call():
+		return
+	if kind == "spells" and not session.rules.is_modern():
+		return
+	actions["close_province"].call()
+	hud.help_panel.hide()
+	if hud.shop_panel.visible and hud.shop_kind == kind:
+		hud.shop_panel.close()
+		return
+	hud.shop_kind = kind
+	hud.shop_items.size.y = 111
+	hud.shop_panel.panel_height = hud.shop_items.position.y + hud.shop_items.size.y + 15
+	hud.shop_panel.rest_top = -154 - hud.shop_panel.panel_height
+	hud.pin_bottom(hud.shop_panel, 24, hud.shop_panel.rest_top, 418, hud.shop_panel.panel_height)
+	hud.shop_title.text = "Recruit" if kind == "recruit" else "Spells" if kind == "spells" else "Build"
+	for child in hud.shop_items.get_children():
+		hud.shop_items.remove_child(child)
+		child.queue_free()
+	if kind == "recruit":
+		for tier in range(1, 4):
+			var button: Button = hud.button_at(hud.shop_items, "", Rect2((tier - 1) * 132, 0, 124, 111), actions["choose_unit"].bind(tier), Catalog.unit_tooltip(tier, session.rules.is_modern(), session.rules.unit_upkeep(tier, session.player_faction)))
+			var name_label: Label = hud.label_at(button, Catalog.UNIT_NAMES[tier], Vector2(0, 66), 16)
+			name_label.size.x = 124
+			name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			var price: Label = hud.label_at(button, Loc.text("%d G") % Catalog.unit_price(tier), Vector2(0, 90), 14, Color("eed3a1"))
+			price.name = "Cost"
+			price.size.x = 124
+			price.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			var image := TextureRect.new()
+			image.texture = board.unit_icon_texture(tier, session.player_faction)
+			image.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+			image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			image.position = Vector2(44, 6)
+			image.size = Vector2(36, 54)
+			image.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			button.add_child(image)
+			bind_card_shortcut(button, "choice_%d" % tier)
+	elif kind == "spells":
+		var index := 0
+		for spell in Spells.SPELLS:
+			var definition: Dictionary = Spells.SPELLS[spell]
+			var mana_cost: int = 0 if session.rules.has_effect(session.player_faction, "free_spell") else definition["cost"]
+			var description: String = Spells.tooltip_description(spell, Catalog.unit_upkeep(1, session.rules.is_modern()))
+			var button: Button = hud.button_at(hud.shop_items, "", Rect2((index % 3) * 132, floori(index / 3.0) * 119, 124, 111), actions["choose_spell"].bind(spell), Loc.text("%s · %d mana\n%s") % [Loc.text(definition["name"]), mana_cost, description])
+			var glyph: Label = hud.label_at(button, definition["glyph"], Vector2(0, 8), 36, Color("bda2fa"))
+			glyph.size.x = 124
+			glyph.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			var name_label: Label = hud.label_at(button, definition["name"], Vector2(0, 66), 16)
+			name_label.size.x = 124
+			name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			var price: Label = hud.label_at(button, "Free" if session.rules.has_effect(session.player_faction, "free_spell") else Loc.text("%d mana") % definition["cost"], Vector2(0, 90), 14, Color("bda2fa"))
+			price.size.x = 124
+			price.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			bind_card_shortcut(button, "choice_%d" % (index + 1))
+			index += 1
+	else:
+		var kinds := ["tower", "house", "bridge"] if session.rules.is_modern() else ["tower", "house"]
+		var width := 124 if session.rules.is_modern() else 190
+		var stride := 132 if session.rules.is_modern() else 198
+		for index in range(kinds.size()):
+			var kind_name: String = kinds[index]
+			var tip := Catalog.building_tooltip(kind_name)
+			var button: Button = hud.button_at(hud.shop_items, "", Rect2(index * stride, 0, width, 111), actions["choose_building"].bind(kind_name), tip)
+			var name_label: Label = hud.label_at(button, kind_name.capitalize(), Vector2(0, 66), 16)
+			name_label.size.x = width
+			name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			var cost := Rules.TOWER_COST if kind_name == "tower" else Rules.BRIDGE_COST if kind_name == "bridge" else Rules.HOUSE_COST
+			var price: Label = hud.label_at(button, Loc.text("%d G") % cost, Vector2(0, 90), 14, Color("eed3a1"))
+			price.name = "Cost"
+			price.size.x = width
+			price.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			var image := TextureRect.new()
+			image.texture = board.building_icon(kind_name)
+			image.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+			image.position = Vector2((width - 54) / 2, 6)
+			image.size = Vector2(54, 54)
+			image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			image.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			button.add_child(image)
+	hud.shop_panel.open(true)
+	for index in range(hud.shop_items.get_child_count()):
+		if kind == "build":
+			bind_card_shortcut(hud.shop_items.get_child(index), "choice_%d" % (index + 1))
+
+func bind_card_shortcut(button: Button, action: String) -> void:
+	button.set_meta("base_tooltip", button.tooltip_text)
+	button.set_meta("shortcut_action", action)
+	button.tooltip_text += "\n" + Loc.text("Shortcut: %s") % Keys.key_name(action)
+
+func refresh_stats() -> void:
+	for container in [hud.stats_rows, hud.kingdom_rows]:
+		for child in container.get_children():
+			container.remove_child(child)
+			child.queue_free()
+	for faction in range(session.rules.faction_count + 1):
+		var owner := faction if faction < session.rules.faction_count else -1
+		var count := 0
+		for kingdom in session.rules.kingdoms.values():
+			if kingdom["owner"] == owner:
+				count += 1
+		var row := HBoxContainer.new()
+		hud.stats_rows.add_child(row)
+		var name_label: Label = hud.label_at(row, "●  " + (session.names[faction] if owner >= 0 else Loc.text("Neutral")), Vector2.ZERO, 16, session.colors[faction] if owner >= 0 else Color("a0aa83"))
+		name_label.custom_minimum_size.x = 233
+		var hex_label: Label = hud.label_at(row, str(session.rules.territory(owner)), Vector2.ZERO, 16)
+		hex_label.custom_minimum_size.x = 97
+		hud.label_at(row, str(count) if owner >= 0 else "—", Vector2.ZERO, 16)
+	var index := 1
+	for kingdom in session.rules.kingdoms.values():
+		if kingdom["owner"] == session.player_faction:
+			var text_value := Loc.text("%d  ·  %d hexes     %d gold     net %+d") % [index, kingdom["hexes"].size(), kingdom["gold"], session.rules.income(kingdom) - session.rules.upkeep(kingdom)]
+			var row := preload("res://src/ui/tooltip_button.gd").new()
+			row.text = text_value
+			row.tooltip_text = Loc.text("Select kingdom\nIncome +%d G · upkeep −%d G") % [session.rules.income(kingdom), session.rules.upkeep(kingdom)]
+			row.focus_mode = Control.FOCUS_NONE
+			Sound.bind_button(row)
+			row.pressed.connect(actions["select_kingdom"].bind(kingdom["capital"]))
+			hud.kingdom_rows.add_child(row)
+			index += 1
+	if index == 1:
+		hud.label_at(hud.kingdom_rows, Loc.text("No connected kingdoms remain."), Vector2.ZERO, 14)
+
+func refresh_overlays() -> void:
+	if session.work_active or board.level_transitioning or session.departure_active:
+		board.show_overlays(session.selection.NONE, session.selection.NONE, {}, [], session.selection.NONE)
+		return
+	var kingdom: Dictionary = session.active_kingdom()
+	var capital: Vector2i = kingdom["capital"] if not kingdom.is_empty() else session.selection.NONE
+	var protector: Vector2i = session.selection.selected if session.selection.selected != session.selection.NONE else session.selection.inspected_unit
+	if session.selection.action_mode != "":
+		protector = session.selection.NONE
+	board.show_overlays(session.selection.selected, session.selection.hovered, session.selection.valid_targets, session.selection.preview_path, capital, tile_intent(session.selection.hovered), protector)
+	if session.selection.inspected_hex != session.selection.NONE and session.selection.inspected_hex != session.selection.selected and session.rules.cells.has(session.selection.inspected_hex):
+		board.outline(session.selection.inspected_hex, Color("ede7d4"))
+
+func tile_intent(coord: Vector2i) -> Dictionary:
+	if not session.work_active and session.selection.action_mode == "bridge" and coord != session.selection.NONE:
+		return {"kind": "bridge", "valid": session.selection.valid_targets.has(coord)}
+	if session.work_active or not session.rules.cells.has(coord):
+		return {}
+	if session.selection.action_mode == "recruit":
+		var tier: int = session.rules.cells[coord]["unit"] + 1 if session.selection.recruit_tier == 0 else session.selection.recruit_tier
+		return {"kind": "upgrade" if session.rules.cells[coord]["owner"] == session.player_faction and session.rules.cells[coord]["unit"] > 0 else "recruit", "valid": session.selection.valid_targets.has(coord), "tier": tier, "faction": session.player_faction}
+	if session.selection.action_mode in ["tower", "house"]:
+		return {"kind": session.selection.action_mode, "valid": session.selection.valid_targets.has(coord)}
+	if session.selection.action_mode == "spell":
+		if session.selection.chosen_spell == "summon":
+			return {"kind": "recruit", "valid": session.selection.valid_targets.has(coord), "tier": 1, "faction": session.player_faction}
+		return {"kind": "spell", "valid": session.selection.valid_targets.has(coord), "glyph": Spells.SPELLS.get(session.selection.chosen_spell, {}).get("glyph", "✦")}
+	if session.rules.cells.has(session.selection.selected) and session.rules.cells[session.selection.selected]["unit"] > 0 and not session.rules.cells[session.selection.selected]["moved"] and coord != session.selection.selected:
+		var kind := "move"
+		if session.rules.is_bridge(coord):
+			kind = "attack" if session.rules.cells[coord]["unit"] > 0 and session.rules.unit_faction(coord) != session.player_faction else "merge" if session.rules.cells[coord]["unit"] > 0 else "move"
+		elif session.rules.cells[coord]["owner"] != session.player_faction:
+			kind = "attack" if session.rules.cells[coord]["unit"] > 0 or session.rules.cells[coord]["building"] != "" or session.rules.cells[coord]["capital"] >= 0 else "capture"
+		elif session.rules.cells[coord]["unit"] > 0:
+			kind = "merge"
+		return {"kind": kind, "valid": session.selection.valid_targets.has(coord), "source": session.selection.selected}
+	return {}
+
+func show_world_tip() -> void:
+	var signature := [session.selection.hovered, session.rules.cells[session.selection.hovered], board.value_heatmap.active, tip_revision]
+	if tip_signature == signature:
+		place_world_tip()
+		return
+	tip_signature = [session.selection.hovered, session.rules.cells[session.selection.hovered].duplicate(true), board.value_heatmap.active, tip_revision]
+	var cell: Dictionary = session.rules.cells[session.selection.hovered]
+	var owner_name: String = session.names[cell["owner"]] if cell["owner"] >= 0 else Loc.text("Neutral")
+	var mountain: bool = session.rules.is_mountain(session.selection.hovered)
+	var bridge: bool = session.rules.is_bridge(session.selection.hovered)
+	var filtered: bool = board.value_heatmap.active
+	var feature := "Land"
+	if mountain:
+		feature = "Mountains"
+	elif cell["unit"] > 0 and not filtered:
+		feature = Catalog.UNIT_NAMES[cell["unit"]]
+		owner_name = session.names[session.rules.unit_faction(session.selection.hovered)]
+	elif bridge:
+		feature = "Bridge"
+	elif cell["capital"] >= 0:
+		feature = "Capital"
+	elif cell["building"] != "":
+		feature = cell["building"].capitalize()
+	elif cell["tree"] or cell["grave"]:
+		feature = "Tree" if cell["tree"] else "Grave"
+	var rows := PackedStringArray([Loc.text("%s · %s") % [owner_name, Loc.text(feature)]])
+	if mountain:
+		rows.append(Loc.text("Impassable"))
+	else:
+		if not filtered and cell["unit"] > 0:
+			rows.append(Loc.text("%s · upkeep −%d G / turn") % [Loc.text("Ready" if board.unit_presentation.is_ready(cell) else "Moved"), session.rules.unit_upkeep(cell["unit"], session.rules.unit_faction(session.selection.hovered))])
+			rows.append("")
+		var income: int = 0 if bridge or cell["tree"] or cell["grave"] else cell.get("value", 1) if session.rules.is_modern() else 1
+		if cell["building"] == "house":
+			income += Rules.HOUSE_INCOME
+		var earnings := Loc.text("Income %+d G / turn") % income if income > 0 else Loc.text("Income 0 G")
+		if session.rules.is_modern() or filtered:
+			rows.append(Loc.text("Province · Value %d") % board.value_heatmap.tile_value(cell))
+		elif cell["unit"] > 0:
+			rows.append(Loc.text("Province"))
+		rows.append(earnings)
+		if cell["tree"] or cell["grave"]:
+			rows.append(Loc.text("%s blocks income") % Loc.text("Tree" if cell["tree"] else "Grave"))
+		if cell.get("mana_source", false):
+			rows.append(Loc.text("Mana source · capacity +%d") % session.rules.mana_source_capacity(cell))
+	if session.rules.is_entrenched(session.selection.hovered):
+		rows.append(Loc.text("Entrenched · absorbs one attack until next turn"))
+	if cell.get("fortified", false):
+		rows.append(Loc.text("Fortified · absorbs one hit"))
+	if session.rules.is_barrier(session.selection.hovered):
+		rows.append(Loc.text("Barrier · blocks passage until next turn"))
+	elif cell.get("barrier_used", false):
+		rows.append(Loc.text("Barrier already used"))
+	if cell.get("event", "") != "":
+		rows.append(Loc.text("? Unexplored encounter"))
+		if cell["owner"] == session.player_faction:
+			rows.append(Loc.text("One visit only. Main outcome requirements: %s") % Loc.text(session.rules.Events.EVENTS.get(cell["event"], {}).get("requirements", "Any army entering this province.")))
+	if cell.get("treasure", 0) > 0:
+		rows.append(Loc.text("Treasure chest · guaranteed %d G on capture") % cell["treasure"])
+	var kingdom: Dictionary = session.rules.unit_kingdom(session.selection.hovered) if cell["unit"] > 0 else session.rules.kingdom_at(session.selection.hovered)
+	if not kingdom.is_empty():
+		rows.append("")
+		rows.append(Loc.text("Kingdom %d G · net %+d G") % [kingdom["gold"], session.rules.income(kingdom) - session.rules.upkeep(kingdom)])
+	elif cell["owner"] >= 0:
+		rows.append("")
+		rows.append(Loc.text("Isolated · no treasury"))
+	hud.Tooltip.fit(hud.world_tip, hud.tip_label, "\n".join(rows))
+	place_world_tip()
+
+func place_world_tip() -> void:
+	var screen: Vector2 = hud.get_viewport().get_visible_rect().size
+	var point: Vector2 = hud.get_viewport().get_mouse_position() + Vector2(18, -hud.world_tip.size.y - 12)
+	hud.UiTheme.keep_on_screen(hud.world_tip, point, screen)
+	hud.world_tip.show()
+
+
+func refresh_hud(economy = null) -> void:
+	invalidate_tip()
+	hud.update_effects(session.rules, session.player_faction)
+	var model = session.rules if economy == null else economy
+	var mana: Dictionary = model.mana_summary(session.player_faction)
+	hud.update_mana(mana["amount"], mana["income"], mana["capacity"], mana["regeneration"])
+	var kingdom: Dictionary = session.active_kingdom(model)
+	if kingdom.is_empty() and (not model.cells.has(session.selection.active_hex) or model.cells[session.selection.active_hex]["owner"] != session.player_faction):
+		for candidate in model.kingdoms.values():
+			if candidate["owner"] == session.player_faction:
+				session.selection.active_hex = candidate["capital"]
+				kingdom = candidate
+				break
+	if not kingdom.is_empty():
+		var income: int = model.income(kingdom)
+		var wages: int = model.upkeep(kingdom)
+		var net := income - wages
+		hud.update_gold(kingdom["gold"], net, kingdom["capital"])
+		hud.income_label.add_theme_color_override("font_color", Color("bed099") if net >= 0 else Color("dfa08e"))
+		hud.gold_control.tooltip_text = Loc.text("Kingdom · %d tiles\nTreasury %d G\nIncome +%d G · upkeep −%d G\nNet %+d G / turn") % [kingdom["hexes"].size(), kingdom["gold"], income, wages, net]
+	else:
+		hud.reset_gold_feedback()
+		hud.money_label.text = "—"
+		hud.income_label.text = ""
+		hud.gold_control.tooltip_text = Loc.text("Isolated land · no treasury\nSelect a connected friendly kingdom")
+	hud.level_label.text = "Tutorial" if session.tutorial != null else Loc.text("Level %d") % session.level_number
+	hud.round_label.text = Loc.text("%s  /  TURN %02d  /  %s") % [session.names[session.active_faction].to_upper(), session.round_number, Loc.text("Tutorial" if session.tutorial != null else "Hotseat" if session.is_hotseat() else "Playtest" if not session.initial_level_data.is_empty() else "Quick Play")]
+	hud.round_label.add_theme_color_override("font_color", session.colors[session.active_faction])
+	hud.recruit_button.text = Loc.text(Catalog.UNIT_NAMES[session.selection.recruit_tier]) + " ×" if session.selection.action_mode == "recruit" and session.selection.recruit_tier > 0 else "Recruit"
+	hud.build_button.text = Loc.text(session.selection.action_mode.capitalize()) + " ×" if session.selection.action_mode in ["tower", "house", "bridge"] else "Build"
+	hud.spell_button.text = Loc.text(Spells.SPELLS[session.selection.chosen_spell]["name"]) + " ×" if session.selection.action_mode == "spell" and Spells.SPELLS.has(session.selection.chosen_spell) else "Spells"
+	for button in [hud.recruit_button, hud.build_button, hud.spell_button]:
+		button.disabled = actions["commands_locked"].call()
+	# Busy opponent playback permits a hold, but commands remain locked.
+	hud.end_button.disabled = actions["commands_locked"].call() and not (session.work_active and session.active_faction != session.player_faction and not session.is_closing() and not session.outcome_reached and not hud.get_tree().paused and not board.level_transitioning and not actions["modal_open"].call())
+	hud.end_button.tooltip_text = Loc.text("Hold: opponents at 6× speed\nAlso: hold %s") % Keys.key_name("speed") if session.work_active and session.active_faction != session.player_faction else Loc.text("End turn · %s\nHold %s: faster movement") % [Keys.key_name("end_turn"), Keys.key_name("speed")]
+	hud.stats_button.disabled = session.work_active or board.level_transitioning or session.departure_active
+	hud.view_button.disabled = board.level_transitioning or session.departure_active
+	hud.heatmap_button.disabled = board.level_transitioning or session.departure_active
+	actions["refresh_heatmap_button"].call()
+	hud.end_button.text = session.names[session.active_faction] + "…" if session.work_active and session.active_faction != session.player_faction else "Moving…" if session.work_active else Loc.text("End turn  →")
+	hud.turn_spinner.set_active(session.work_active and session.active_faction != session.player_faction)
+	actions["update_playback"].call()
+	actions["refresh_view_button"].call()

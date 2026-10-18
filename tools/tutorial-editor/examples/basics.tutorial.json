@@ -1,0 +1,371 @@
+{
+  "category": "basics",
+  "format": "slay-tutorial",
+  "map": {
+    "cells": [
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 0,
+        "q": -3,
+        "r": -1,
+        "tree": false,
+        "unit": 0,
+        "value": 2
+      },
+      {
+        "building": "",
+        "capital": 0,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 0,
+        "q": -3,
+        "r": 0,
+        "tree": false,
+        "unit": 0,
+        "value": 2
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 0,
+        "q": -3,
+        "r": 1,
+        "tree": false,
+        "unit": 0,
+        "value": 2
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 0,
+        "q": -2,
+        "r": -1,
+        "tree": false,
+        "unit": 0,
+        "value": 2
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 0,
+        "q": -2,
+        "r": 0,
+        "tree": false,
+        "unit": 0,
+        "value": 2
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 0,
+        "q": -2,
+        "r": 1,
+        "tree": false,
+        "unit": 0,
+        "value": 2
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 0,
+        "q": -1,
+        "r": -1,
+        "tree": false,
+        "unit": 0,
+        "value": 2
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 0,
+        "q": -1,
+        "r": 0,
+        "tree": false,
+        "unit": 0,
+        "value": 2
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 0,
+        "q": -1,
+        "r": 1,
+        "tree": false,
+        "unit": 0,
+        "value": 2
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": -1,
+        "q": 0,
+        "r": 0,
+        "tree": false,
+        "unit": 0,
+        "value": 2
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 1,
+        "q": 1,
+        "r": 0,
+        "tree": false,
+        "unit": 0,
+        "value": 2
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 1,
+        "q": 1,
+        "r": 1,
+        "tree": false,
+        "unit": 0,
+        "value": 2
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 1,
+        "q": 2,
+        "r": -1,
+        "tree": false,
+        "unit": 1,
+        "value": 2
+      },
+      {
+        "building": "",
+        "capital": 1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 1,
+        "q": 2,
+        "r": 0,
+        "tree": false,
+        "unit": 0,
+        "value": 2
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 1,
+        "q": 2,
+        "r": 1,
+        "tree": false,
+        "unit": 0,
+        "value": 2
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 1,
+        "q": 3,
+        "r": 0,
+        "tree": false,
+        "unit": 0,
+        "value": 2
+      }
+    ],
+    "format": "slay-level",
+    "gold": 10,
+    "rules": "modern",
+    "seed": 73015,
+    "size": "small",
+    "title": "Tutorial: Basics",
+    "version": 1
+  },
+  "opponent_mode": "scripted",
+  "require_victory": true,
+  "steps": [
+    {
+      "details": {
+        "tier": 1
+      },
+      "id": "recruit",
+      "kind": "recruit",
+      "target": [
+        -2,
+        0
+      ],
+      "task": "Recruit a Scout on the gold ring",
+      "text": "You are green. Spend your 10 G on a Scout.",
+      "title": "Your first Scout"
+    },
+    {
+      "details": {},
+      "id": "select",
+      "kind": "select",
+      "target": [
+        -2,
+        0
+      ],
+      "task": "Select your Scout",
+      "text": "Click the Scout itself to see where it can move.",
+      "title": "Take command"
+    },
+    {
+      "details": {
+        "source": [
+          -2,
+          0
+        ]
+      },
+      "id": "expand",
+      "kind": "move",
+      "target": [
+        0,
+        0
+      ],
+      "task": "Move from the cyan ring to the gold ring",
+      "text": "Claim the empty border province. More land earns more gold.",
+      "title": "Make room to grow"
+    },
+    {
+      "details": {},
+      "id": "income",
+      "kind": "end_turn",
+      "opponent": [
+        {
+          "kind": "move",
+          "source": [
+            2,
+            -1
+          ],
+          "target": [
+            1,
+            0
+          ]
+        }
+      ],
+      "target": null,
+      "task": "End your turn",
+      "text": "Your Scout has moved. End turn to collect income and watch your opponent advance.",
+      "title": "Let the turn play out"
+    },
+    {
+      "details": {
+        "tier": 2
+      },
+      "id": "upgrade",
+      "kind": "recruit",
+      "target": [
+        0,
+        0
+      ],
+      "task": "Recruit a Soldier onto your Scout",
+      "text": "Their Scout guards the border. Upgrade yours: a Soldier beats a Scout.",
+      "title": "Meet the threat"
+    },
+    {
+      "details": {
+        "outcome": "attack",
+        "source": [
+          0,
+          0
+        ]
+      },
+      "id": "battle",
+      "kind": "move",
+      "target": [
+        1,
+        0
+      ],
+      "task": "Attack the enemy Scout",
+      "text": "Your Soldier is stronger. Take the guarded province.",
+      "title": "Push them back"
+    },
+    {
+      "details": {},
+      "id": "ready",
+      "kind": "end_turn",
+      "opponent": [],
+      "target": null,
+      "task": "End your turn",
+      "text": "One capture uses one action. Ready your Soldier for the final attack.",
+      "title": "The capital is next"
+    },
+    {
+      "details": {
+        "outcome": "attack",
+        "source": [
+          1,
+          0
+        ]
+      },
+      "id": "victory",
+      "kind": "move",
+      "target": [
+        2,
+        0
+      ],
+      "task": "Take the enemy capital",
+      "text": "Capture their capital. Its neighboring provinces will surrender.",
+      "title": "Finish the match"
+    }
+  ],
+  "title": "Basics",
+  "version": 1,
+  "description": "Recruit, claim land, and win your first battle."
+}

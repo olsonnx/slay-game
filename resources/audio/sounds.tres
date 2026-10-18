@@ -1,0 +1,47 @@
+[gd_resource type="Resource" format=3 uid="uid://d2u0ngi8ooldi"]
+
+[ext_resource type="Script" uid="uid://m2tiy0federb" path="res://src/audio/sound_bank.gd" id="1"]
+[ext_resource type="Script" uid="uid://7ixm2xoiciww" path="res://src/audio/sound_cue.gd" id="2"]
+[ext_resource type="AudioStream" uid="uid://cteo2mihmbo5i" path="res://assets/sfx/ui_hover.mp3" id="3"]
+[ext_resource type="AudioStream" uid="uid://cx5dfsqb253xn" path="res://assets/sfx/ui_click.mp3" id="4"]
+[ext_resource type="AudioStream" uid="uid://n8tx4ksmoei3" path="res://assets/sfx/ui_close.mp3" id="5"]
+[ext_resource type="AudioStream" uid="uid://b3ikgd5j4nc6p" path="res://assets/sfx/action_place.mp3" id="6"]
+
+[sub_resource type="Resource" id="Place"]
+script = ExtResource("2")
+streams = Array[AudioStream]([ExtResource("6")])
+cooldown_seconds = 0.06
+max_voices = 4
+
+[sub_resource type="Resource" id="Click"]
+script = ExtResource("2")
+streams = Array[AudioStream]([ExtResource("4")])
+bus = &"UI"
+max_voices = 2
+priority = 30
+
+[sub_resource type="Resource" id="Close"]
+script = ExtResource("2")
+streams = Array[AudioStream]([ExtResource("5")])
+bus = &"UI"
+max_voices = 2
+priority = 40
+
+[sub_resource type="Resource" id="Hover"]
+script = ExtResource("2")
+streams = Array[AudioStream]([ExtResource("3")])
+bus = &"UI"
+volume_db = -10.0
+cooldown_seconds = 0.12
+max_voices = 1
+replace_oldest = false
+priority = 5
+
+[resource]
+script = ExtResource("1")
+cues = Dictionary[StringName, Resource]({
+&"action_place": SubResource("Place"),
+&"ui_click": SubResource("Click"),
+&"ui_close": SubResource("Close"),
+&"ui_hover": SubResource("Hover")
+})

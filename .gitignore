@@ -1,0 +1,23 @@
+# Godot 4+ specific ignores
+.godot/
+/android/
+/artifacts/*
+!/artifacts/.gdignore
+
+# Local secrets and Godot export credentials
+.env
+.env.*
+!.env.example
+export_credentials.cfg
+
+# Exported builds and local tool caches
+/build/
+/builds/
+/dist/
+__pycache__/
+*.py[cod]
+
+# Operating-system metadata
+Thumbs.db
+Desktop.ini
+.DS_Store

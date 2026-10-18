@@ -1,0 +1,498 @@
+{
+  "category": "intermediate",
+  "format": "slay-tutorial",
+  "map": {
+    "cells": [
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 0,
+        "q": -4,
+        "r": -1,
+        "tree": false,
+        "unit": 0,
+        "value": 2
+      },
+      {
+        "building": "",
+        "capital": 0,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 0,
+        "q": -4,
+        "r": 0,
+        "tree": false,
+        "unit": 0,
+        "value": 2
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 0,
+        "q": -4,
+        "r": 1,
+        "tree": false,
+        "unit": 0,
+        "value": 2
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 0,
+        "q": -3,
+        "r": -1,
+        "tree": false,
+        "unit": 0,
+        "value": 3
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 0,
+        "q": -3,
+        "r": 0,
+        "tree": false,
+        "unit": 1,
+        "value": 3
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 0,
+        "q": -3,
+        "r": 1,
+        "tree": false,
+        "unit": 0,
+        "value": 3
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 0,
+        "q": -2,
+        "r": -1,
+        "tree": false,
+        "unit": 0,
+        "value": 3
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 0,
+        "q": -2,
+        "r": 0,
+        "tree": false,
+        "unit": 0,
+        "value": 3
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 0,
+        "q": -2,
+        "r": 1,
+        "tree": false,
+        "unit": 0,
+        "value": 3
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 0,
+        "q": -1,
+        "r": -1,
+        "tree": false,
+        "unit": 0,
+        "value": 3
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 0,
+        "q": -1,
+        "r": 0,
+        "tree": false,
+        "unit": 0,
+        "value": 3
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 0,
+        "q": -1,
+        "r": 1,
+        "tree": false,
+        "unit": 0,
+        "value": 3
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": -1,
+        "q": 0,
+        "r": 0,
+        "tree": false,
+        "unit": 0,
+        "value": 3
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": -1,
+        "q": 0,
+        "r": 1,
+        "tree": false,
+        "unit": 0,
+        "value": 3
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 1,
+        "q": 1,
+        "r": 0,
+        "tree": false,
+        "unit": 0,
+        "value": 3
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 1,
+        "q": 1,
+        "r": 1,
+        "tree": false,
+        "unit": 0,
+        "value": 3
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 1,
+        "q": 2,
+        "r": -1,
+        "tree": false,
+        "unit": 2,
+        "value": 3
+      },
+      {
+        "building": "",
+        "capital": 1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 1,
+        "q": 2,
+        "r": 0,
+        "tree": false,
+        "unit": 0,
+        "value": 3
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 1,
+        "q": 2,
+        "r": 1,
+        "tree": false,
+        "unit": 0,
+        "value": 3
+      },
+      {
+        "building": "",
+        "capital": -1,
+        "event": "",
+        "grave": false,
+        "mana_source": false,
+        "mountain": false,
+        "owner": 1,
+        "q": 3,
+        "r": 0,
+        "tree": false,
+        "unit": 0,
+        "value": 3
+      }
+    ],
+    "format": "slay-level",
+    "gold": 20,
+    "rules": "modern",
+    "seed": 73015,
+    "size": "small",
+    "title": "Tutorial: Intermediate",
+    "version": 1
+  },
+  "opponent_mode": "scripted",
+  "require_victory": true,
+  "steps": [
+    {
+      "details": {
+        "building": "house"
+      },
+      "id": "house",
+      "kind": "build",
+      "target": [
+        -3,
+        -1
+      ],
+      "task": "Build a House on the gold ring",
+      "text": "A border raid is coming. A House adds income without adding wages.",
+      "title": "Invest before the war"
+    },
+    {
+      "details": {},
+      "id": "raid",
+      "kind": "end_turn",
+      "opponent": [
+        {
+          "kind": "move",
+          "source": [
+            2,
+            -1
+          ],
+          "target": [
+            0,
+            0
+          ]
+        }
+      ],
+      "target": null,
+      "task": "End your turn",
+      "text": "Collect your income. Watch the enemy Soldier move toward your border.",
+      "title": "The enemy advances"
+    },
+    {
+      "details": {
+        "building": "tower"
+      },
+      "id": "tower",
+      "kind": "build",
+      "target": [
+        -1,
+        0
+      ],
+      "task": "Build a Tower at the border",
+      "text": "A Tower protects its tile and friendly neighbors. Their Soldier cannot beat it.",
+      "title": "Hold the line"
+    },
+    {
+      "details": {},
+      "id": "flank",
+      "kind": "end_turn",
+      "opponent": [
+        {
+          "kind": "move",
+          "source": [
+            0,
+            0
+          ],
+          "target": [
+            0,
+            1
+          ]
+        }
+      ],
+      "target": null,
+      "task": "End your turn",
+      "text": "Your border is protected. Save another turn of income for a stronger army.",
+      "title": "Make them go around"
+    },
+    {
+      "details": {
+        "tier": 3
+      },
+      "id": "knight",
+      "kind": "recruit",
+      "target": [
+        -3,
+        0
+      ],
+      "task": "Upgrade your Scout to a Knight",
+      "text": "Your income now supports a Knight. Upgrade the Scout to break their advance.",
+      "title": "Fund the counterattack"
+    },
+    {
+      "details": {
+        "outcome": "attack",
+        "source": [
+          -3,
+          0
+        ]
+      },
+      "id": "counter",
+      "kind": "move",
+      "target": [
+        0,
+        1
+      ],
+      "task": "Defeat the enemy Soldier",
+      "text": "They went around your Tower. Your Knight can reach them through friendly land.",
+      "title": "Stop the raid"
+    },
+    {
+      "details": {},
+      "id": "fortify",
+      "kind": "end_turn",
+      "opponent": [
+        {
+          "building": "tower",
+          "kind": "build",
+          "target": [
+            1,
+            0
+          ]
+        }
+      ],
+      "target": null,
+      "task": "End your turn",
+      "text": "Ready your Knight. The enemy will fortify the road to their capital.",
+      "title": "They fall back on defense"
+    },
+    {
+      "details": {
+        "source": [
+          0,
+          1
+        ]
+      },
+      "id": "secure",
+      "kind": "move",
+      "target": [
+        0,
+        0
+      ],
+      "task": "Capture the enemy foothold",
+      "text": "Clear the enemy foothold before marching on their capital.",
+      "title": "Secure the border"
+    },
+    {
+      "details": {},
+      "id": "march",
+      "kind": "end_turn",
+      "opponent": [],
+      "target": null,
+      "task": "End your turn",
+      "text": "Your border is safe. Ready your Knight to attack the Tower.",
+      "title": "Prepare the assault"
+    },
+    {
+      "details": {
+        "outcome": "attack",
+        "source": [
+          0,
+          0
+        ]
+      },
+      "id": "breach",
+      "kind": "move",
+      "target": [
+        1,
+        0
+      ],
+      "task": "Capture the enemy Tower",
+      "text": "A Knight beats a Tower's defense. Capturing it also destroys the building.",
+      "title": "Break the strongpoint"
+    },
+    {
+      "details": {},
+      "id": "ready",
+      "kind": "end_turn",
+      "opponent": [],
+      "target": null,
+      "task": "End your turn",
+      "text": "Your House and land cover the Knight's wages. Ready the final attack.",
+      "title": "Keep the army paid"
+    },
+    {
+      "details": {
+        "outcome": "attack",
+        "source": [
+          1,
+          0
+        ]
+      },
+      "id": "victory",
+      "kind": "move",
+      "target": [
+        2,
+        0
+      ],
+      "task": "Take the enemy capital",
+      "text": "Their defenses are gone. Take the capital and end the war.",
+      "title": "Turn defense into victory"
+    }
+  ],
+  "title": "Intermediate",
+  "version": 1,
+  "description": "Fund an army, hold your border, and counterattack."
+}
