@@ -20,11 +20,25 @@ static func income_adjustment(state, kingdom: Dictionary) -> int:
 	if bonus == 0: return 0
 	return bonus if primary_treasury(state, faction).get("capital") == kingdom["capital"] else 0
 
-static func change_income(state, faction: int, kingdom: Dictionary, amount: int) -> void:
+static func change_income(state, faction: int, kingdom: Dictionary, amount: int, source := "") -> void:
 	if not state.effects_by_faction.has(faction): state.effects_by_faction[faction] = {}
 	var effects: Dictionary = state.effects_by_faction[faction]
 	if not effects.has("income_home"): effects["income_home"] = kingdom["capital"]
 	effects["income_bonus"] = int(effects.get("income_bonus", 0)) + amount
+	add_source(effects,"income_sources",source,amount)
+
+static func add_source(effects: Dictionary, key: String, source: String, amount := 1) -> void:
+	if source == "": return
+	var amounts_key := key.trim_suffix("_sources")+"_source_amounts"
+	if not effects.has(amounts_key):
+		effects[amounts_key] = {}
+		# Older positions recorded counts only. Fixed lair rewards are recoverable.
+		for previous in effects.get(key,{}):
+			if key == "income_sources" and previous == "bear": effects[amounts_key][previous] = int(effects[key][previous])*5
+			elif key == "mana_sources" and previous == "wolf": effects[amounts_key][previous] = int(effects[key][previous])
+	if not effects.has(key): effects[key] = {}
+	effects[key][source] = int(effects[key].get(source,0))+1
+	effects[amounts_key][source] = int(effects[amounts_key].get(source,0))+amount
 
 static func forest(state, kingdom: Dictionary) -> Dictionary:
 	var result := {"trees": [], "blocked": 0, "potential": 0}
@@ -177,7 +191,7 @@ static func resolve(state, event: Dictionary, choice: int) -> String:
 		"comet":
 			if choice == 0:
 				var gain: int = state.rng.randi_range(1, 2)
-				change_income(state, faction, kingdom, gain)
+				change_income(state, faction, kingdom, gain, "comet")
 				return Loc.text("The comet has improved the accounts: +%d gold per turn permanently.") % gain
 			var site := recruit_site(state, kingdom)
 			state.cells[site]["unit"] = 1
@@ -228,7 +242,7 @@ static func resolve(state, event: Dictionary, choice: int) -> String:
 			return Loc.text("A grim demonstration of power: +1 mana.")
 		"economist":
 			kingdom["gold"] += 10 if choice == 0 else -10
-			change_income(state, faction, kingdom, -1 if choice == 0 else 1)
+			change_income(state, faction, kingdom, -1 if choice == 0 else 1, "economist")
 			return Loc.text("Gain 10 gold here; permanently lose 1 gold per turn from your income treasury.") if choice == 0 else Loc.text("Pay 10 gold here; permanently gain 1 gold per turn in your income treasury.")
 		"revolt":
 			if choice == 1:

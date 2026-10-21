@@ -102,8 +102,6 @@ static func populate(assets, tile: Node3D, coord: Vector2i, cell: Dictionary, co
 		return
 	if cell.get("mountain", false):
 		assets.add_mountain(features, coord)
-	elif cell["unit"] == 0 and cell["capital"] < 0 and cell["building"] == "" and not cell["tree"] and not cell["grave"] and cell.get("event", "") == "" and cell.get("treasure", 0) == 0:
-		assets.grass_details(features, coord, color)
 	if cell["tree"]:
 		assets.add_tree(features, Vector3(-0.40, 0, -0.04) if cell.get("event", "") != "" or cell.get("treasure", 0) > 0 else Vector3(0.13, 0, 0))
 	if cell["grave"]:
@@ -116,11 +114,13 @@ static func populate(assets, tile: Node3D, coord: Vector2i, cell: Dictionary, co
 		assets.add_capital(features, Vector3(-0.20, 0, -0.12) if cell["unit"] > 0 or cell["grave"] or cell["tree"] else Vector3.ZERO, color)
 	if cell.get("treasure", 0) > 0:
 		assets.add_treasure(features)
+	if cell.get("lair", "") != "":
+		preload("res://src/rendering/wildlife_presentation.gd").add_lair(assets,features,cell.lair)
 	if cell.get("mana_source", false):
 		assets.add_mana_source(tile)
 
 static func refresh(assets, tile: Node3D, coord: Vector2i, cell: Dictionary, mask := 0) -> void:
-	# Used only for offscreen menu recycling. The board retains its own dirty sync.
+	# Rebuild changed scenery while retaining the tile and its terrain buffers.
 	for name in ["Features", "ManaSource"]:
 		var old := tile.get_node_or_null(name)
 		if old != null:

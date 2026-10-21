@@ -145,7 +145,7 @@ func check_tool_context(editor) -> void:
 	editor.ui.event_search.text = "wizard"
 	editor.ui.filter_events()
 	expect(root.gui_get_focus_owner() == editor.ui.event_search and editor.event_id == "wizard", "Searching immediately selects a matching event without losing text focus")
-	expect(editor.ui.event_details.bbcode_enabled and editor.ui.event_details.text.contains("[b]soldiers[/b]") and editor.ui.event_details.text.contains("[color=#8fbfe8]mana[/color]"), "Editor previews share unit emphasis and mana colours")
+	expect(editor.ui.event_details.bbcode_enabled and not editor.ui.event_details.text.contains("[b]") and editor.ui.event_details.text.contains("0 mana[/color]"), "Editor previews use regular unit text and retain mana colours")
 	editor.release_text_focus()
 	editor.ui.event_search.text = ""
 	editor.ui.filter_events()
@@ -329,6 +329,7 @@ func run() -> void:
 	editor.file_dialog.get_line_edit().text = path.get_file()
 	editor.file_dialog.get_ok_button().pressed.emit()
 	await process_frame
+	while editor.loading_map: await process_frame
 	expect(FileAccess.file_exists(path) and not editor.document.dirty(), "Editor saves persistent file")
 	editor.document.paint(Vector2i.ZERO, "Water", -1, 1)
 	editor.open_load()
@@ -337,6 +338,7 @@ func run() -> void:
 	editor.file_dialog.get_line_edit().text = path.get_file()
 	editor.file_dialog.get_ok_button().pressed.emit()
 	await process_frame
+	while editor.loading_map: await process_frame
 	expect(editor.document.state() == draft, "Editor loads saved file")
 	# The same dialog can save/load an ordinary folder outside app data.
 	var external_path := ProjectSettings.globalize_path("res://artifacts/editor_dialog_fixture.json")
@@ -346,12 +348,14 @@ func run() -> void:
 	editor.file_dialog.get_line_edit().text = external_path.get_file()
 	editor.file_dialog.get_ok_button().pressed.emit()
 	await process_frame
+	while editor.loading_map: await process_frame
 	expect(FileAccess.file_exists(external_path) and editor.file_path == external_path, "Explorer saves to ordinary filesystem folders")
 	editor.document.title = "Changed after saving"
 	editor.open_load()
 	editor.file_dialog.get_line_edit().text = external_path.get_file()
 	editor.file_dialog.get_ok_button().pressed.emit()
 	await process_frame
+	while editor.loading_map: await process_frame
 	expect(editor.document.state() == draft, "Explorer reloads from ordinary filesystem folder")
 	var corrupt_path := external_path.get_base_dir().path_join("editor_dialog_corrupt.json")
 	var corrupt_file := FileAccess.open(corrupt_path, FileAccess.WRITE)
@@ -361,6 +365,7 @@ func run() -> void:
 	editor.file_dialog.get_line_edit().text = corrupt_path.get_file()
 	editor.file_dialog.get_ok_button().pressed.emit()
 	await process_frame
+	while editor.loading_map: await process_frame
 	expect(editor.document.state() == draft and editor.status.text == "This is not a supported Slay level.", "Malformed file selected through explorer preserves draft and reports an error")
 	DirAccess.remove_absolute(corrupt_path)
 	editor.request_action(func(): editor.status.text = "clean action")
@@ -449,7 +454,8 @@ func run() -> void:
 	var zoom_before: float = editor.view.zoom
 	editor._input(press)
 	editor._unhandled_input(press)
-	expect(editor.view.zoom < zoom_before and root.gui_get_focus_owner() == null, "Wheel zoom works immediately after text editing")
+	editor.view.navigation._process(0.1)
+	expect(editor.view.zoom < zoom_before and root.gui_get_focus_owner() == null, "Wheel zoom works after text editing")
 	editor.value_choice.get_line_edit().grab_focus()
 	press.button_index = MOUSE_BUTTON_MIDDLE
 	editor._input(press)

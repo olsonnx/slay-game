@@ -2,6 +2,7 @@ extends RefCounted
 ## Completed games only: readable decision lines plus lossless compressed detail.
 ## Only authoritative rules opt in. AI search copies never inherit the recorder.
 const Snapshots = preload("res://src/game/state_snapshot.gd")
+const Summary = preload("res://src/game/replay_summary.gd")
 const FORMAT := "slay-replay"
 const VERSION := 2
 const DIRECTORY := "user://replays"
@@ -164,7 +165,8 @@ static func archive_objects(objects: Array) -> PackedStringArray:
 	if raw.size() > MAX_DETAIL_BYTES: return PackedStringArray()
 	var result := PackedStringArray([JSON.stringify({"format":FORMAT, "version":VERSION,
 		"seed":int(first["seed"]), "rules":first["rules"], "names":first["names"], "humans":brief(first["humans"]), "encoding":"gzip-base64",
-		"columns":["sequence", "round", "faction", "arguments"], "derived_hashes":true, "sha256":digest(raw)})])
+		"columns":["sequence", "round", "faction", "arguments"], "derived_hashes":true, "sha256":digest(raw),
+		"summary":Summary.from_records(first, objects.slice(1))})])
 	# AI diagnostics are attached to the full record, not duplicated in the
 	# human timeline. Every actual action still has exactly one readable line.
 	for index in range(1, objects.size()):
@@ -319,6 +321,24 @@ func begin_transaction() -> void:
 	transaction = true
 	checkpoint = copy_index(previous)
 
+func fork_worker():
+	assert(not transaction)
+	var fork = get_script().new()
+	fork.started = started
+	fork.finished = finished
+	fork.error = error
+	fork.round_number = round_number
+	fork.sequence = sequence
+	fork.previous = copy_index(previous)
+	return fork
+
+func publish_worker(fork, expected_sequence: int) -> void:
+	assert(sequence == expected_sequence and not transaction and not finished)
+	previous = fork.previous
+	sequence = fork.sequence
+	round_number = fork.round_number
+	rows.append_array(fork.rows)
+
 func commit_transaction() -> void:
 	for row in buffered:
 		sequence += 1
@@ -334,11 +354,13 @@ func cancel_transaction() -> void:
 	buffered.clear()
 	transaction = false
 
-func finish(model, outcome: String, winner := -1) -> void:
+func finish(model, outcome: String, winner := -1, completion: Dictionary = {}) -> void:
 	if finished: return
 	if outcome in ["completed", "victory", "defeat", "draw"]:
 		if transaction: commit_transaction()
-		record(model, "result", -1, {"outcome":outcome, "winner":winner})
+		var result := completion.duplicate(true)
+		result.merge({"outcome":outcome, "winner":winner, "completed_utc":Time.get_datetime_string_from_system(true)}, true)
+		record(model, "result", -1, result)
 		completed = true
 	else: cancel_transaction()
 	finished = true
@@ -349,7 +371,7 @@ func finish(model, outcome: String, winner := -1) -> void:
 	checkpoint.clear()
 	previous.clear()
 
-static func expand_archive(lines: PackedStringArray) -> Dictionary:
+static func expand_archive(lines: PackedStringArray, derive_hashes := true, cancelled := Callable()) -> Dictionary:
 	var parser := JSON.new()
 	if lines.is_empty() or parser.parse(lines[0]) != OK: return {"error":"Invalid replay header"}
 	var envelope = parser.data
@@ -364,9 +386,10 @@ static func expand_archive(lines: PackedStringArray) -> Dictionary:
 	if raw.is_empty() or digest(raw) != envelope.get("sha256"):
 		return {"error":"Replay archive checksum mismatch"}
 	var expanded := raw.get_string_from_utf8().strip_edges().split("\n")
-	if envelope.get("derived_hashes", false):
+	if derive_hashes and envelope.get("derived_hashes", false):
 		var state := {}
 		for index in range(expanded.size()):
+			if cancelled.is_valid() and cancelled.call(): return {"error":"Replay loading cancelled"}
 			if parser.parse(expanded[index]) != OK or not parser.data is Dictionary: return {"error":"Invalid compressed record"}
 			var row: Dictionary = parser.data
 			if index == 0:
@@ -378,29 +401,39 @@ static func expand_archive(lines: PackedStringArray) -> Dictionary:
 			expanded[index] = JSON.stringify(integer_numbers(row), "", true, true)
 	if parser.parse(expanded[0]) != OK or not parser.data is Dictionary or parser.data.get("seed") != envelope.get("seed") or parser.data.get("rules") != envelope.get("rules") or parser.data.get("names") != envelope.get("names") or parser.data.get("humans") != envelope.get("humans"):
 		return {"error":"Replay metadata mismatch"}
+	var detail_header: Dictionary = parser.data
+	var detail_results: Array = []
 	var timeline_index := 1
 	for index in range(1, expanded.size()):
+		if cancelled.is_valid() and cancelled.call(): return {"error":"Replay loading cancelled"}
 		if parser.parse(expanded[index]) != OK or not valid_command(parser.data): return {"error":"Invalid compressed command"}
 		var row: Dictionary = parser.data
 		if not row.has_all(["seq", "round", "faction"]): return {"error":"Invalid compressed command"}
+		if row.get("action") == "result": detail_results.append(row)
 		if row.get("action") == "ai_decision": continue
 		var expected := decision_line(row)
 		if timeline_index >= lines.size() - 1 or parser.parse(lines[timeline_index]) != OK or brief(parser.data) != expected:
 			return {"error":"Readable decision timeline mismatch"}
 		timeline_index += 1
 	if timeline_index != lines.size() - 1: return {"error":"Unexpected replay timeline lines"}
+	if envelope.has("summary") and integer_numbers(envelope["summary"]) != integer_numbers(Summary.from_records(detail_header, detail_results)):
+		return {"error":"Replay summary mismatch"}
 	return {"error":"", "lines":expanded}
 
-static func read_replay(source_path: String) -> Dictionary:
+static func read_replay(source_path: String, for_playback := false, cancelled := Callable()) -> Dictionary:
 	var source := FileAccess.open(source_path, FileAccess.READ)
 	if source == null: return {"error":"Cannot open replay"}
 	if source.get_length() > MAX_FILE_BYTES: return {"error":"Replay file is too large"}
 	var lines := source.get_as_text().strip_edges().split("\n")
-	var expanded := expand_archive(lines)
+	# The archive checksum already authenticates the complete state tape. Playback
+	# need not serialize/hash the entire board twice for every recorded command.
+	var envelope = JSON.parse_string(lines[0]) if not lines.is_empty() else null
+	var authenticated_tape: bool = for_playback and envelope is Dictionary and envelope.get("version") == VERSION and envelope.get("derived_hashes", false) == true
+	var expanded := expand_archive(lines, not authenticated_tape, cancelled)
 	if expanded["error"] != "": return expanded
-	return read_records(expanded["lines"])
+	return read_records(expanded["lines"], not authenticated_tape, cancelled)
 
-static func read_records(lines: PackedStringArray) -> Dictionary:
+static func read_records(lines: PackedStringArray, verify_hashes := true, cancelled := Callable()) -> Dictionary:
 	var parser := JSON.new()
 	if lines.is_empty() or parser.parse(lines[0]) != OK: return {"error":"Invalid replay header"}
 	var header = parser.data
@@ -408,10 +441,11 @@ static func read_records(lines: PackedStringArray) -> Dictionary:
 		return {"error":"Unsupported replay header"}
 	if not header.get("initial") is Dictionary or not valid_encoding(header["initial"]): return {"error":"Invalid initial position"}
 	var state: Dictionary = header["initial"].duplicate(true)
-	if fingerprint(state) != header.get("hash"): return {"error":"Initial position hash mismatch"}
+	if verify_hashes and fingerprint(state) != header.get("hash"): return {"error":"Initial position hash mismatch"}
 	var commands: Array = []
 	var incomplete := false
 	for index in range(1, lines.size()):
+		if cancelled.is_valid() and cancelled.call(): return {"error":"Replay loading cancelled"}
 		var line := lines[index]
 		if line.strip_edges() == "": continue
 		var parse_error := parser.parse(line)
@@ -422,6 +456,6 @@ static func read_records(lines: PackedStringArray) -> Dictionary:
 		if not valid_command(row) or row.get("seq") != commands.size() + 1:
 			return {"error":"Invalid command at line %d" % (commands.size() + 2)}
 		if not apply_delta(state, row["delta"]): return {"error":"Invalid delta at command %d" % row["seq"]}
-		if fingerprint(state) != row.get("hash"): return {"error":"Position hash mismatch at command %d" % row["seq"]}
+		if verify_hashes and fingerprint(state) != row.get("hash"): return {"error":"Position hash mismatch at command %d" % row["seq"]}
 		commands.append(row)
 	return {"error":"", "header":header, "commands":commands, "position":decode(state), "incomplete_tail":incomplete}

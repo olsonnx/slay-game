@@ -1,5 +1,6 @@
 shader_type spatial;
 render_mode unshaded, cull_disabled, depth_draw_never;
+#include "authored_color.gdshaderinc"
 // Adapted from MinhCreatorVN's Stylized Water for Godot 4.x (MIT), combining
 // kmitt91 and StayAtHomeDev's techniques. See water.LICENSE.md.
 // Waves perturb shading, retaining the flat board/picking plane.
@@ -54,14 +55,14 @@ void fragment() {
     float fresnel = pow(1.0 - clamp(dot(normal, view), 0.0, 1.0), 3.0);
     float bands = smoothstep(0.28, 0.72, wave);
     vec3 water_color = mix(deep_water.rgb, color.rgb, bands * 0.35 + 0.25);
-    water_color += vec3(0.025, 0.045, 0.045) * fresnel;
+    water_color += authored_to_working(vec3(0.025, 0.045, 0.045)) * fresnel;
     float highlight = pow(max(dot(normal, normalize(view + vec3(-0.35, 0.85, 0.4))), 0.0), 96.0);
-    water_color += vec3(0.07, 0.10, 0.09) * highlight;
+    water_color += authored_to_working(vec3(0.07, 0.10, 0.09)) * highlight;
     // Broken crests keep the noise legible as water at the board's small scale.
     float crest = pow(max(sin(world_pos.x * 1.2 + world_pos.z * 1.7
         + wave * 7.0 - clock * 0.5), 0.0), 18.0);
     crest *= smoothstep(0.45, 0.65, n2);
-    water_color += vec3(0.045, 0.065, 0.06) * crest;
+    water_color += authored_to_working(vec3(0.045, 0.065, 0.06)) * crest;
     float foam = 0.0;
     if (!backdrop_depth) {
         vec3 scene = scene_position(SCREEN_UV, INV_PROJECTION_MATRIX);

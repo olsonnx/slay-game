@@ -11,6 +11,9 @@ var view
 var random_values := false
 var event_id := ""
 var player_marker: Label3D
+var brush_preview: MeshInstance3D
+var brush_preview_land: StandardMaterial3D
+var brush_preview_water: StandardMaterial3D
 var brush_rng := RandomNumberGenerator.new()
 var pending_action: Callable
 var stroke = preload("res://src/editor/brush_stroke.gd").new()
@@ -18,15 +21,43 @@ var painting: bool:
 	get: return stroke.active
 var removing: bool:
 	get: return stroke.removing
-var rotating := false
+var rotating := false:
+	set(value):
+		rotating = value
+		if not value and is_instance_valid(view): view.zoom_reference = Vector2(-1, -1)
 var panning := false
 var file_path := ""
 var suspended := false
+var loading_map := false
+var loading_camera_mask := 1
 var pointer_position := Vector2.ZERO
+var document_status := ""
+var previous_fps_limit := 0
+var owns_fps_limit := false
+
+func _enter_tree() -> void:
+	previous_fps_limit = Engine.max_fps
+	Engine.max_fps = mini(previous_fps_limit, 120) if previous_fps_limit > 0 else 120
+	owns_fps_limit = true
+
+func _exit_tree() -> void:
+	if owns_fps_limit:
+		Engine.max_fps = previous_fps_limit
+		owns_fps_limit = false
 
 func _ready() -> void:
 	view = preload("res://src/rendering/board_view.gd").new()
 	add_child(view)
+	# Smaller upload regions keep whole-map editor replacements responsive.
+	view.static_batches.chunk_size = 12
+	brush_preview = MeshInstance3D.new()
+	brush_preview.name = "EditorBrushPreview"
+	brush_preview.mesh = view.outline_mesh
+	brush_preview.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	brush_preview_land = view.material(Color("f2eed6"), true, true)
+	brush_preview_water = view.material(Color("95c9ee"), true, true)
+	brush_preview.hide()
+	view.overlay_root.add_child(brush_preview)
 	ui.layer = 20
 	ui.action_requested.connect(_on_view_action)
 	ui.focus_release_requested.connect(release_text_focus)
@@ -37,7 +68,8 @@ func _ready() -> void:
 	ui.random_values_changed.connect(set_random_values)
 	ui.brush_changed.connect(update_status)
 	ui.file_chosen.connect(file_selected)
-	ui.discard_confirmed.connect(func(): pending_action.call())
+	ui.discard_confirmed.connect(discard_changes)
+	ui.discard_cancelled.connect(func(): pending_action = Callable())
 	ui.shortcuts_requested.connect(refresh_help)
 	ui.build_ui()
 	brush_rng.randomize()
@@ -53,7 +85,7 @@ func active_tool() -> String:
 
 func select_tool(tool: String) -> void:
 	if tool not in Document.TOOLS: return
-	if document.rule_mode == "classic" and tool in ["Mountain", "Mana source", "Bridge", "Event"]: return
+	if document.rule_mode == "classic" and tool in Document.MODERN_TOOLS: return
 	end_stroke()
 	release_text_focus()
 	ui.tool_choice.select(Document.TOOLS.find(tool))
@@ -136,13 +168,28 @@ func toggle_settings() -> void:
 	ui.tool_panel.close()
 
 func update_status(message := "") -> void:
+	# Recompute document state only after edits/settings/save/undo, never hover.
 	ui.undo_button.disabled = document.undo_stack.is_empty()
 	ui.redo_button.disabled = document.redo_stack.is_empty()
-	ui.status.text = message if message != "" else Loc.text("EDITOR%s  /  %s  /  %d TILES  /  %s: %s") % [" *" if document.dirty() else "", Loc.text(document.rule_mode.capitalize()).to_upper(), document.cells.size(), Loc.text("Tiles" if active_tool() in Document.TILE_TOOLS else "Paint").to_upper(), Loc.text(active_tool()).to_upper()]
+	document_status = Loc.text("EDITOR%s  /  %s  /  %d TILES  /  %s: %s") % [" *" if painting or document.dirty() else "", Loc.text(document.rule_mode.capitalize()).to_upper(), document.cells.size(), Loc.text("Tiles" if active_tool() in Document.TILE_TOOLS else "Paint").to_upper(), Loc.text(active_tool()).to_upper()]
+	show_pointer_status(message)
 	ui.brush_label.text = Loc.text(active_tool())
 	ui.brush_label.tooltip_text = Loc.text(Document.Events.EVENTS[event_id]["title"]) if active_tool() == "Event" and Document.Events.EVENTS.has(event_id) else Loc.text(active_tool())
 
-func refresh(reset_view := false) -> void:
+func update_brush_preview(coord: Vector2i) -> void:
+	brush_preview.visible = not loading_map and not view.value_heatmap.active and document.in_bounds(coord)
+	if not brush_preview.visible: return
+	var position_wanted: Vector3 = view.coord_position(coord) + Vector3(0, 0.026, 0)
+	if brush_preview.position != position_wanted: brush_preview.position = position_wanted
+	var material: StandardMaterial3D = brush_preview_land if document.cells.has(coord) else brush_preview_water
+	if brush_preview.material_override != material: brush_preview.material_override = material
+
+func show_pointer_status(message := "") -> void:
+	var text: String = message if message != "" else document_status
+	if ui.status.text != text: ui.status.text = text
+
+func refresh(reset_view := false, render_board := true) -> void:
+	brush_preview.hide()
 	ui.name_edit.set_block_signals(true)
 	ui.name_edit.text = document.title
 	ui.name_edit.set_block_signals(false)
@@ -155,10 +202,10 @@ func refresh(reset_view := false) -> void:
 	ui.filter_events()
 	ui.category_buttons["Events"].disabled = not ui.events_enabled
 	for index in range(ui.tool_choice.item_count):
-		ui.tool_choice.set_item_disabled(index, document.rule_mode == "classic" and Document.TOOLS[index] in ["Mountain", "Mana source", "Bridge", "Event"])
+		ui.tool_choice.set_item_disabled(index, document.rule_mode == "classic" and Document.TOOLS[index] in Document.MODERN_TOOLS)
 	if ui.tool_choice.is_item_disabled(ui.tool_choice.selected): ui.tool_choice.select(0)
 	view.configure_map(document.map_size, Document.Sizes.generation_bounds(document.map_size) + Vector2(5.7, 6), document.cells)
-	view.render_cells(document.cells)
+	if render_board: view.render_cells(document.cells)
 	if ui.tool_panel.visible:
 		var group: String = ui.tool_group
 		ui.tool_panel.close()
@@ -195,6 +242,7 @@ func toggle_heatmap() -> void:
 	end_stroke()
 	release_text_focus()
 	view.value_heatmap.set_active(not view.value_heatmap.active)
+	brush_preview.hide()
 	refresh_heatmap()
 
 func refresh_heatmap() -> void:
@@ -224,7 +272,7 @@ func release_text_focus() -> void:
 	if is_instance_valid(view): view.controls_enabled = not modal_open()
 
 func modal_open() -> bool:
-	return ui.file_dialog.visible or ui.confirm.visible or ui.settings_shade.visible or ui.variant_choice.get_popup().visible or ui.owner_choice.get_popup().visible or ui.size_choice.get_popup().visible or ui.mode_choice.get_popup().visible
+	return loading_map or ui.file_dialog.visible or ui.confirm.visible or ui.settings_shade.visible or ui.variant_choice.get_popup().visible or ui.owner_choice.get_popup().visible or ui.size_choice.get_popup().visible or ui.mode_choice.get_popup().visible
 
 func pointer_over_ui(position: Vector2) -> bool:
 	if modal_open(): return true
@@ -257,6 +305,8 @@ func sample_at(position: Vector2) -> void:
 	var tool := "Land"
 	if cell["mountain"]: tool = "Mountain"
 	elif cell["building"] == "bridge": tool = "Bridge"
+	elif cell.get("lair", "") != "":
+		tool = Document.LAIR_TOOLS.find_key(cell.lair)
 	elif cell["event"] != "":
 		event_id = cell["event"]
 		ui.selected_event = event_id
@@ -278,17 +328,70 @@ func save_level(save_as := false) -> void:
 		ui.file_dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE
 		file_selected(file_path)
 
+func begin_map_load():
+	loading_map = true
+	brush_preview.hide()
+	end_stroke()
+	rotating = false
+	panning = false
+	view.controls_enabled = false
+	view.stop_camera_pan()
+	view.birds.set_loading(true)
+	loading_camera_mask = view.camera.cull_mask
+	view.camera.cull_mask = 0
+	view.process_mode = Node.PROCESS_MODE_DISABLED
+	var preparation = preload("res://src/ui/preparation_screen.gd").new()
+	add_child(preparation)
+	await get_tree().process_frame
+	if DisplayServer.get_name() != "headless": await RenderingServer.frame_post_draw
+	return preparation
+
+func finish_map_load(preparation) -> void:
+	refresh(true, false)
+	await view.replace_cells(document.cells)
+	view.camera.cull_mask = loading_camera_mask
+	await view.lighting.warmup()
+	# Warm the replacement beneath the cover before revealing it.
+	for frame in range(2):
+		await get_tree().process_frame
+		if DisplayServer.get_name() != "headless": await RenderingServer.frame_post_draw
+	view.process_mode = Node.PROCESS_MODE_INHERIT
+	view.birds.set_loading(false)
+	await preparation.reveal()
+	loading_map = false
+	view.controls_enabled = not modal_open()
+
 func new_island(blank: bool) -> void:
-	document.generate(Document.Sizes.IDS[ui.size_choice.selected], "modern" if ui.mode_choice.selected == 0 else "classic", blank)
-	file_path = ""
+	if loading_map: return
+	var size_id: String = Document.Sizes.IDS[ui.size_choice.selected]
+	var mode := "modern" if ui.mode_choice.selected == 0 else "classic"
 	ui.settings_shade.hide()
-	refresh(true)
+	var preparation = await begin_map_load()
+	var replacement = Document.new()
+	replacement.title = document.title
+	if blank:
+		replacement.generate(size_id, mode, true)
+	else:
+		var task := WorkerThreadPool.add_task(replacement.generate.bind(size_id, mode, false), false, "Prepare editor island")
+		while not WorkerThreadPool.is_task_completed(task): await get_tree().process_frame
+		WorkerThreadPool.wait_for_task_completion(task)
+	document = replacement
+	file_path = ""
+	await finish_map_load(preparation)
+
+func discard_changes() -> void:
+	var action := pending_action
+	pending_action = Callable()
+	if action.is_valid(): action.call()
 
 func request_action(action: Callable) -> void:
+	if ui.confirm.visible: return
 	end_stroke()
+	release_text_focus()
 	if document.dirty():
 		pending_action = action
-		ui.confirm.popup_centered(Vector2i(380, 160))
+		ui.confirm.popup_centered()
+		view.controls_enabled = false
 	else: action.call()
 
 func prepare_files() -> void:
@@ -311,6 +414,7 @@ func open_load() -> void:
 	ui.file_dialog.popup_centered_ratio(0.75)
 
 func file_selected(path: String) -> void:
+	if loading_map: return
 	if ui.file_dialog.file_mode == FileDialog.FILE_MODE_SAVE_FILE:
 		if not path.to_lower().ends_with(".json"): path += ".json"
 		var error: Error = document.save_file(path)
@@ -335,7 +439,8 @@ func file_selected(path: String) -> void:
 			update_status(error)
 			return
 		file_path = path
-		refresh(true)
+		var preparation = await begin_map_load()
+		await finish_map_load(preparation)
 		update_status(Loc.text("Loaded %s") % path.get_file())
 
 func playtest() -> void:
@@ -365,12 +470,14 @@ func paint_at(position: Vector2) -> void:
 	var hit: Dictionary = view.pick_at_screen(position, true)
 	if stroke.paint(document, hit["coord"], active_tool(), ui.owner_choice.selected - 1, int(ui.value_choice.value), random_values, brush_rng, event_id):
 		view.render_cells(document.cells)
+		update_brush_preview(hit["coord"])
 		refresh_player_labels()
 		update_status()
 
 func handle_shortcut(event: InputEventKey) -> bool:
 	if not event.pressed or event.echo: return false
 	if modal_open():
+		if ui.confirm.visible: return false
 		if ui.settings_shade.visible and event.keycode == KEY_ESCAPE:
 			toggle_settings()
 			return true
@@ -437,14 +544,17 @@ func handle_shortcut(event: InputEventKey) -> bool:
 	return true
 
 func _input(event: InputEvent) -> void:
+	if loading_map: return
 	if suspended: return
 	if event is InputEventMouseButton or event is InputEventMouseMotion:
 		pointer_position = event.position
 		if not pointer_over_ui(event.position):
 			release_text_focus()
-		elif event is InputEventMouseMotion and painting:
-			# Do not connect a stroke across a UI panel.
-			stroke.break_path()
+		else:
+			brush_preview.hide()
+			if event is InputEventMouseMotion and painting:
+				# Do not connect a stroke across a UI panel.
+				stroke.break_path()
 	if event is InputEventKey:
 		# Playtest detaches this scene synchronously; retain its input viewport.
 		var input_viewport := get_viewport()
@@ -480,32 +590,32 @@ func _unhandled_input(event: InputEvent) -> void:
 				stroke.begin(document)
 				paint_at(event.position)
 			MOUSE_BUTTON_RIGHT:
-				if event.alt_pressed: rotating = true
+				if event.alt_pressed:
+					rotating = true
+					view.zoom_reference = event.position
 				else:
 					end_stroke()
 					stroke.begin(document, true)
 					paint_at(event.position)
 			MOUSE_BUTTON_MIDDLE: panning = true
-			MOUSE_BUTTON_WHEEL_UP: view.change_zoom(1)
-			MOUSE_BUTTON_WHEEL_DOWN: view.change_zoom(-1)
+			MOUSE_BUTTON_WHEEL_UP: view.change_zoom(1, event.position)
+			MOUSE_BUTTON_WHEEL_DOWN: view.change_zoom(-1, event.position)
 	if event is InputEventMouseMotion:
 		if pointer_over_ui(event.position): return
 		var coord: Vector2i = view.hex_at_screen(event.position, true)
+		update_brush_preview(coord)
 		if view.value_heatmap.active:
 			view.value_heatmap.set_hovered(coord)
-		else:
-			var water_preview := {coord: true} if document.in_bounds(coord) and not document.cells.has(coord) else {}
-			view.show_overlays(Document.Rules.NONE, coord if document.in_bounds(coord) else Document.Rules.NONE, water_preview, [], Document.Rules.NONE)
 		if painting: paint_at(event.position)
 		elif document.cells.has(coord):
 			var cell: Dictionary = document.cells[coord]
 			var owner: int = cell["owner"]
-			update_status(Loc.text("%s · Province %d, %d · Value %d · %s") % [Loc.text(Document.Events.EVENTS[event_id]["title"]) if active_tool() == "Event" and Document.Events.EVENTS.has(event_id) else Loc.text(active_tool()), coord.x, coord.y, cell["value"], Loc.text("Neutral") if owner < 0 else document.factions[owner]["name"]])
-		else: update_status()
+			show_pointer_status(Loc.text("%s · Province %d, %d · Value %d · %s") % [Loc.text(Document.Events.EVENTS[event_id]["title"]) if active_tool() == "Event" and Document.Events.EVENTS.has(event_id) else Loc.text(active_tool()), coord.x, coord.y, cell["value"], Loc.text("Neutral") if owner < 0 else document.factions[owner]["name"]])
+		else: show_pointer_status()
 
 func _process(_delta: float) -> void:
 	var focus := get_viewport().gui_get_focus_owner()
-	view.controls_enabled = not modal_open() and not focus is LineEdit and not Input.is_key_pressed(KEY_CTRL) and not Input.is_key_pressed(KEY_ALT)
+	view.controls_enabled = not modal_open() and not focus is LineEdit and not Input.is_key_pressed(KEY_CTRL) and (not Input.is_key_pressed(KEY_ALT) or rotating)
 	if painting and not rotating and not panning and not pointer_over_ui(pointer_position):
 		paint_at(pointer_position)
 
@@ -516,6 +626,7 @@ func _notification(what: int) -> void:
 		panning = false
 
 func _on_view_action(action: StringName, arguments: Array) -> void:
+	if loading_map: return
 	match action:
 		&"toggle_view": toggle_view()
 		&"toggle_heatmap": toggle_heatmap()

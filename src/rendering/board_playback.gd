@@ -10,6 +10,10 @@ var animation_revision := 0
 var preparation_tween: Tween
 var speed_scale := 1.0
 var scaled_tweens: Array[Tween] = []
+var growing_trees: Dictionary = {}
+# Keep the shader variant alive between short-lived action effects.
+var marker_material: StandardMaterial3D
+var flash_material: StandardMaterial3D
 
 func set_speed_scale(value: float) -> void:
 	if speed_scale == value:
@@ -32,6 +36,66 @@ func scaled_tween(owner: Node) -> Tween:
 
 func _init(view) -> void:
 	board = view
+	marker_material = StandardMaterial3D.new()
+	marker_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	marker_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	marker_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	flash_material = marker_material.duplicate()
+	flash_material.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_DISABLED
+	# Unused templates do not acquire a shader until their RID is requested.
+	marker_material.get_rid()
+	flash_material.get_rid()
+
+func prepare_effects() -> void:
+	# Forward+ prepares invisible surfaces too, under the normal loading cover.
+	for pair in [[marker_material, board.outline_mesh], [flash_material, board.outline_mesh],
+		[flash_material, board.cylinder_mesh(0.91, 0.91, 0.005, 6)]]:
+		var surface := MeshInstance3D.new()
+		surface.name = "EffectPipeline"
+		surface.mesh = pair[1]
+		surface.material_override = pair[0]
+		surface.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		# Compile the surface without drawing it in any camera.
+		surface.layers = 0
+		add_child(surface)
+
+func grow_tree(coord: Vector2i) -> void:
+	var tree: Node3D = board.tile_nodes[coord].get_node_or_null("Features/Tree")
+	if tree == null: return
+	if growing_trees.has(coord): finish_tree_growth(coord, growing_trees[coord].tree)
+	var parts: Array = tree.find_children("*", "MeshInstance3D", true, false)
+	# All tree pieces share a ground anchor, including the existing contact shadow.
+	var trunk: Node3D = tree.get_child(1)
+	var pivot := Vector3(trunk.position.x,0,trunk.position.z)
+	var entry := {"tree":tree, "parts":parts, "pivot":pivot, "tween":null}
+	growing_trees[coord] = entry
+	tree.tree_exiting.connect(finish_tree_growth.bind(coord,tree))
+	update_tree_growth(0.0,entry)
+	var tween := scaled_tween(tree)
+	entry.tween = tween
+	tween.tween_method(update_tree_growth.bind(entry),0.0,1.0,0.36).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_callback(finish_tree_growth.bind(coord,tree))
+
+func update_tree_growth(progress: float, entry: Dictionary) -> void:
+	var tree: Node3D = entry.tree
+	if not is_instance_valid(tree) or not tree.is_inside_tree(): return
+	var scale := Vector3(lerpf(0.25,1,progress),lerpf(0.02,1,progress),lerpf(0.25,1,progress))
+	var pivot: Vector3 = tree.to_global(entry.pivot)
+	var basis := Basis.from_scale(scale)
+	var growth := Transform3D(basis,pivot-basis*pivot)
+	for part in entry.parts:
+		if is_instance_valid(part): board.static_batches.set_source_visual_transform(part,growth*part.global_transform)
+
+func finish_tree_growth(coord: Vector2i, tree: Node3D) -> void:
+	if not growing_trees.has(coord) or growing_trees[coord].tree != tree: return
+	var entry: Dictionary = growing_trees[coord]
+	growing_trees.erase(coord)
+	if entry.tween != null and entry.tween.is_valid(): entry.tween.kill()
+	for part in entry.parts:
+		if is_instance_valid(part) and part.is_inside_tree(): board.static_batches.reset_source_visual_transform(part)
+
+func clear_tree_growth() -> void:
+	for coord in growing_trees.keys(): finish_tree_growth(coord,growing_trees[coord].tree)
 
 func action_marker(coord: Vector2i, color: Color) -> void:
 	var marker := MeshInstance3D.new()
@@ -39,10 +103,7 @@ func action_marker(coord: Vector2i, color: Color) -> void:
 	marker.mesh = board.outline_mesh
 	marker.position = board.coord_position(coord) + Vector3(0, 0.07, 0)
 	marker.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	var mat := StandardMaterial3D.new()
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	var mat: StandardMaterial3D = marker_material.duplicate()
 	mat.albedo_color = color
 	marker.material_override = mat
 	board.animation_root.add_child(marker)
@@ -51,7 +112,7 @@ func action_marker(coord: Vector2i, color: Color) -> void:
 	tween.tween_property(mat, "albedo_color", Color(color, 0), 0.30)
 	tween.chain().tween_callback(marker.queue_free)
 
-func play_preparation(actions: Array, new_cells: Dictionary) -> void:
+func play_preparation(actions: Array, new_cells: Dictionary, partial := false) -> void:
 	# Retain dying troops until their final pose, including starvation deaths.
 	var displayed: Dictionary = new_cells.duplicate()
 	var deaths: Array[Vector2i] = []
@@ -61,7 +122,7 @@ func play_preparation(actions: Array, new_cells: Dictionary) -> void:
 		if action["kind"] == "death" and board.unit_actors.has(coord) and displayed.has(coord):
 			displayed[coord] = board.cells[coord].duplicate(true)
 			deaths.append(coord)
-	board.render_cells(displayed)
+	board.render_cells(displayed, partial)
 	if actions.is_empty():
 		return
 	is_animating = true
@@ -132,6 +193,7 @@ func animate_moves(actions: Array, final_cells: Dictionary) -> void:
 
 func cancel_motion(restored_cells: Dictionary) -> void:
 	animation_revision += 1
+	board.wildlife.cancel_effects()
 	board.unit_spawn_effects.clear()
 	if preparation_tween != null and preparation_tween.is_valid():
 		preparation_tween.kill()
@@ -152,6 +214,7 @@ func cancel_motion(restored_cells: Dictionary) -> void:
 	board.render_cells(restored_cells)
 
 func start_motion(actor: Node3D, defender: Node3D, action: Dictionary) -> void:
+	board.birds.unit_departing(action["source"])
 	board.dirty_tiles[action["source"]] = true
 	board.dirty_tiles[action["target"]] = true
 	var tween := scaled_tween(actor)
@@ -169,10 +232,12 @@ func start_motion(actor: Node3D, defender: Node3D, action: Dictionary) -> void:
 	for index in range(1, path.size()):
 		if attacking and index == last_step:
 			break
+		tween.tween_callback(board.birds.scatter.bind(path[index], board.coord_position(path[index - 1])))
 		var point: Vector3 = end if index == last_step else board.coord_position(path[index])
 		tween.tween_callback(animator.face.bind(point))
 		tween.tween_property(actor, "global_position", point, STEP_SECONDS).set_trans(Tween.TRANS_LINEAR)
 	if attacking:
+		tween.tween_callback(board.birds.scatter.bind(action["target"], board.coord_position(path[last_step - 1])))
 		var before_target: Vector3 = board.coord_position(path[last_step - 1])
 		var direction: Vector3 = (end - before_target).normalized()
 		# Leave room for the new silhouettes and their weapon reach.
@@ -210,6 +275,14 @@ func start_motion(actor: Node3D, defender: Node3D, action: Dictionary) -> void:
 	tween.tween_callback(finish_motion.bind(actor, defender, action))
 
 func impact(defender: Node3D, action: Dictionary) -> void:
+	if action["before_target"].get("animal", "") != "" and action["kind"] == "attack":
+		board.wildlife.defeat(action["target"])
+		board.cells[action["target"]].erase("animal")
+		board.cells[action["target"]].erase("animal_home")
+		board.cells[action["target"]].erase("animal_target")
+	if action["before_target"].get("lair", "") != "" and action["kind"] == "attack":
+		board.cells[action["target"]].erase("lair")
+		clear_features(action["target"])
 	if is_instance_valid(defender):
 		var animator = defender.get_node("UnitAnimation")
 		animator.face(active_motions[action["source"]]["actor"].global_position)
@@ -240,7 +313,7 @@ func impact(defender: Node3D, action: Dictionary) -> void:
 		return
 	if is_instance_valid(defender):
 		board.cells[action["target"]]["unit"] = 0
-	if action["before_target"]["capital"] >= 0 or action["before_target"]["building"] != "":
+	if action["capture"] and (action["before_target"]["capital"] >= 0 or action["before_target"]["building"] != ""):
 		clear_features(action["target"])
 		board.cells[action["target"]]["building"] = ""
 		board.cells[action["target"]]["capital"] = -1
@@ -250,6 +323,8 @@ func impact(defender: Node3D, action: Dictionary) -> void:
 
 func clear_features(coord: Vector2i) -> void:
 	var features: Node3D = board.tile_nodes[coord].get_node("Features")
+	if features.get_child_count() == 0: return
+	board.tile_nodes[coord].remove_meta("scenery_state")
 	for child in features.get_children():
 		features.remove_child(child)
 		child.queue_free()
@@ -318,8 +393,8 @@ func finish_motion(actor: Node3D, defender: Node3D, action: Dictionary) -> void:
 		for index in range(cell["unit"]):
 			board.cylinder(pips, Vector3((index - (cell["unit"] - 1) * 0.5) * 0.11, 0.045, 0.40), 0.035, 0.035, 0.025, Color("f0dba3"), 8)
 	board.motion_stage.emit(action, "occupy")
-	board.notify_visible_board_changed()
 	if not action.get("annexed", {}).is_empty():
+		board.notify_visible_board_changed()
 		await play_castle_surrender(action)
 		if revision != animation_revision:
 			return
@@ -341,9 +416,8 @@ func play_castle_surrender(action: Dictionary) -> void:
 	ring.position = board.coord_position(action["target"]) + Vector3(0, 0.10, 0)
 	ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	# Animated materials must not mutate the shared static material cache.
-	var mat: StandardMaterial3D = board.material(Color("ffe5a2"), true).duplicate()
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	var mat: StandardMaterial3D = marker_material.duplicate()
+	mat.albedo_color = Color("ffe5a2")
 	ring.material_override = mat
 	board.animation_root.add_child(ring)
 	wave.set_parallel(true)

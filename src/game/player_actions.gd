@@ -21,6 +21,7 @@ func click_hex(game, coord: Vector2i, hit_kind := "auto") -> void:
 		game.cancel_action()
 		return
 	var unit_clicked: bool = hit_kind == "unit" or (hit_kind == "auto" and game.view.cells.get(coord, {}).get("unit", 0) > 0)
+	var animal_clicked: bool = hit_kind == "wildlife" or (hit_kind == "auto" and game.view.cells.get(coord, {}).get("animal", "") != "")
 	var completed_mode: String = game.session.selection.action_mode
 	var completed_spell: String = game.session.selection.chosen_spell
 	var completed_tier: int = game.session.selection.recruit_tier
@@ -30,10 +31,11 @@ func click_hex(game, coord: Vector2i, hit_kind := "auto") -> void:
 	if game.session.selection.action_mode in ["tower","house"] and not game.tutorial_permits("build",coord,{"building":game.session.selection.action_mode}): return
 	if game.session.selection.action_mode == "" and game.session.selection.selected != coord and game.session.selection.valid_targets.has(coord) and not game.tutorial_permits("move",coord,{"source":game.session.selection.selected}): return
 	game.session.selection.inspected_unit = game.NONE
-	if unit_clicked:
+	game.session.selection.inspected_animal = game.NONE
+	if unit_clicked or animal_clicked:
 		game.close_province()
 	if game.busy or game.game_over:
-		if game.rules.is_modern() and not unit_clicked:
+		if game.rules.is_modern() and not unit_clicked and not animal_clicked:
 			game.inspect_province(coord)
 		return
 	game.hud.shop_panel.close()
@@ -106,6 +108,8 @@ func click_hex(game, coord: Vector2i, hit_kind := "auto") -> void:
 			game.announce(Loc.text("Entrenchment absorbed the hit. The attacker has spent its move.") if action["before_target"].get("entrenched_by", -1) >= 0 else Loc.text("Fortification absorbed the hit. The attacker has spent its move."))
 		elif action["kind"] == "knight_duel":
 			game.announce(Loc.text("Both Knights fell. Territory remains unchanged."))
+		elif action.get("lair_reward", "") != "":
+			game.announce(Loc.text("Lair destroyed: %s") % Loc.text(game.rules.Wildlife.DEFINITIONS[action.lair_reward].reward))
 		elif action["before_target"].get("treasure", 0) > 0 and action["capture"]:
 			game.announce(Loc.text("Treasure collected · +%d G to your kingdom.") % action["before_target"]["treasure"])
 		game.show_next_event()
@@ -114,6 +118,10 @@ func click_hex(game, coord: Vector2i, hit_kind := "auto") -> void:
 		game.refresh_ui()
 		game.report_tutorial_action("move",coord,action)
 		return
+	elif animal_clicked and game.session.selection.action_mode == "":
+		Sound.play(&"ui_click")
+		game.session.selection.selected = game.NONE
+		game.session.selection.inspected_animal = coord
 	elif game.cells[coord]["owner"] == game.player_faction or game.cells[coord]["unit"] > 0 and game.rules.unit_faction(coord) == game.player_faction:
 		if unit_clicked or not game.rules.is_modern():
 			Sound.play(&"ui_click")
@@ -136,8 +144,10 @@ func click_hex(game, coord: Vector2i, hit_kind := "auto") -> void:
 			game.view.spawn_unit_effect(coord, game.cells[coord]["unit"])
 		elif cast:
 			game.view.action_marker(coord, Color("bda2fa"))
-	if game.rules.is_modern() and not unit_clicked and not changed and game.session.selection.action_mode == "":
+	if game.rules.is_modern() and not unit_clicked and not animal_clicked and not changed and game.session.selection.action_mode == "":
 		game.inspect_province(coord)
+	elif not game.rules.is_modern() and not unit_clicked and not animal_clicked and not changed and game.session.selection.action_mode == "":
+		game.session.selection.inspected_hex = coord if game.cells[coord].building == "tower" else game.NONE
 	game.check_winner()
 	game.refresh_ui()
 	if changed:

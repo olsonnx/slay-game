@@ -57,6 +57,9 @@ static func pick_at_screen(board, screen: Vector2, include_water := false, exhau
 			size = Vector3(0.68, 1.48, 0.68)
 		elif cell["building"] == "house":
 			size = Vector3(0.92, 1.10, 0.80)
+		elif cell.get("lair", "") != "":
+			var lair_scale := 1.0 if cell.lair == "bear" else 0.90 if cell.lair == "wolf" else 0.82
+			size = Vector3(1.2,0.8,1.65)*lair_scale
 		elif cell["tree"] and not heatmap:
 			size = Vector3(0.86, 1.50, 0.86)
 		elif cell.get("treasure", 0) > 0:
@@ -81,6 +84,8 @@ static func pick_at_screen(board, screen: Vector2, include_water := false, exhau
 				for child in actor.get_children():
 					if child is Sprite3D:
 						sprites.append(child)
+	if board.get("wildlife") != null:
+		for actor in board.wildlife.actors.values(): sprites.append(board.wildlife.sprite_for(actor))
 	for unit in sprites:
 		if not unit.is_visible_in_tree():
 			continue
@@ -98,10 +103,10 @@ static func pick_at_screen(board, screen: Vector2, include_water := false, exhau
 		var distance: float = (unit.global_position - origin).dot(direction)
 		# Opaque soldier pixels take priority over coarse prop bounding boxes.
 		# This keeps a soldier beside/on a castle independently selectable.
-		if object_kind != "unit" or distance < closest:
+		if object_kind not in ["unit", "wildlife"] or distance < closest:
 			closest = distance
 			object_hex = unit.get_parent().get_meta("hex")
-			object_kind = "unit"
+			object_kind = "wildlife" if unit.get_meta("wildlife",false) else "unit"
 	if object_hex != NONE:
 		return {"coord": object_hex, "kind": "terrain" if heatmap else object_kind}
 	return {"coord": ground_hex if ground_hex != NONE else Grid.from_world(point) if include_water else NONE, "kind": "terrain"}

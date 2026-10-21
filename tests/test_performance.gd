@@ -31,6 +31,11 @@ func run() -> void:
 			for coord in rules.cells:
 				if rules.cells[coord]["unit"] > 0:
 					expect(queries.reachable_targets(coord) == rules.reachable_targets(coord), "Memoized targets retain their source-rooted route graph")
+					var targets: Dictionary = rules.reachable_targets(coord)
+					for target in rules.cells:
+						expect(rules.can_move(coord, target) == targets.has(target), "Single-target validation matches complete legal destinations")
+						var expected: Array = rules.movement_path(coord, target, targets) if targets.has(target) else []
+						expect(rules.movement_path(coord, target) == expected, "Single-target routes preserve path selection")
 			for faction in range(rules.faction_count):
 				var summary: Dictionary = rules.mana_summary(faction)
 				expect(summary["amount"] == rules.get_mana(faction) and summary["capacity"] == rules.mana_capacity(faction) and summary["regeneration"] == rules.mana_regeneration(faction) and summary["income"] == rules.mana_income(faction), "Single-pass mana agrees with public queries")

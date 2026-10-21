@@ -84,6 +84,14 @@ func refresh(model, coord: Vector2i, can_act: bool, faction := 0) -> void:
 	if cell.get("treasure", 0) > 0:
 		mana_label.text = Loc.text("Treasure chest · guaranteed %d G on capture") % cell["treasure"]
 	if model.is_entrenched(coord): mana_label.text = Loc.text("Entrenched · absorbs one attack until your next turn")
+	if cell.get("animal", "") != "" or cell.get("lair", "") != "":
+		var kind: String = cell.get("animal",cell.get("lair", ""))
+		var animal: Dictionary = model.Wildlife.DEFINITIONS[kind]
+		title.text = Loc.text(animal.lair if cell.get("lair", "") != "" else animal.name)
+		mana_label.text = Loc.text("Requires a Knight" if kind == "bear" else "Requires a Soldier or Knight")
+		if cell.get("lair", "") != "": income_label.text = Loc.text("Reward: +5 G / turn" if kind == "bear" else "Reward: +1 mana / turn" if kind == "wolf" else "Reward: 20 G + 2 mana")
+		income_label.add_theme_font_size_override("font_size",12)
+	else: income_label.add_theme_font_size_override("font_size",16)
 	entrench_button.visible = model.is_modern() and cell["unit"] > 0 and model.unit_faction(coord) == faction
 	entrench_button.disabled = not can_act or not model.can_entrench(coord, faction)
 	entrench_button.text = Loc.text("Entrenched") if model.is_entrenched(coord) else Loc.text("Entrench")

@@ -25,6 +25,10 @@ static func local_defense(state, coord: Vector2i) -> int:
 	return strength
 
 static func defense(state, coord: Vector2i) -> int:
+	if state.has_wildlife(coord): return state.Wildlife.defense(state.cells[coord])
+	return province_defense(state,coord)
+
+static func province_defense(state, coord: Vector2i) -> int:
 	var cells: Dictionary = state.cells
 	var strength: int = local_defense(state, coord)
 	if cells[coord]["owner"] < 0:
@@ -37,6 +41,12 @@ static func defense(state, coord: Vector2i) -> int:
 			# Knights defend their own hex at 3, but lend at most 2 to neighbours.
 			strength = maxi(strength, mini(2, local_defense(state, next)))
 	return strength
+
+static func attack_defense(state, coord: Vector2i, faction: int) -> int:
+	var protection := defense(state,coord)
+	if state.has_wildlife(coord) and state.cells[coord]["owner"] >= 0 and state.cells[coord]["owner"] != faction:
+		protection = maxi(protection,province_defense(state,coord))
+	return protection
 
 static func unit_protection(cells: Dictionary, source: Vector2i) -> Dictionary:
 	# Defence spreads only across adjacent land with the same terrain owner.
@@ -72,7 +82,7 @@ static func friendly_routes(state, source: Vector2i) -> Dictionary:
 				continue
 			var cell: Dictionary = cells[next]
 			var accessible: bool = cell["owner"] == faction or (modern and cell["building"] == "bridge" and (cell["unit"] == 0 or cell.get("unit_owner", -1) == faction))
-			if accessible and not cell.get("mountain", false) and cell.get("barrier_by", -1) < 0:
+			if accessible and not state.has_wildlife(next) and not cell.get("mountain", false) and cell.get("barrier_by", -1) < 0:
 				parents[next] = coord
 				queue.append(next)
 	return parents
@@ -101,19 +111,45 @@ static func reachable_targets(state, source: Vector2i) -> Dictionary:
 			if parents.has(next) or checked_border.has(next):
 				continue
 			checked_border[next] = true
-			if not state.is_mountain(next) and not state.is_barrier(next) and (cells[next]["owner"] != faction or state.is_bridge(next)) and (strength > defense(state, next) or knight_duel(state, source, next)):
+			# Hunting on friendly land ignores friendly defenders. Capturing enemy
+			# land must still overcome its defenders as well as the animal.
+			var protection := attack_defense(state,next,faction)
+			if not state.is_mountain(next) and not state.is_barrier(next) and (cells[next]["owner"] != faction or state.is_bridge(next) or state.has_wildlife(next)) and (strength > protection or knight_duel(state, source, next)):
 				targets[next] = parents
 	return targets
 
+static func target_parents(state, source: Vector2i, target: Vector2i) -> Dictionary:
+	# A command validates one destination. Avoid evaluating every other border
+	# province's defenders just to recover the same friendly route graph.
+	var cells: Dictionary = state.cells
+	if not cells.has(source) or not cells.has(target) or source == target: return {}
+	if cells[source]["unit"] == 0 or cells[source]["moved"]: return {}
+	var parents := friendly_routes(state, source)
+	if parents.is_empty(): return {}
+	var destination: Dictionary = cells[target]
+	if parents.has(target):
+		if (destination["building"] == "" or state.is_bridge(target)) and (destination["unit"] == 0 or destination["unit"] == cells[source]["unit"] and cells[source]["unit"] < 3): return parents
+		return {}
+	if state.is_mountain(target) or state.is_barrier(target): return {}
+	var faction: int = state.unit_faction(source)
+	if destination["owner"] == faction and not state.is_bridge(target) and not state.has_wildlife(target): return {}
+	if cells[source]["unit"] <= attack_defense(state, target, faction) and not knight_duel(state, source, target): return {}
+	for direction in Grid.DIRECTIONS:
+		if parents.has(target + direction): return parents
+	return {}
+
 static func can_move(state, source: Vector2i, target: Vector2i) -> bool:
-	return reachable_targets(state, source).has(target)
+	return not target_parents(state, source, target).is_empty()
 
 static func movement_path(state, source: Vector2i, target: Vector2i, known_targets: Dictionary = {}) -> Array[Vector2i]:
 	var result: Array[Vector2i] = []
-	var targets: Dictionary = reachable_targets(state, source) if known_targets.is_empty() else known_targets
-	if not targets.has(target):
-		return result
-	var parents: Dictionary = targets[target]
+	var parents: Dictionary
+	if known_targets.is_empty():
+		parents = target_parents(state, source, target)
+	else:
+		if not known_targets.has(target): return result
+		parents = known_targets[target]
+	if parents.is_empty(): return result
 	var endpoint := target
 	if not parents.has(target):
 		var shortest := 1000000
@@ -150,6 +186,7 @@ static func move_unit(state, source: Vector2i, target: Vector2i) -> bool:
 	return true
 
 static func fortification_blocks_attack(state, source: Vector2i, target: Vector2i) -> bool:
+	if state.has_wildlife(target): return false
 	if not state.cells[target].get("fortified", false) and not state.is_entrenched(target):
 		return false
 	if state.is_bridge(target):
@@ -195,6 +232,8 @@ static func apply_move(state, source: Vector2i, target: Vector2i, path: Array = 
 		return
 	var support: Dictionary = state.unit_kingdom(source)
 	var support_capital: Vector2i = support.get("capital", state.NONE)
+	var lair: String = destination.get("lair", "")
+	if destination.get("animal", "") != "": state.Wildlife.kill(state,target)
 	var reward: int = 1 if state.is_modern() and destination["tree"] else 0
 	var surrendered: Array[Vector2i] = castle_neighbors(state, source, target)
 	var capturing: bool = not state.is_bridge(target) and destination["owner"] != faction
@@ -237,6 +276,10 @@ static func apply_move(state, source: Vector2i, target: Vector2i, path: Array = 
 		var beneficiary: Dictionary = state.kingdom_at(support_capital) if support_capital != state.NONE else state.unit_kingdom(target)
 		if not beneficiary.is_empty():
 			beneficiary["gold"] += reward
+	if lair != "":
+		var beneficiary: Dictionary = state.unit_kingdom(target)
+		if beneficiary.is_empty() and support_capital != state.NONE: beneficiary = state.kingdom_at(support_capital)
+		state.Wildlife.destroy_lair(state,target,faction,beneficiary)
 
 static func perform_move(state, source: Vector2i, target: Vector2i) -> Dictionary:
 	# Record the route and participants before the authoritative move changes them.
@@ -260,7 +303,7 @@ static func record_validated_move(state, source: Vector2i, target: Vector2i, pat
 	var blocked_reward: int = 1 if blocked and landing != source and state.is_modern() and before_landing["tree"] else 0
 	var duel: bool = not blocked and knight_duel(state, source, target)
 	var capturing: bool = not blocked and not duel and not state.is_bridge(target) and faction != target_cell["owner"]
-	var attacking: bool = blocked or capturing and (target_cell["unit"] > 0 or target_cell["building"] != "" or target_cell["capital"] >= 0) or state.is_bridge(target) and target_cell["unit"] > 0 and state.unit_faction(target) != faction
+	var attacking: bool = state.Wildlife.present(target_cell) or blocked or capturing and (target_cell["unit"] > 0 or target_cell["building"] != "" or target_cell["capital"] >= 0) or state.is_bridge(target) and target_cell["unit"] > 0 and state.unit_faction(target) != faction
 	var kind = "blocked_attack" if blocked else "knight_duel" if duel else "attack" if attacking else "merge" if target_cell["unit"] > 0 and state.unit_faction(target) == faction else "move"
 	var surrendered: Array[Vector2i] = []
 	if not blocked and not duel:
@@ -278,7 +321,7 @@ static func record_validated_move(state, source: Vector2i, target: Vector2i, pat
 		"target": target, "path": path, "before_source": source_cell,
 		"before_target": target_cell, "after_target": state.cells[target].duplicate(true),
 		"capture": capturing, "annexed": annexed, "after_source": state.cells[source].duplicate(true),
-		"payer_capital": support.get("capital", state.NONE), "gold_reward": blocked_reward + (int(target_cell.get("treasure", 0)) if capturing else 0) + (1 if state.is_modern() and target_cell["tree"] and not blocked and not duel else 0)}
+		"payer_capital": support.get("capital", state.NONE), "lair_reward":target_cell.get("lair", "") if not blocked and not duel else "", "gold_reward": blocked_reward + (int(target_cell.get("treasure", 0)) if capturing else 0) + (20 if target_cell.get("lair", "") == "boar" and not blocked and not duel else 0) + (1 if state.is_modern() and target_cell["tree"] and not blocked and not duel else 0)}
 	if blocked:
 		record["landing"] = landing
 		record["before_landing"] = before_landing

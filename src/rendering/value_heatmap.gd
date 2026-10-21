@@ -217,6 +217,7 @@ func rebuild_borders() -> void:
 		var material := StandardMaterial3D.new()
 		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 		material.vertex_color_use_as_albedo = true
+		material.vertex_color_is_srgb = true
 		material.cull_mode = BaseMaterial3D.CULL_DISABLED
 		borders.material_override = material
 		add_child(borders)

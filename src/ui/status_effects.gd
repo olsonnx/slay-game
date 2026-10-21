@@ -16,11 +16,14 @@ func refresh(model, faction := 0) -> void:
 			var definition: Array = Events.EFFECTS[effect]
 			active[effect] = [definition[0], Loc.text(definition[1]) + "\n" + (Loc.text("Next move: act again after a neutral capture\nAny move spends it") if effect == "trailblaze" else Loc.text("Next successful spell: 0 mana\nLasts until used")), Color("c7b2fa")]
 	if model.has_effect(faction, "stainless_steel"):
-		active["stainless_steel"] = ["S", Loc.text("Stainless steel\nKnights cost 2 G less in upkeep. Permanent; does not stack."), Color("b5d5df")]
+		active["stainless_steel"] = ["S", Loc.text("Invention of stainless steel"), Color("b5d5df")]
 	var permanent_income: int = model.effects_by_faction.get(faction, {}).get("income_bonus", 0)
 	if permanent_income != 0:
-		active["income_bonus"] = ["G", Loc.text("Permanent income: %+d G per turn\nApplied to one treasury for this faction. Moves to a surviving treasury if its capital is lost; never multiplied by splits." ) % permanent_income, Color("eed3a1")]
+		active["income_bonus"] = ["G", source_breakdown(model.effects_by_faction.get(faction, {}), "income", permanent_income, Loc.text("Gold per turn")), Color("eed3a1")]
 	var counts := {"entrench": 0}
+	var wildlife_regen: int = model.effects_by_faction.get(faction, {}).get("wildlife_mana_regen",0)
+	if wildlife_regen > 0:
+		active["wildlife_mana_regen"] = ["M",source_breakdown(model.effects_by_faction.get(faction, {}), "mana", wildlife_regen, Loc.text("Mana per turn")),Color("bdb0ed")]
 	for cell in model.cells.values():
 		if cell.get("entrenched_by", -1) == faction: counts["entrench"] += 1
 	if counts["entrench"] > 0:
@@ -48,3 +51,26 @@ func refresh(model, faction := 0) -> void:
 		if icon.get_index() != index:
 			move_child(icon, index)
 		index += 1
+
+func source_breakdown(effects: Dictionary, resource: String, total: int, heading: String) -> String:
+	var sources: Dictionary = effects.get(resource+"_sources", {"wolf":total} if resource == "mana" else {})
+	var amounts: Dictionary = effects.get(resource+"_source_amounts",{}).duplicate()
+	var lines := PackedStringArray([heading])
+	var unknown := PackedStringArray()
+	var accounted := 0
+	for source in sources:
+		var title: String = Events.EVENTS.get(source,{}).get("title",preload("res://src/game/wildlife.gd").DEFINITIONS.get(source,{}).get("lair",Loc.text("Other sources")))
+		var count: int = sources[source]
+		var name_value := Loc.text(title)+( " ×%d" % count if count > 1 else "")
+		if not amounts.has(source):
+			if resource == "income" and source == "bear": amounts[source] = count*5
+			elif resource == "mana" and source == "wolf": amounts[source] = count
+		if amounts.has(source):
+			var amount: int = amounts[source]
+			accounted += amount
+			lines.append("%s: %+d" % [name_value,amount])
+		else: unknown.append(name_value)
+	# Keep old positions accurate when an event's original random amount is unknown.
+	if not unknown.is_empty() or accounted != total or lines.size() == 1:
+		lines.append("%s: %+d" % [", ".join(unknown) if not unknown.is_empty() else Loc.text("Other sources"),total-accounted])
+	return "\n".join(lines)

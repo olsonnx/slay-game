@@ -19,6 +19,8 @@ const WARRIOR_CLIPS := {
 }
 const RIDER_CLIPS := {"idle":[0,8,8.0],"run":[1,6,10.0],"charge":[2,6,12.0],"jump":[3,3,10.0],"attack":[4,7,12.0],"hurt":[5,2,12.0],"death":[6,6,10.0]}
 const CLIPS := [{}, FOOT_CLIPS, WARRIOR_CLIPS, RIDER_CLIPS]
+var profile_frames := false
+var frame_samples: Array = []
 var sources: Dictionary = {}
 var masks: Dictionary = {}
 var sheets: Dictionary = {}
@@ -87,12 +89,16 @@ func frame(tier: int, color: Color, animation := "idle", index := 0) -> Dictiona
 	index = clampi(index,0,int(sequence[1])-1)
 	var key := "%d:%s:%s:%d" % [tier,color.to_html(),animation,index]
 	if frames.has(key): return frames[key]
+	var started := Time.get_ticks_usec() if profile_frames else 0
 	# The foot troops have 12 empty pixels above every pose. Crop consistently,
 	# keeping weapon reach and the same foot anchor throughout each animation.
 	var crop := Rect2i(index*32,int(sequence[0])*32+(0 if tier == 3 else 12),32,32 if tier == 3 else 20)
 	var image := sheet(tier,color).get_region(crop)
 	var result := {"image":image,"texture":ImageTexture.create_from_image(image)}
+	if tier == 1:
+		result.texture.set_meta("normal_region", Rect2(Vector2(crop.position) / Vector2(SHEETS[1].get_size()), Vector2(crop.size) / Vector2(SHEETS[1].get_size())))
 	frames[key] = result
+	if profile_frames: frame_samples.append({"frame":Engine.get_process_frames(),"key":key,"ms":(Time.get_ticks_usec()-started)/1000.0})
 	return result
 
 func portrait(tier: int, color: Color) -> Texture2D:

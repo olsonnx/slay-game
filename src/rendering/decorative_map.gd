@@ -224,6 +224,9 @@ func apply_background() -> void:
 			Tile.update_join(self, slot["node"], slot["cell"], slot["joined_mask"])
 		sync_menu_batches()
 	sun.shadow_enabled = Video.shadows
+	preload("res://src/rendering/lighting_style.gd").apply(environment,sun,"atmospheric" if Video.atmospheric_lighting else "simple")
+	refresh_lighting_materials(Video.atmospheric_lighting)
+	if static_batches != null: static_batches.refresh_lighting_materials(Video.atmospheric_lighting,shadow_texture)
 	water.visible = Video.background == "water"
 	environment.background_color = Color("213b45") if water.visible else Color("172e39")
 

@@ -13,6 +13,9 @@ var sprite_cache: Dictionary = {}
 var image_cache: Dictionary = {}
 var hover_outline_cache: Dictionary = {}
 var shadow_texture: Texture2D
+var sprite_lighting
+var lighting_materials: Dictionary = {}
+var lighting_registrations := 0
 var internal_border_visibility := 0.0
 
 func set_internal_border_visibility(value: float) -> bool:
@@ -144,42 +147,6 @@ func roof_mesh(width: float, depth: float, height: float) -> ArrayMesh:
 	mesh_cache[key] = mesh
 	return mesh
 
-func grass_details(parent: Node3D, coord: Vector2i, color: Color) -> void:
-	var detail := Node3D.new()
-	detail.name = "GrassDetail"
-	parent.add_child(detail)
-	parent = detail
-	var seed_value := absi(coord.x * 43 + coord.y * 79)
-	var x := sin(float(seed_value)) * 0.43
-	var z := cos(float(seed_value * 2)) * 0.4
-	if not mesh_cache.has("grass_blades"):
-		var builder := SurfaceTool.new()
-		builder.begin(Mesh.PRIMITIVE_TRIANGLES)
-		for index in range(3):
-			var blade := BoxMesh.new()
-			blade.size = Vector3(0.025, 0.12 + index * 0.025, 0.022)
-			builder.append_from(blade, 0, Transform3D(Basis(Vector3(0, 0, 1), (index - 1) * 0.2), Vector3(index * 0.055, 0.07, 0)))
-		mesh_cache["grass_blades"] = builder.commit()
-	var blades := piece(parent, mesh_cache["grass_blades"], Vector3(x, 0, z), color.darkened(0.20))
-	blades.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	blades.set_meta("lod_detail", true)
-	blades.set_meta("lod_layers", blades.layers)
-	blades.material_override = detail_material(color.darkened(0.20))
-	if seed_value % 3 == 0:
-		var pebble := cylinder(parent, Vector3(-x, 0.035, -z), 0.06, 0.09, 0.06, Color("ada993"), 5)
-		pebble.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		pebble.set_meta("lod_detail", true)
-		pebble.set_meta("lod_layers", pebble.layers)
-		pebble.material_override = detail_material(Color("ada993"))
-
-func detail_material(color: Color) -> StandardMaterial3D:
-	var key := "detail_fade:" + str(color)
-	if not material_cache.has(key):
-		var result: StandardMaterial3D = material(color).duplicate()
-		result.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		cache_material(key, result)
-	return material_cache[key]
-
 func add_mana_source(tile: Node3D) -> void:
 	var source := Node3D.new()
 	source.name = "ManaSource"
@@ -230,9 +197,9 @@ func add_house(parent: Node3D, offset: Vector3) -> void:
 	for x in [-0.29, 0.29]:
 		box(parent, offset + Vector3(x, 0.36, 0.29), Vector3(0.05, 0.55, 0.035), Color("795d48"))
 	box(parent, offset + Vector3(0.05, 0.26, 0.296), Vector3(0.17, 0.35, 0.035), Color("73503e"))
-	box(parent, offset + Vector3(-0.17, 0.44, 0.30), Vector3(0.13, 0.15, 0.035), Color("f5d090"))
+	register_lighting_material(box(parent, offset + Vector3(-0.17, 0.44, 0.30), Vector3(0.13, 0.15, 0.035), Color("f5d090")).material_override,"window")
 	box(parent, offset + Vector3(0.25, 0.88, -0.14), Vector3(0.13, 0.36, 0.14), Color("b3a08a"))
-	box(parent, offset + Vector3(0.35, 0.44, -0.05), Vector3(0.025, 0.15, 0.14), Color("f5d090"))
+	register_lighting_material(box(parent, offset + Vector3(0.35, 0.44, -0.05), Vector3(0.025, 0.15, 0.14), Color("f5d090")).material_override,"window")
 
 func add_bridge(parent: Node3D) -> MeshInstance3D:
 	var surface := cylinder(parent, Vector3(0, -0.04, 0), 0.97, 0.97, 0.075, Color("88613e"), 6)
@@ -269,7 +236,7 @@ func add_capital(parent: Node3D, offset: Vector3, flag_color: Color) -> void:
 		cylinder(parent, offset + Vector3(x, 0.42, 0.22), 0.13, 0.15, 0.76, Color("d2c9b0"), 8)
 		cylinder(parent, offset + Vector3(x, 0.88, 0.22), 0, 0.19, 0.25, Color("526b69"), 8)
 	box(parent, offset + Vector3(0, 0.25, 0.25), Vector3(0.16, 0.31, 0.035), Color("76604c"))
-	box(parent, offset + Vector3(0.19, 0.50, 0.25), Vector3(0.09, 0.12, 0.035), Color("f9d892"))
+	register_lighting_material(box(parent, offset + Vector3(0.19, 0.50, 0.25), Vector3(0.09, 0.12, 0.035), Color("f9d892")).material_override,"window")
 	add_flag(parent, offset + Vector3(0, 0.83, -0.08), flag_color)
 
 func add_treasure(parent: Node3D) -> void:
@@ -309,6 +276,7 @@ func shadow(parent: Node3D, offset: Vector3, size: float) -> void:
 	mat.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_DISABLED
 	node.material_override = mat
 	node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	register_lighting_material(mat,"contact")
 	parent.add_child(node)
 
 func soldier_texture(tier: int, owner: int) -> Texture2D:
@@ -331,6 +299,11 @@ func soldier_hover_outline(tier: int, owner: int, frame_index := 0) -> Texture2D
 		return hover_outline_cache[key]
 	soldier_texture(tier, owner)
 	var source: Image = unit_sprites.frame(tier,COLORS[owner],"idle",frame_index).image
+	var texture := pixel_hover_outline(source)
+	hover_outline_cache[key] = texture
+	return texture
+
+static func pixel_hover_outline(source: Image) -> Texture2D:
 	var outline := Image.create(source.get_width() + 4, source.get_height() + 4, false, Image.FORMAT_RGBA8)
 	for x in range(outline.get_width()):
 		for y in range(outline.get_height()):
@@ -349,9 +322,7 @@ func soldier_hover_outline(tier: int, owner: int, frame_index := 0) -> Texture2D
 						edge = true
 			if edge:
 				outline.set_pixel(x, y, Color("ffe6ab"))
-	var texture := ImageTexture.create_from_image(outline)
-	hover_outline_cache[key] = texture
-	return texture
+	return ImageTexture.create_from_image(outline)
 
 func building_icon(kind: String) -> Texture2D:
 	if icon_cache.has(kind):
@@ -399,3 +370,19 @@ func ring_mesh() -> ArrayMesh:
 			builder.add_vertex(vertex)
 	return builder.commit()
 
+
+func register_lighting_material(value: StandardMaterial3D, role: String) -> void:
+	value.set_meta("lighting_role",role)
+	if not lighting_materials.has(value.get_instance_id()):
+		lighting_registrations += 1
+		if lighting_registrations%128 == 0:
+			for id in lighting_materials.keys():
+				if lighting_materials[id].get_ref() == null: lighting_materials.erase(id)
+	lighting_materials[value.get_instance_id()] = weakref(value)
+	preload("res://src/rendering/lighting_style.gd").apply_material(value,Video.atmospheric_lighting,shadow_texture)
+
+func refresh_lighting_materials(rich: bool) -> void:
+	for id in lighting_materials.keys():
+		var value: StandardMaterial3D = lighting_materials[id].get_ref()
+		if value == null: lighting_materials.erase(id)
+		else: preload("res://src/rendering/lighting_style.gd").apply_material(value,rich,shadow_texture)

@@ -45,6 +45,7 @@ func query_checks(model) -> void:
 		var tactical_change := query.defense_needs(faction) != query.threats(faction)
 		for action in old + current:
 			var target: Vector2i = action["coord"]
+			if model.has_wildlife(target): tactical_change = true
 			if model.cells[target]["owner"] >= 0 and model.cells[target]["owner"] != faction and query.cut_value(target) > 0: tactical_change = true
 			if query.campaign_value(target,faction) > 0: tactical_change = true
 			for next in [target] + model.neighbors(target):
@@ -114,6 +115,25 @@ func run() -> void:
 	game.set_process(false)
 	await process_frame
 	var board = game.view
+	board.profile_capture = true
+	board.capture_samples.clear()
+	board.unit_batches.queue_sync()
+	board.unit_batches.sync(true)
+	await process_frame
+	await process_frame
+	var refreshes := 0
+	for sample in board.capture_samples:
+		if sample.get("stage") == "army_sync": refreshes += 1
+	expect(refreshes == 1, "Immediate army flush consumes its deferred request without another scan")
+	board.unit_batches.queue_sync()
+	board.unit_batches.queue_sync()
+	await process_frame
+	await process_frame
+	var coalesced := 0
+	for sample in board.capture_samples:
+		if sample.get("stage") == "army_sync": coalesced += 1
+	expect(coalesced == 2, "Repeated deferred army requests still perform one real refresh")
+	board.profile_capture = false
 	var coord: Vector2i = game.active_capital()
 	for unit_coord in board.unit_actors:
 		if game.cells[unit_coord]["owner"] == 0:
@@ -164,6 +184,14 @@ func run() -> void:
 		expect(board.overlay_root.get_node("ReachableArea") == area, "Hover retains the same reachable-area mesh")
 		break
 	gameplay.set_clear_indicators(clear, false)
+	var sprite_count: int = board.units.size()
+	var stale := Sprite3D.new()
+	board.unit_presentation.units.append(stale)
+	stale.free()
+	board.remove_unit(coord)
+	expect(board.units.size() == sprite_count - 1, "Unit cleanup removes freed sprite references by index")
+	for remaining in board.units:
+		expect(is_instance_valid(remaining), "Unit cleanup leaves only live picking sprites")
 	game.shutdown()
 	game.queue_free()
 	await process_frame

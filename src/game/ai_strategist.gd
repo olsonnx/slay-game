@@ -43,6 +43,8 @@ func signature() -> Array:
 
 func objective(coord: Vector2i) -> Dictionary:
 	var cell: Dictionary = state.cells[coord]
+	if state.has_wildlife(coord):
+		return {"priority":40.0 if cell.get("lair", "") != "" else 27.0,"reason":"clear a wildlife lair" if cell.get("lair", "") != "" else "hunt a dangerous animal","kind":"capture"}
 	if cell["owner"] != faction and not state.is_bridge(coord):
 		var score: float = 8.0 + cell["value"] * 1.5
 		var distance_to_goal := 100000

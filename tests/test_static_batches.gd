@@ -152,7 +152,7 @@ func run() -> void:
 	expect(surface.layers == 0 and manager.visible, "Reenabling returns to retained static batching")
 	video.set_preference(&"level_transitions", true, false)
 	game.view.start_level_transition(true)
-	expect(manager.suspended and not manager.visible and surface.layers == 1, "Island transition uses the original animated tile geometry")
+	expect(manager.suspended and not manager.visible and surface.layers == 0 and game.view.island_transition.moving_batches.source_count > 0, "Island transition instances the moving tile geometry")
 	game.view.cancel_level_transition()
 	expect(not manager.suspended and manager.visible and surface.layers == 0, "Cancelled transition restores static geometry at the original positions")
 	# Tooltip content rebuilds only after a meaningful change, while position follows.

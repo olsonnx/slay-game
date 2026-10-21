@@ -1,6 +1,7 @@
 extends Node3D
 const Records = preload("res://src/rendering/batch_records.gd")
 ## Retained chunked opaque instancing. Source nodes retain their scene semantics.
+var startup_max_batch_usec := 0
 var chunk_size := 12
 var terrain_group_size := 0
 var shadow_min_size := 0.0
@@ -80,7 +81,7 @@ func register_detail(node: MeshInstance3D) -> void:
 	detail_sources[node.get_instance_id()] = [weakref(node), node.get_meta("lod_layers", node.layers)]
 	register_fade_material(node.material_override, true)
 	if suspended or not enabled:
-		node.layers = int(node.get_meta("lod_layers", node.layers)) if detail_is_drawn() else 0
+		preload("res://src/rendering/batch_source_lifetime.gd").set_layers(node, int(node.get_meta("lod_layers", node.layers)) if detail_is_drawn() else 0)
 
 func set_detail_visible(value: bool) -> void:
 	if detail_visible == value:
@@ -98,7 +99,7 @@ func update_detail_sources() -> void:
 		if not is_instance_valid(node) or node.is_queued_for_deletion():
 			detail_sources.erase(id)
 		elif not suppressed.has(id):
-			node.layers = detail_sources[id][1] if detail_is_drawn() else 0
+			preload("res://src/rendering/batch_source_lifetime.gd").set_layers(node, detail_sources[id][1] if detail_is_drawn() else 0)
 
 func set_shadow_cutoff(value: float) -> void:
 	if is_equal_approx(shadow_min_size, value):
@@ -197,6 +198,21 @@ func material_key(material: StandardMaterial3D) -> String:
 	material_scan_count += 1
 	return key
 
+func set_source_visual_transform(source: MeshInstance3D, transform: Transform3D) -> void:
+	# Keep cached scene geometry canonical; only the displayed instance animates.
+	source.set_meta("visual_transform", transform)
+	RenderingServer.instance_set_transform(source.get_instance(), transform)
+	var slot: Array = source.get_meta("visual_batch_slot", [])
+	if slot.is_empty(): return
+	var render: MultiMeshInstance3D = slot[0].get_ref()
+	if is_instance_valid(render) and int(slot[1]) < render.multimesh.instance_count:
+		render.multimesh.set_instance_transform(slot[1], render.global_transform.affine_inverse()*transform)
+
+func reset_source_visual_transform(source: MeshInstance3D) -> void:
+	set_source_visual_transform(source, source.global_transform)
+	source.remove_meta("visual_transform")
+	if source.has_meta("visual_batch_slot"): source.remove_meta("visual_batch_slot")
+
 func restore_layers() -> void:
 	update_fade_materials(source_fade_materials)
 	for record in suppressed.values():
@@ -213,8 +229,24 @@ func restore_source(record: Array) -> void:
 		node.set_notify_transform(bool(record[Records.Suppressed.TRANSFORM_NOTIFICATION]))
 		# A source can reappear after its scrolling parent has moved many frames.
 		if node.is_inside_tree():
-			RenderingServer.instance_set_transform(node.get_instance(), node.global_transform)
-	node.layers = 0 if node.get_meta("lod_detail", false) and not detail_is_drawn() else record[Records.Suppressed.LAYERS]
+			RenderingServer.instance_set_transform(node.get_instance(), node.get_meta("visual_transform", node.global_transform))
+	preload("res://src/rendering/batch_source_lifetime.gd").set_layers(node, 0 if node.get_meta("lod_detail", false) and not detail_is_drawn() else record[Records.Suppressed.LAYERS])
+
+func suppress_cached_sources() -> void:
+	# Transition completion reuses existing uploads. Restore suppression without
+	# rescanning source geometry or rebuilding the merged terrain meshes.
+	for tile in tile_records.values():
+		for record in tile["records"]:
+			var node: MeshInstance3D = record[Records.Source.NODE]
+			if not is_instance_valid(node) or node.is_queued_for_deletion(): continue
+			var id: int = record[Records.Source.ID]
+			if suppressed.has(id): continue
+			var notification: int = int(node.is_transform_notification_enabled()) if mute_source_notifications else -1
+			suppressed[id] = [node, record[Records.Source.LAYERS], notification]
+			preload("res://src/rendering/batch_source_lifetime.gd").set_layers(node, 0)
+			if mute_source_notifications: node.set_notify_transform(false)
+	instance_count = suppressed.size()
+	apply_lod()
 
 func set_suspended(value: bool) -> void:
 	suspended = value
@@ -244,7 +276,9 @@ func same_signature(a: Array, b: Array, include_color := true) -> bool:
 			return false
 	return true
 
-func sync_tiles(tiles: Dictionary, dirty_ids: Dictionary = {}, force_all := true) -> void:
+# A nonzero startup budget yields only under the opaque loading screen.
+# Ordinary board updates retain their synchronous, atomic behavior.
+func sync_tiles(tiles: Dictionary, dirty_ids: Dictionary = {}, force_all := true, terrain_tiles: Dictionary = {}, startup_budget_usec := 0) -> void:
 	if suspended or not enabled:
 		return
 	visible = true
@@ -283,12 +317,18 @@ func sync_tiles(tiles: Dictionary, dirty_ids: Dictionary = {}, force_all := true
 	elif indexed:
 		for tile in work_tiles.values(): cleanup_ids.merge(tile_records[tile.get_instance_id()]["source_ids"])
 	var inverse := global_transform.affine_inverse()
+	var batch_started := Time.get_ticks_usec()
+	if startup_budget_usec > 0: startup_max_batch_usec = 0
 	for coord in work_tiles:
 		var tile: Node3D = work_tiles[coord]
 		var tile_id := tile.get_instance_id()
 		current_tiles[tile_id] = true
 		var chunk_coord := Vector2i(floori(float(coord.x) / chunk_size), floori(float(coord.y) / chunk_size))
 		if scoped and not dirty_chunks.has(chunk_coord): continue
+		if startup_budget_usec > 0 and Time.get_ticks_usec() - batch_started >= startup_budget_usec:
+			startup_max_batch_usec = maxi(startup_max_batch_usec, Time.get_ticks_usec() - batch_started)
+			await get_tree().process_frame
+			batch_started = Time.get_ticks_usec()
 		last_tiles_scanned += 1
 		if not groups.has(chunk_coord):
 			groups[chunk_coord] = []
@@ -318,7 +358,7 @@ func sync_tiles(tiles: Dictionary, dirty_ids: Dictionary = {}, force_all := true
 			if not suppressed.has(id):
 				var notification: int = int(node.is_transform_notification_enabled()) if mute_source_notifications else -1
 				suppressed[id] = [node, record[Records.Source.LAYERS], notification]
-				node.layers = 0
+				preload("res://src/rendering/batch_source_lifetime.gd").set_layers(node, 0)
 				if mute_source_notifications:
 					node.set_notify_transform(false)
 	if not indexed:
@@ -350,20 +390,29 @@ func sync_tiles(tiles: Dictionary, dirty_ids: Dictionary = {}, force_all := true
 		if not groups.has(coord):
 			chunks[coord]["root"].free()
 			chunks.erase(coord)
+	if startup_budget_usec > 0:
+		startup_max_batch_usec = maxi(startup_max_batch_usec, Time.get_ticks_usec() - batch_started)
+		await get_tree().process_frame
 	var build_started := Time.get_ticks_usec() if profile_sync else 0
 	for coord in groups:
 		if not force_all and chunks.has(coord) and not dirty_chunks.has(coord):
 			continue
-		publish_chunk(coord, groups[coord], tiles)
+		# Progressive initial publication still needs the complete neighborhood to
+		# cull shared terrain faces correctly at the edges of unpublished regions.
+		if startup_budget_usec > 0:
+			await publish_chunk(coord, groups[coord], tiles if terrain_tiles.is_empty() else terrain_tiles, startup_budget_usec)
+		else:
+			publish_chunk(coord, groups[coord], tiles if terrain_tiles.is_empty() else terrain_tiles)
 	instance_count = suppressed.size()
 	apply_lod()
 	if profile_sync:
 		last_scan_usec = build_started - started
 		last_build_usec = Time.get_ticks_usec() - build_started
 		last_rebuilt = rebuild_count - before_rebuilds
-		profile_samples.append({"scan_ms": last_scan_usec / 1000.0, "build_ms": last_build_usec / 1000.0, "rebuilt": last_rebuilt, "tiles_scanned": last_tiles_scanned})
+		profile_samples.append({"frame":Engine.get_process_frames(),"scan_ms": last_scan_usec / 1000.0, "build_ms": last_build_usec / 1000.0, "rebuilt": last_rebuilt, "tiles_scanned": last_tiles_scanned})
 
-func publish_chunk(coord: Vector2i, records: Array, tiles: Dictionary) -> void:
+func publish_chunk(coord: Vector2i, records: Array, tiles: Dictionary, startup_budget_usec := 0) -> void:
+	var batch_started := Time.get_ticks_usec()
 	# Publish only changed geometry; retain batches and recolor terrain in place.
 	var signature: Array = []
 	for record in records:
@@ -399,6 +448,10 @@ func publish_chunk(coord: Vector2i, records: Array, tiles: Dictionary) -> void:
 			retained[key].free()
 			retained.erase(key)
 	for key in batches:
+		if startup_budget_usec > 0 and Time.get_ticks_usec() - batch_started >= startup_budget_usec:
+			startup_max_batch_usec = maxi(startup_max_batch_usec, Time.get_ticks_usec() - batch_started)
+			await get_tree().process_frame
+			batch_started = Time.get_ticks_usec()
 		var batch: Array = batches[key]
 		var source: MeshInstance3D = batch[0][Records.Source.NODE]
 		var terrain: bool = key.begins_with("terrain:")
@@ -424,6 +477,7 @@ func publish_chunk(coord: Vector2i, records: Array, tiles: Dictionary) -> void:
 				var material: StandardMaterial3D = source.material_override.duplicate()
 				material.albedo_color = Color.WHITE
 				material.vertex_color_use_as_albedo = true
+				material.vertex_color_is_srgb = true
 				materials[feature_key] = material
 			render.material_override = materials[feature_key]
 			chunks[coord]["root"].add_child(render)
@@ -445,8 +499,20 @@ func publish_chunk(coord: Vector2i, records: Array, tiles: Dictionary) -> void:
 		if render.multimesh.instance_count != batch.size():
 			render.multimesh.instance_count = batch.size()
 		for index in range(batch.size()):
-			render.multimesh.set_instance_transform(index, batch[index][Records.Source.TRANSFORM])
+			var node: MeshInstance3D = batch[index][Records.Source.NODE]
+			var transform: Transform3D = batch[index][Records.Source.TRANSFORM]
+			if node.has_meta("visual_transform"):
+				transform = render.global_transform.affine_inverse()*node.get_meta("visual_transform")
+				node.set_meta("visual_batch_slot", [weakref(render), index])
+			render.multimesh.set_instance_transform(index, transform)
 			render.multimesh.set_instance_color(index, batch[index][Records.Source.COLOR])
+	if startup_budget_usec > 0:
+		startup_max_batch_usec = maxi(startup_max_batch_usec, Time.get_ticks_usec() - batch_started)
+		await get_tree().process_frame
 
 func _exit_tree() -> void:
 	restore_layers()
+
+func refresh_lighting_materials(rich: bool, simple_shadow: Texture2D) -> void:
+	for value in materials.values():
+		preload("res://src/rendering/lighting_style.gd").apply_material(value,rich,simple_shadow)

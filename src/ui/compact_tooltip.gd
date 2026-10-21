@@ -25,7 +25,7 @@ static func rich_text(text_value: String, heading := true, event_outcome := fals
 			offset = found.get_end()
 		result += line.substr(offset)
 		lines.append(Loc.text("[b]%s[/b]") % result if lines.is_empty() and heading else result)
-	return EventText.mark_units("\n".join(lines)).replace("\n\n", "\n[font_size=6]\n[/font_size]")
+	return "\n".join(lines).replace("\n\n", "\n[font_size=6]\n[/font_size]")
 
 static func make_label() -> RichTextLabel:
 	var label := RichTextLabel.new()
@@ -39,23 +39,15 @@ static func make_label() -> RichTextLabel:
 	label.add_theme_color_override("default_color", Color("ede7d4"))
 	return label
 
-static func outcome_layout(text_value: String, font: Font, bold_font: Font, font_size: int, width: float) -> Dictionary:
-	# Shape the same mixed-font runs as the label. Measuring a whole line in bold
-	# reserves space for glyphs which never appear, especially around short effects.
-	var units := RegEx.new()
-	units.compile("(?i)" + EventText.unit_pattern())
+static func outcome_layout(text_value: String, font: Font, font_size: int, width: float) -> Dictionary:
+	# Measure the same regular font used by the outcome label.
 	var measured := Vector2.ZERO
 	var lines := PackedStringArray()
 	for line in text_value.split("\n"):
 		var paragraph := TextParagraph.new()
 		paragraph.width = width
 		paragraph.break_flags = TextServer.BREAK_MANDATORY | TextServer.BREAK_WORD_BOUND | TextServer.BREAK_ADAPTIVE | TextServer.BREAK_TRIM_START_EDGE_SPACES | TextServer.BREAK_TRIM_END_EDGE_SPACES
-		var offset := 0
-		for found in units.search_all(line):
-			paragraph.add_string(line.substr(offset, found.get_start() - offset), font, font_size)
-			paragraph.add_string(found.get_string(), bold_font, font_size)
-			offset = found.get_end()
-		paragraph.add_string(line.substr(offset), font, font_size)
+		paragraph.add_string(line, font, font_size)
 		for index in range(paragraph.get_line_count()):
 			measured.x = maxf(measured.x, paragraph.get_line_size(index).x)
 			var span := paragraph.get_line_range(index)
@@ -78,7 +70,7 @@ static func fit(box: Control, label: RichTextLabel, text_value: String, padding 
 		return false
 	label.set_meta(&"fit_signature", signature)
 	if outcome:
-		var layout := outcome_layout(text_value, font, bold_font, font_size, 280.0)
+		var layout := outcome_layout(text_value, font, font_size, 280.0)
 		var measured: Vector2 = layout["size"]
 		# Use the shaped line breaks, so tightening the box cannot wrap a word again.
 		label.autowrap_mode = TextServer.AUTOWRAP_OFF
@@ -89,11 +81,10 @@ static func fit(box: Control, label: RichTextLabel, text_value: String, padding 
 		label.size.y = maxf(label.get_content_height(), measured.y)
 		box.size = label.size + padding * 2
 		return true
-	var emphasized := EventText.has_units(text_value)
 	var width := 0.0
 	var first := true
 	for line in text_value.split("\n"):
-		width = maxf(width, (bold_font if first or emphasized else font).get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, title_size if first or emphasized else font_size).x)
+		width = maxf(width, (bold_font if first else font).get_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, -1, title_size if first else font_size).x)
 		first = false
 	width = clampf(ceilf(width) + 2, 96, 280)
 	label.position = padding
@@ -105,8 +96,8 @@ static func fit(box: Control, label: RichTextLabel, text_value: String, padding 
 	var measured_height := 0.0
 	first = true
 	for line in text_value.split("\n"):
-		var row_font: Font = bold_font if first or emphasized else font
-		var row_size: int = title_size if first or emphasized else font_size
+		var row_font: Font = bold_font if first else font
+		var row_size: int = title_size if first else font_size
 		measured_height += row_font.get_multiline_string_size(line, HORIZONTAL_ALIGNMENT_LEFT, width, row_size).y if not line.is_empty() else row_font.get_height(6)
 		first = false
 	label.size.y = maxf(label.get_content_height(), ceilf(measured_height) + 2)

@@ -56,6 +56,9 @@ var closing: bool:
 	set(value):
 		if value: session.close()
 var visible_economy_signature: Array = []
+var visible_economy_tracker = VisibleEconomy.new()
+var ai_simulation_workers := true # Internal diagnostic override; graphics/settings are unaffected.
+var settling_turn := false
 var initial_seed := -1
 var initial_rule_mode := "classic"
 var initial_map_size := "small"
@@ -63,6 +66,7 @@ var initial_kingdom_count := 0
 var initial_difficulty := "normal"
 var deferred_startup := false
 var startup_timings: Dictionary = {}
+var prepared_level_document = null
 var province_view
 var playback_kingdoms: Dictionary = {}
 var playback_mana: Dictionary = {}
@@ -92,6 +96,7 @@ func _ready() -> void:
 	presenter = preload("res://src/ui/game_presenter.gd").new(session, hud, view, presentation_actions())
 	view.action_started.connect(_on_visual_action_started)
 	view.action_finished.connect(_on_visual_action_finished)
+	view.wildlife.world_action_started.connect(_on_world_action_started)
 	view.visible_board_changed.connect(_on_visible_board_changed)
 	view.visible_board_changed.connect(presenter.invalidate_tip)
 	view.manual_camera_moved.connect(_on_manual_camera_moved)
@@ -171,7 +176,10 @@ func new_game(seed_value := -1, render_board := true, generate_rules := true) ->
 	close_menus()
 	if not session.initial_level_data.get("tutorial", false):
 		session.rules.replay_log = ReplayLog.new()
-		if not session.rules.replay_log.start(session.rules, {"generation_version":session.rules.MapGenerator.GENERATION_VERSION, "difficulty":initial_difficulty, "algorithm":session.rules.ai_algorithm, "turn_order":turn_order, "match":initial_match_config}):
+		if not session.rules.replay_log.start(session.rules, {"generation_version":session.rules.MapGenerator.GENERATION_VERSION, "difficulty":initial_difficulty, "algorithm":session.rules.ai_algorithm, "turn_order":turn_order, "match":initial_match_config,
+			"factions":preload("res://src/game/replay_identity.gd").capture(session.names, session.colors, view.COLORS),
+			"mode":"hotseat" if is_hotseat() else "editor" if not session.initial_level_data.is_empty() else "quick_play",
+			"map_title":session.initial_level_data.get("title", "")}):
 			push_warning("Replay could not be saved: " + session.rules.replay_log.error)
 	for kingdom in session.rules.kingdoms.values():
 		if kingdom["owner"] == session.player_faction:
@@ -197,26 +205,23 @@ func new_game(seed_value := -1, render_board := true, generate_rules := true) ->
 		begin_local_turn()
 
 func prepare_board() -> void:
-	if not session.initial_level_data.is_empty():
-		var document = preload("res://src/editor/level_document.gd").new()
-		var error: String = document.read_data(session.initial_level_data)
-		assert(error == "", error)
-		session.rules = document.build_rules()
-		session.rules.ai_difficulty = initial_difficulty
-		new_game(initial_seed, false, false)
-		await view.build_initial_cells(cells)
-		startup_timings.merge(view.startup_timings, true)
-		refresh_ui()
-		return
 	var job = preload("res://src/game/island_preparation.gd").new()
-	var task := WorkerThreadPool.add_task(job.generate.bind(initial_seed, initial_map_size, initial_rule_mode, initial_kingdom_count), false, "Prepare island")
+	var work: Callable = job.generate.bind(initial_seed, initial_map_size, initial_rule_mode, initial_kingdom_count)
+	if not session.initial_level_data.is_empty():
+		work = job.prepare_level.bind(session.initial_level_data)
+	var task := WorkerThreadPool.add_task(work, false, "Prepare island")
 	while not WorkerThreadPool.is_task_completed(task):
 		await get_tree().process_frame
 	WorkerThreadPool.wait_for_task_completion(task)
+	assert(job.error.is_empty(), job.error)
+	prepared_level_document = job.document
 	session.rules = job.rules
 	session.rules.ai_difficulty = initial_difficulty
 	startup_timings["generation_ms"] = job.generation_ms
+	var setup_started := Time.get_ticks_usec()
 	new_game(initial_seed, false, false)
+	startup_timings["session_setup_ms"] = (Time.get_ticks_usec() - setup_started) / 1000.0
+	prepared_level_document = null
 	await view.build_initial_cells(cells)
 	startup_timings.merge(view.startup_timings, true)
 	refresh_ui()
@@ -289,7 +294,7 @@ func _process(delta: float) -> void:
 	var hit: Dictionary = view.pick_at_screen(get_viewport().get_mouse_position(), session.selection.action_mode == "bridge")
 	var coord: Vector2i = hit["coord"]
 	view.value_heatmap.set_hovered(coord)
-	view.set_unit_hover(coord if hit["kind"] == "unit" else NONE)
+	view.set_unit_hover(coord if hit["kind"] in ["unit", "wildlife"] else NONE, hit["kind"])
 	if coord != session.selection.hovered:
 		session.selection.hovered = coord
 		hover_time = 0
@@ -334,6 +339,7 @@ func inspect_province(coord: Vector2i) -> void:
 func close_province() -> void:
 	session.selection.inspected_hex = NONE
 	session.selection.inspected_unit = NONE
+	session.selection.inspected_animal = NONE
 	if is_instance_valid(province_view):
 		province_view.close()
 
@@ -407,6 +413,7 @@ func toggle_action(mode: String) -> void:
 	session.selection.action_mode = "" if session.selection.action_mode == mode else mode
 	session.selection.selected = NONE
 	session.selection.inspected_unit = NONE
+	session.selection.inspected_animal = NONE
 	hud.shop_panel.close()
 	refresh_ui()
 
@@ -467,18 +474,18 @@ func check_winner() -> void:
 				announce(Loc.text("Defeat — all local kingdoms have fallen."))
 		begin_completion_exit()
 		return
-	if session.rules.territory(0) == 0:
+	if session.rules.territory(session.player_faction) == 0:
 		game_over = true
 		announce(Loc.text("Your kingdom has fallen."))
 	else:
 		var enemy_capital_exists := false
 		for cell in cells.values():
-			if cell["owner"] > 0 and cell["capital"] == cell["owner"]:
+			if cell["owner"] >= 0 and cell["owner"] != session.player_faction and cell["capital"] == cell["owner"]:
 				enemy_capital_exists = true
 				break
 		if not enemy_capital_exists:
 			game_over = true
-			announce(Loc.text("Victory for Fern!"))
+			announce(Loc.text("Victory for %s!") % session.names[session.player_faction])
 	begin_completion_exit()
 
 func play_level_entry() -> void:
@@ -491,8 +498,11 @@ func begin_completion_exit() -> void:
 	if not game_over: return
 	match_clock.pause()
 	if session.rules.replay_log != null and not session.rules.replay_log.finished:
-		var winner := winner_faction if is_hotseat() else 0 if session.rules.territory(0) > 0 else -1
-		session.rules.replay_log.finish(session.rules, "completed", winner)
+		var winner: int = winner_faction if is_hotseat() else session.player_faction if session.rules.territory(session.player_faction) > 0 else -1
+		var result := "victory" if not is_hotseat() and winner >= 0 else "defeat"
+		if is_hotseat():
+			result = "completed" if winner >= 0 else "draw" if not cells.values().any(func(cell): return cell["capital"] >= 0) else "defeat"
+		session.rules.replay_log.finish(session.rules, "completed", winner, {"duration_seconds":match_clock.seconds(), "result":result})
 		match_results = preload("res://src/game/match_results.gd").summarize(session.rules.replay_log)
 	if busy or closing or defeat_notified or not animate_level_changes: return
 	defeat_notified = true
@@ -645,14 +655,16 @@ func refresh_stats() -> void:
 	presenter.refresh_stats()
 
 func select_kingdom(capital: Vector2i) -> void:
-	session.selection.active_hex = capital
+	if session.rules.kingdoms.has(capital) and session.rules.kingdoms[capital].owner == session.player_faction:
+		session.selection.active_hex = capital
 	view.focus = view.coord_position(capital)
 	view.update_camera()
 	toggle_stats()
 	refresh_ui()
 
 func refresh_ui(economy = null) -> void:
-	view.unit_presentation.set_turn(-1 if game_over else session.active_faction)
+	view.birds.set_round(session.round_number)
+	if not settling_turn: view.unit_presentation.set_turn(-1 if game_over else session.active_faction)
 	if session.rules.replay_log != null and session.rules.replay_log.error != "" and not replay_error_reported:
 		replay_error_reported = true
 		announce(Loc.text("Replay recording stopped: %s") % session.rules.replay_log.error)
@@ -721,7 +733,7 @@ func reset_camera_gesture() -> void:
 	input_handler.reset_camera_gesture()
 
 func has_cancellable_action() -> bool:
-	return not player_move_snapshot.is_empty() or session.selection.selected != NONE or session.selection.action_mode != "" or hud.shop_panel.visible or hud.stats_shade.visible or hud.help_panel.visible or session.selection.inspected_hex != NONE
+	return not player_move_snapshot.is_empty() or session.selection.selected != NONE or session.selection.action_mode != "" or hud.shop_panel.visible or hud.stats_shade.visible or hud.help_panel.visible or session.selection.inspected_hex != NONE or session.selection.inspected_animal != NONE
 
 func open_pause() -> void:
 	if not closing:
@@ -751,14 +763,17 @@ func _exit_tree() -> void:
 func _on_visible_board_changed() -> void:
 	if closing or not busy:
 		return
-	if session.active_faction == session.player_faction:
+	# Settlement publishes a final readout before unlocking commands. Wildlife
+	# impacts retain their immediate feedback while their animation is playing.
+	if settling_turn and not view.wildlife.is_playing: return
+	if session.active_faction == session.player_faction and not view.wildlife.is_playing:
 		if session.selection.inspected_hex != NONE:
 			refresh_province(visible_economy())
 		return
 	# Enemy captures of unrelated land do not change the player's displayed
 	# economy. Keep immediate impact feedback when player land/support changes,
 	# without cloning and rebuilding the entire economy for every enemy actor.
-	var signature: Array = VisibleEconomy.signature(view.cells, playback_kingdoms, session.player_faction, session.selection.inspected_hex, session.selection.active_hex, session.active_faction, session.round_number)
+	var signature: Array = visible_economy_tracker.scoped_signature(view.cells, playback_kingdoms, session.player_faction, session.selection.inspected_hex, session.selection.active_hex, session.active_faction, session.round_number, view.visible_change_coords)
 	if signature == visible_economy_signature:
 		return
 	visible_economy_signature = signature
@@ -768,8 +783,9 @@ func _on_visible_board_changed() -> void:
 
 func visible_economy():
 	var started := Time.get_ticks_usec() if view.profile_capture else 0
-	var baseline: Dictionary = player_move_snapshot.get("kingdoms", session.rules.kingdoms) if session.active_faction == session.player_faction else playback_kingdoms
-	var mana: Dictionary = player_move_snapshot.get("mana", session.rules.mana_by_faction) if session.active_faction == session.player_faction else playback_mana
+	var own_turn: bool = session.active_faction == session.player_faction and not view.wildlife.is_playing
+	var baseline: Dictionary = player_move_snapshot.get("kingdoms", session.rules.kingdoms) if own_turn else playback_kingdoms
+	var mana: Dictionary = player_move_snapshot.get("mana", session.rules.mana_by_faction) if own_turn else playback_mana
 	var economy = VisibleEconomy.project(session.rules, view.cells, baseline, mana, session.player_faction, session.selection.inspected_hex)
 	if view.profile_capture: view.capture_samples.append({"stage": "economy_readout", "ms": (Time.get_ticks_usec() - started) / 1000.0, "tiles": economy.cells.size()})
 	return economy
@@ -777,6 +793,10 @@ func visible_economy():
 func _on_manual_camera_moved() -> void:
 	if busy:
 		camera_follow_suspended = true
+
+func _on_world_action_started(action: Dictionary) -> void:
+	if closing or camera_follow_suspended or not Video.follow_turn_camera: return
+	view.smooth_pan_to(view.coord_position(action.target))
 
 func follow_active_faction(force := false) -> void:
 	if closing or game_over or view.level_transitioning or (not force and (camera_follow_suspended or not Video.follow_turn_camera)):
@@ -833,8 +853,10 @@ func configure_players() -> void:
 	view.COLORS = Catalog.TERRAIN_COLORS.duplicate()
 	var authored_document = null
 	if not session.initial_level_data.is_empty():
-		authored_document = preload("res://src/editor/level_document.gd").new()
-		authored_document.restore(session.initial_level_data)
+		authored_document = prepared_level_document
+		if authored_document == null:
+			authored_document = preload("res://src/editor/level_document.gd").new()
+			authored_document.restore(session.initial_level_data)
 		session.names = authored_document.faction_names()
 		session.colors = authored_document.faction_colors("color")
 		view.COLORS = authored_document.faction_colors("terrain")

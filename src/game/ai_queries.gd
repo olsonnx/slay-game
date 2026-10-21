@@ -121,6 +121,8 @@ func cut_starves(cut: Vector2i, source: Vector2i) -> bool:
 func capture_value(coord: Vector2i, faction: int) -> float:
 	var cell: Dictionary = model.cells[coord]
 	var value: float = 6.0 + cell["value"] * 1.2
+	if cell.get("lair", "") != "": value += 24.0
+	if cell.get("animal", "") != "": value += 12.0
 	if cell["owner"] >= 0 and cell["owner"] != faction: value += 5.0 + cut_value(coord)
 	if cell["capital"] >= 0: value += 30.0
 	if cell["mana_source"]: value += 5.0
@@ -140,7 +142,7 @@ func recruitment_value(coord: Vector2i, tier: int) -> float:
 	var best := 0.0
 	var count := 0
 	for target in component["boundary"]:
-		if model.cells[target]["owner"] == faction: continue
+		if model.cells[target]["owner"] == faction and not model.has_wildlife(target): continue
 		if model.is_bridge(target) and (model.cells[target]["unit"] == 0 or model.unit_faction(target) == faction): continue
 		var protection := defense(target)
 		# Pay for the cheapest rank that opens this target. An upgrade must add
@@ -198,7 +200,7 @@ func recruitment_jobs(coord: Vector2i) -> Dictionary:
 	component["free_strength"] = 0
 	for source in available: component["free_strength"] = maxi(component["free_strength"],model.cells[source]["unit"])
 	for target in component["boundary"]:
-		if model.cells[target]["owner"] == faction or model.is_bridge(target) and (model.cells[target]["unit"] == 0 or model.unit_faction(target) == faction): continue
+		if model.cells[target]["owner"] == faction and not model.has_wildlife(target) or model.is_bridge(target) and (model.cells[target]["unit"] == 0 or model.unit_faction(target) == faction): continue
 		if defense(target) < 3: jobs.append(target)
 	jobs.sort_custom(func(a,b):
 		if defense(a) != defense(b): return defense(a) > defense(b)
@@ -421,7 +423,8 @@ func candidate_targets(source: Vector2i) -> Array:
 			if (cell["building"] == "" or model.is_bridge(coord)) and (cell["unit"] == 0 or cell["unit"] == strength and strength < 3):
 				result.append(coord)
 		for coord in component["boundary"]:
-			if (model.cells[coord]["owner"] != faction or model.is_bridge(coord)) and (strength > defense(coord) or strength == 3 and model.cells[coord]["unit"] == 3 and model.unit_faction(coord) != faction):
+			var protection: int = model.attack_defense(coord,faction) if model.has_wildlife(coord) else defense(coord)
+			if (model.cells[coord]["owner"] != faction or model.is_bridge(coord) or model.has_wildlife(coord)) and (strength > protection or strength == 3 and model.cells[coord]["unit"] == 3 and model.unit_faction(coord) != faction):
 				result.append(coord)
 		candidate_sets[key] = result
 	return candidate_sets[key]
@@ -474,7 +477,7 @@ func frontier(capital: Vector2i) -> Dictionary:
 		var result: Dictionary = {}
 		for coord in friendly_routes(capital):
 			for next in model.neighbors(coord):
-				if model.cells[next]["owner"] != model.cells[capital]["owner"] and not model.is_mountain(next) and not model.is_barrier(next):
+				if (model.cells[next]["owner"] != model.cells[capital]["owner"] or model.has_wildlife(next)) and not model.is_mountain(next) and not model.is_barrier(next):
 					result[next] = true
 		frontiers[capital] = result
 	return frontiers[capital]
@@ -524,5 +527,16 @@ func threats(faction: int) -> Dictionary:
 					var combined: Array = result[target]["sources"] + group["sources"]
 					combined.sort_custom(func(a, b): return order[a] < order[b])
 					result[target]["sources"] = combined
+		# Animals take one adjacent step per World turn, rather than using a
+		# kingdom's unlimited friendly movement. They do not coordinate armies.
+		for source in model.cells:
+			var kind: String = model.cells[source].get("animal", "")
+			if kind == "": continue
+			for target in neighbors(source):
+				if model.cells[target].owner != faction or not model.Wildlife.can_attack(model,target,kind): continue
+				var strength: int = model.Wildlife.DEFINITIONS[kind].attack
+				if not result.has(target): result[target] = {"strength":strength,"sources":[source]}
+				else:
+					result[target] = {"strength":maxi(result[target].strength,strength),"sources":result[target].sources+[source]}
 		danger[faction] = result
 	return danger[faction]

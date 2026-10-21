@@ -238,6 +238,8 @@ func verify_crossing(original, regions: Array) -> void:
 	copy.map_size = original.map_size
 	copy.cells = original.cells.duplicate(true)
 	for cell in copy.cells.values():
+		# Isolate geographic bridge access from optional combat objectives.
+		for field in ["animal","animal_home","lair","lair_wait"]: cell.erase(field)
 		cell["unit"] = 0
 		cell["owner"] = -1
 		cell["capital"] = -1

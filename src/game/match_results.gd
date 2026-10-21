@@ -17,7 +17,7 @@ static func summarize(replay) -> Dictionary:
 		var unit_balance := {}
 		var actor: int = row["faction"]
 		var action: String = row["action"]
-		var gameplay: bool = action in ["move", "spell", "event_choice", "turn_start", "build", "develop", "recruit", "entrench"]
+		var gameplay: bool = action in ["move", "spell", "event_choice", "turn_start", "build", "develop", "recruit", "entrench", "wildlife_attack"]
 		for coord in changed:
 			var before: Dictionary = cells.get(coord, {})
 			var after: Dictionary = updated.get(coord, {})

@@ -59,3 +59,68 @@ static func simulation(model):
 static func presentation_metadata(source, destination) -> void:
 	for field in PRESENTATION:
 		destination.set(field, owned(source.get(field)))
+
+static func analysis_view(model):
+	# A synchronous read-only planner can borrow worker-owned records. Mutation
+	# resumes only after planning ends; legacy branch simulations still copy fully.
+	var copy = model.get_script().new()
+	for field in CONFIGURATION: copy.set(field, owned(model.get(field)))
+	copy.ai_difficulty = model.ai_difficulty
+	copy.cells = model.cells.duplicate()
+	for coord in copy.cells:
+		if copy.cells[coord].get("event", "") != "":
+			copy.cells[coord] = copy.cells[coord].duplicate()
+			copy.cells[coord]["event"] = ""
+	for key in ["kingdoms", "mana", "effects", "capital_relocations"]:
+		copy.set(POSITION_FIELDS[key], model.get(POSITION_FIELDS[key]))
+	copy.rng.seed = 0
+	return copy
+
+static func worker_input(model) -> Dictionary:
+	# Read-only lease: callers lock commands and await the worker before publishing.
+	# Indexes belong to the packet; records are only read until copied on the worker.
+	var packet := {"script":model.get_script(), "configuration":{}, "position":{}, "ai_last_decision":owned(model.ai_last_decision)}
+	for field in CONFIGURATION: packet["configuration"][field] = owned(model.get(field))
+	for key in POSITION_FIELDS:
+		var value = str(model.rng.state) if key == "rng" else model.get(POSITION_FIELDS[key])
+		packet["position"][key] = value.duplicate() if value is Dictionary or value is Array else value
+	return packet
+
+static func update_worker(model, packet: Dictionary) -> void:
+	# Keep the worker's unchanged private records, copying only incoming changes.
+	for key in POSITION_FIELDS:
+		var incoming = packet["position"][key]
+		if key == "rng": model.rng.state = int(incoming)
+		elif incoming is Dictionary:
+			var current: Dictionary = model.get(POSITION_FIELDS[key])
+			var ordered := {}
+			for coord in incoming:
+				ordered[coord] = current[coord] if current.has(coord) and current[coord] == incoming[coord] else owned(incoming[coord])
+			model.set(POSITION_FIELDS[key], ordered)
+		else: model.set(POSITION_FIELDS[key], owned(incoming))
+	for field in CONFIGURATION: model.set(field, owned(packet["configuration"][field]))
+	model.ai_last_decision = owned(packet["ai_last_decision"])
+
+static func worker_result(model, packet: Dictionary) -> Dictionary:
+	var result := {"cells":{}, "removed":[], "fields":{}, "ai_revision":model.ai_revision, "ai_last_decision":owned(model.ai_last_decision)}
+	var before: Dictionary = packet["position"]["cells"]
+	for coord in model.cells:
+		if not before.has(coord) or before[coord] != model.cells[coord]: result["cells"][coord] = owned(model.cells[coord])
+	for coord in before:
+		if not model.cells.has(coord): result["removed"].append(coord)
+	for key in POSITION_FIELDS:
+		if key == "cells": continue
+		var value = str(model.rng.state) if key == "rng" else model.get(POSITION_FIELDS[key])
+		if value != packet["position"][key]: result["fields"][key] = owned(value)
+	return result
+
+static func publish_worker(model, result: Dictionary) -> void:
+	# Ownership of the prepared patch passes to the main thread. Worker state and
+	# replay rows own separate records, so later computation cannot alter playback.
+	for coord in result["removed"]: model.cells.erase(coord)
+	for coord in result["cells"]: model.cells[coord] = result["cells"][coord]
+	for key in result["fields"]:
+		if key == "rng": model.rng.state = int(result["fields"][key])
+		else: model.set(POSITION_FIELDS[key], result["fields"][key])
+	model.ai_revision = result["ai_revision"]
+	model.ai_last_decision = result["ai_last_decision"]

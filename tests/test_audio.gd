@@ -133,19 +133,19 @@ func run() -> void:
 	expect(is_equal_approx(zoom_volumes[2], -26.0), "Closest zoom uses the quieter nature mix")
 	expect(not ambience.overview_player.playing, "Closest zoom leaves only the close nature layer")
 	expect(ambience.overview_player.stream.loop and ambience.overview_player.stream.get_length() > 0.0 and ambience.overview_player.bus == &"Ambience", "Overview recording is playable and loops on the ambience bus")
-	for size in [14.0, 22.0, 30.0]:
+	for size in [14.0, maxf(14.0, board.max_zoom * 0.35)]:
 		board.zoom = size
 		board.update_camera()
 		ambience._process(1.5)
 		expect(not ambience.player.playing and not ambience.overview_player.playing, "Middle zoom range settles to complete ambience silence")
 	var wide_volumes: Array[float] = []
-	for ratio in [0.85, 0.93, 1.0]:
-		board.zoom = lerpf(maxf(30.0, board.max_zoom * 0.75), board.max_zoom, ratio)
+	for ratio in [0.15, 0.5, 1.0]:
+		board.zoom = lerpf(maxf(14.0, board.max_zoom * 0.35), board.max_zoom, ratio)
 		board.update_camera()
 		ambience._process(1.5)
 		wide_volumes.append(ambience.overview_player.volume_db)
 		expect(not ambience.player.playing, "Far zoom never enables close nature")
-	expect(wide_volumes[0] < wide_volumes[1] and wide_volumes[1] < wide_volumes[2], "Overview gets louder only toward the far zoom limit")
+	expect(wide_volumes[0] < wide_volumes[1] and wide_volumes[1] < wide_volumes[2], "Overview gradually gets louder across the wider zoom range")
 	expect(is_equal_approx(wide_volumes[2], -34.0), "Farthest view uses the quieter overview mix")
 	board.cells = zoom_test_cells
 	board.focus = board.coord_position(board.cells.keys()[0])
@@ -154,7 +154,7 @@ func run() -> void:
 	expect(is_zero_approx(ambience.target_gain()), "Distant map view is silent")
 	ambience._process(1.5)
 	expect(not ambience.player.playing, "Nature stops after fading out")
-	expect(not ambience.overview_player.playing, "Normal overview zoom is also silent")
+	expect(ambience.overview_player.playing, "Wind already fades in at normal overview zoom")
 	board.zoom = board.max_zoom
 	board.focus = Vector3(1000, 0, 1000)
 	board.update_camera()

@@ -112,37 +112,66 @@ func bind_card_shortcut(button: Button, action: String) -> void:
 	button.tooltip_text += "\n" + Loc.text("Shortcut: %s") % Keys.key_name(action)
 
 func refresh_stats() -> void:
-	for container in [hud.stats_rows, hud.kingdom_rows]:
+	for container in [hud.stats_rows, hud.ledger_table_header]:
 		for child in container.get_children():
 			container.remove_child(child)
 			child.queue_free()
-	for faction in range(session.rules.faction_count + 1):
-		var owner := faction if faction < session.rules.faction_count else -1
-		var count := 0
-		for kingdom in session.rules.kingdoms.values():
-			if kingdom["owner"] == owner:
-				count += 1
+	var ledger: Dictionary = preload("res://src/ui/ledger_model.gd").build(session.rules, session.round_number)
+	for title in ["Faction", "Hexes", "Gold", "Income", "Costs", "Profit", "Units", ""]:
+		ledger_cell(hud.ledger_table_header, Loc.text(title), hud.UiTheme.MUTED, hud.ledger_table_header.get_child_count(), true)
+	var lines: Array = []
+	var capital_icon = hud.UiTheme.svg_texture('<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><g fill="none" stroke="#ede7d4" stroke-width="1.5" stroke-linecap="round"><circle cx="10" cy="10" r="5"/><path d="M10 1v5m0 8v5M1 10h5m8 0h5"/></g></svg>')
+	for index in range(session.rules.faction_count+1):
+		var owner := index if index < session.rules.faction_count else -1
+		var data: Dictionary = ledger.factions[owner]
+		var color: Color = session.colors[owner] if owner >= 0 else Color("a0aa83")
 		var row := HBoxContainer.new()
+		row.custom_minimum_size.y = 36
+		row.add_theme_constant_override("separation", 8)
 		hud.stats_rows.add_child(row)
-		var name_label: Label = hud.label_at(row, "●  " + (session.names[faction] if owner >= 0 else Loc.text("Neutral")), Vector2.ZERO, 16, session.colors[faction] if owner >= 0 else Color("a0aa83"))
-		name_label.custom_minimum_size.x = 233
-		var hex_label: Label = hud.label_at(row, str(session.rules.territory(owner)), Vector2.ZERO, 16)
-		hex_label.custom_minimum_size.x = 97
-		hud.label_at(row, str(count) if owner >= 0 else "—", Vector2.ZERO, 16)
-	var index := 1
-	for kingdom in session.rules.kingdoms.values():
-		if kingdom["owner"] == session.player_faction:
-			var text_value := Loc.text("%d  ·  %d hexes     %d gold     net %+d") % [index, kingdom["hexes"].size(), kingdom["gold"], session.rules.income(kingdom) - session.rules.upkeep(kingdom)]
-			var row := preload("res://src/ui/tooltip_button.gd").new()
-			row.text = text_value
-			row.tooltip_text = Loc.text("Select kingdom\nIncome +%d G · upkeep −%d G") % [session.rules.income(kingdom), session.rules.upkeep(kingdom)]
-			row.focus_mode = Control.FOCUS_NONE
-			Sound.bind_button(row)
-			row.pressed.connect(actions["select_kingdom"].bind(kingdom["capital"]))
-			hud.kingdom_rows.add_child(row)
-			index += 1
-	if index == 1:
-		hud.label_at(hud.kingdom_rows, Loc.text("No connected kingdoms remain."), Vector2.ZERO, 14)
+		ledger_cell(row,session.names[owner] if owner >= 0 else Loc.text("Neutral"),color,0)
+		var column := 1
+		for field in ["hexes","gold","income","costs","profit","units"]:
+			var value := "%+d" % data[field] if field == "profit" else str(data[field])
+			if owner < 0 and field != "hexes": value = "—"
+			var tint: Color = Color("ed9b91") if field == "profit" and data.profit < 0 else Color("bed099") if field == "profit" else hud.UiTheme.TEXT
+			var cell := ledger_cell(row,value,tint,column)
+			if field == "units" and owner >= 0:
+				cell.tooltip_text = Loc.text("%d Scouts · %d Soldiers · %d Knights") % data.tiers
+			column += 1
+		var focus := preload("res://src/ui/tooltip_button.gd").new()
+		focus.name = "ViewCapital"
+		focus.icon = capital_icon
+		focus.tooltip_text = Loc.text("View capital")
+		focus.focus_mode = Control.FOCUS_NONE
+		focus.custom_minimum_size = Vector2(32,32)
+		focus.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		hud.UiTheme.style_button(focus,false,false,true)
+		focus.disabled = data.capital == session.selection.NONE
+		if owner < 0: focus.modulate.a = 0.0
+		Sound.bind_button(focus)
+		focus.pressed.connect(actions["select_kingdom"].bind(data.capital))
+		row.add_child(focus)
+		if owner >= 0:
+			lines.append({"title":session.names[owner],"color":color,"points":data.points})
+	hud.ledger_table_scroll.custom_minimum_size.y = minf(252,(session.rules.faction_count+1)*36)
+	hud.ledger_graph.series = lines
+	hud.ledger_graph.maximum = maxf(2,ceilf(ledger.max_income/2.0)*2)
+	hud.ledger_graph.last_round = session.round_number
+	hud.ledger_graph.hover_round = -1
+	hud.ledger_graph.queue_redraw()
+
+func ledger_cell(row: HBoxContainer, text: String, color: Color, column: int, heading := false) -> Label:
+	var label: Label = hud.label_at(row,text,Vector2.ZERO,12 if heading else 15,color)
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	if column == 0:
+		label.custom_minimum_size.x = 130
+		label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		label.clip_text = true
+	else:
+		label.custom_minimum_size.x = 32 if column == 7 else 76
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	return label
 
 func refresh_overlays() -> void:
 	if session.work_active or board.level_transitioning or session.departure_active:
@@ -153,7 +182,10 @@ func refresh_overlays() -> void:
 	var protector: Vector2i = session.selection.selected if session.selection.selected != session.selection.NONE else session.selection.inspected_unit
 	if session.selection.action_mode != "":
 		protector = session.selection.NONE
-	board.show_overlays(session.selection.selected, session.selection.hovered, session.selection.valid_targets, session.selection.preview_path, capital, tile_intent(session.selection.hovered), protector)
+	var inspected: Vector2i = session.selection.inspected_hex if session.selection.action_mode == "" else session.selection.NONE
+	if session.selection.action_mode == "" and session.selection.inspected_animal != session.selection.NONE:
+		inspected = session.selection.inspected_animal
+	board.show_overlays(session.selection.selected, session.selection.hovered, session.selection.valid_targets, session.selection.preview_path, capital, tile_intent(session.selection.hovered), protector, inspected)
 	if session.selection.inspected_hex != session.selection.NONE and session.selection.inspected_hex != session.selection.selected and session.rules.cells.has(session.selection.inspected_hex):
 		board.outline(session.selection.inspected_hex, Color("ede7d4"))
 
@@ -208,6 +240,20 @@ func show_world_tip() -> void:
 	elif cell["tree"] or cell["grave"]:
 		feature = "Tree" if cell["tree"] else "Grave"
 	var rows := PackedStringArray([Loc.text("%s · %s") % [owner_name, Loc.text(feature)]])
+	if cell.get("animal", "") != "":
+		var animal: Dictionary = Rules.Wildlife.DEFINITIONS[cell.animal]
+		rows.append(Loc.text(animal.name) + " · " + Loc.text("Requires a Knight" if cell.animal == "bear" else "Requires a Soldier or Knight"))
+		rows.append(Loc.text("Targets units, buildings and provinces" if cell.animal == "bear" else "Targets units and provinces; leaves buildings intact" if cell.animal == "wolf" else "Targets buildings and provinces; cannot kill units"))
+		rows.append(Loc.text("Sight 3 · two actions each World turn"))
+		if cell.has("animal_target"):
+			var target: Vector2i = cell.animal_target
+			rows.append(Loc.text("Alert · pursuing province (%d, %d)") % [target.x,target.y])
+		else: rows.append(Loc.text("Roaming near its lair"))
+	if cell.get("lair", "") != "":
+		var lair: Dictionary = Rules.Wildlife.DEFINITIONS[cell.lair]
+		rows.append(Loc.text(lair.lair) + " · " + Loc.text("Requires a Knight" if cell.lair == "bear" else "Requires a Soldier or Knight"))
+		rows.append(Loc.text("Destroy to gain: %s") % Loc.text(lair.reward))
+		rows.append(Loc.text("One animal per lair · respawns after 3 World turns"))
 	if mountain:
 		rows.append(Loc.text("Impassable"))
 	else:
@@ -284,7 +330,7 @@ func refresh_hud(economy = null) -> void:
 		hud.income_label.text = ""
 		hud.gold_control.tooltip_text = Loc.text("Isolated land · no treasury\nSelect a connected friendly kingdom")
 	hud.level_label.text = "Tutorial" if session.tutorial != null else Loc.text("Level %d") % session.level_number
-	hud.round_label.text = Loc.text("%s  /  TURN %02d  /  %s") % [session.names[session.active_faction].to_upper(), session.round_number, Loc.text("Tutorial" if session.tutorial != null else "Hotseat" if session.is_hotseat() else "Playtest" if not session.initial_level_data.is_empty() else "Quick Play")]
+	hud.round_label.text = Loc.text("%s  /  TURN %02d  /  %s") % [Loc.text("World").to_upper() if board.wildlife != null and board.wildlife.is_playing else session.names[session.active_faction].to_upper(), session.round_number, Loc.text("Tutorial" if session.tutorial != null else "Hotseat" if session.is_hotseat() else "Playtest" if not session.initial_level_data.is_empty() else "Quick Play")]
 	hud.round_label.add_theme_color_override("font_color", session.colors[session.active_faction])
 	hud.recruit_button.text = Loc.text(Catalog.UNIT_NAMES[session.selection.recruit_tier]) + " ×" if session.selection.action_mode == "recruit" and session.selection.recruit_tier > 0 else "Recruit"
 	hud.build_button.text = Loc.text(session.selection.action_mode.capitalize()) + " ×" if session.selection.action_mode in ["tower", "house", "bridge"] else "Build"

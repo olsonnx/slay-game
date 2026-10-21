@@ -10,12 +10,15 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 EXTRA = {
+    "src/game/replay_summary.gd",
+    "src/game/wildlife.gd",
     "src/game/game.gd", "src/game/game_catalog.gd", "src/game/spell_catalog.gd",
     "src/game/event_catalog.gd", "src/game/encounter_rules.gd", "src/game/tutorial.gd", "src/game/tutorial_lessons.gd",
     "src/game/player_actions.gd", "src/game/opponent_turns.gd", "src/game/kingdom_magic.gd",
     "src/game/match_setup.gd", "src/game/map_sizes.gd", "src/game/game_input.gd",
     "src/settings/key_settings.gd", "src/app/app.gd",
     "src/editor/level_document.gd", "src/editor/level_editor.gd", "src/editor/editor_view.gd",
+    "src/editor/discard_dialog.gd",
     "src/localization/native_messages.gd",
 }
 # Engine classes, node names, enum/paint IDs and proper names are not message keys.
@@ -49,7 +52,7 @@ def tokens(source):
 def readable(value):
     if not value or value in EXCLUDE or not re.search(r"[A-Za-z]", value):
         return False
-    if any(x in value for x in ("res://", "user://", "<svg", "[color=", "[font_size=", "</", "\\d", "\\s", "\\b")):
+    if any(x in value for x in ("res://", "user://", "<svg", "<path", "<circle", "<rect", "[color=", "[font_size=", "</", "\\d", "\\s", "\\b")):
         return False
     if "_" in value and not re.search(r"\s", value):
         return False

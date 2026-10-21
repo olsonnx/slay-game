@@ -104,7 +104,7 @@ func sample(case_name: String, info: Dictionary) -> void:
 		"nodes": Performance.get_monitor(Performance.OBJECT_NODE_COUNT), "chunks": game.view.static_batches.chunks.size(),
 		"camera_zoom": game.view.zoom, "shadow_distance": game.view.sun.directional_shadow_max_distance})
 	result["window_resolution"] = str(DisplayServer.window_get_size())
-	result["grass_lod"] = game.view.detail_lod
+	result["shadow_opacity"] = game.view.sun.shadow_opacity
 	result["shadow_mode"] = game.view.sun.directional_shadow_mode
 	result["chunk_size"] = game.view.static_batches.chunk_size
 	result["lod_rebuilds"] = game.view.static_batches.rebuild_count - start_rebuilds

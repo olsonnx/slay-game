@@ -6,10 +6,104 @@ const Candidates = preload("res://src/game/ai_candidates.gd")
 const Planner = preload("res://src/game/ai_planner.gd")
 const SearchJob = preload("res://src/game/ai_search_job.gd")
 const Strategist = preload("res://src/game/ai_strategist.gd")
+const Snapshots = preload("res://src/game/state_snapshot.gd")
+const SimulationJob = preload("res://src/game/simulation_job.gd")
 var state
 var strategic_context: Dictionary = {}
 var pending_orders: Array = []
 var strategic_planner
+var threaded_simulation := true
+var simulation_job
+var worker_cancel: Callable
+var presentation_patch: Dictionary = {}
+var presentation_patch_ready := false
+var settlement_deaths := 0
+
+func world_async(host) -> Array[Dictionary]:
+	presentation_patch_ready = false
+	if can_simulate_on_worker(): return await simulate_async(Execution.adapt(host), -1, false, "world")
+	return state.world_turn()
+
+func begin_turn_async(host, faction: int) -> int:
+	presentation_patch_ready = false
+	if can_simulate_on_worker():
+		await simulate_async(Execution.adapt(host), faction, false, "settlement")
+		return settlement_deaths
+	return state.begin_turn(faction)
+
+func preparation_cells() -> Dictionary:
+	return presentation_patch if presentation_patch_ready else state.cells
+
+func movement_cells(actions: Array) -> Dictionary:
+	if not presentation_patch_ready: return state.cells
+	var result := presentation_patch.duplicate()
+	for action in actions:
+		for coord in [action["source"], action["target"], action.get("landing", action["target"])]:
+			result[coord] = state.cells[coord]
+	return result
+
+func is_cancelled() -> bool:
+	return worker_cancel.is_valid() and worker_cancel.call()
+
+func run_planner(faction: int, spending := false):
+	var planner
+	if state.uses_strategic_ai() and worker_cancel.is_valid():
+		var view = Snapshots.analysis_view(state)
+		planner = Strategist.new(view, faction, spending, true, strategic_context)
+	else:
+		planner = Strategist.new(state, faction, spending, false, strategic_context) if state.uses_strategic_ai() else Planner.new(state, faction, spending)
+	while not is_cancelled() and not planner.step(): pass
+	return planner
+
+func can_simulate_on_worker() -> bool:
+	return threaded_simulation and (state.replay_log == null or not state.replay_log.transaction)
+
+func simulate_async(execution: Execution, faction: int, preparation: bool, operation := "") -> Array[Dictionary]:
+	if execution.is_cancelled(): return []
+	await execution.wait_until_resumed()
+	if execution.is_cancelled(): return []
+	if simulation_job == null: simulation_job = SimulationJob.new()
+	var job = simulation_job
+	var started := execution.start_sample()
+	job.packet = Snapshots.worker_input(state)
+	job.clear_outputs()
+	job.faction = faction
+	job.preparation = preparation
+	job.operation = operation
+	job.deaths = 0
+	job.recorder = state.replay_log.fork_worker() if state.replay_log != null else null
+	var expected_sequence: int = state.replay_log.sequence if state.replay_log != null else 0
+	execution.finish_sample(started, "simulation_input")
+	# Round settlement is short and blocks the next turn; do not queue it behind
+	# background loading or shader preparation. Long AI searches keep normal priority.
+	var task := WorkerThreadPool.add_task(job.run, operation != "", "Kingdom simulation")
+	while not WorkerThreadPool.is_task_completed(task):
+		await execution.next_frame()
+		if execution.is_cancelled(): job.cancel()
+	WorkerThreadPool.wait_for_task_completion(task)
+	await execution.wait_until_resumed()
+	if execution.is_cancelled() or job.is_cancelled():
+		simulation_job = null
+		return []
+	if job.result.is_empty():
+		push_error("Simulation worker did not produce a completed transaction")
+		simulation_job = null
+		return []
+	started = execution.start_sample()
+	Snapshots.publish_worker(state, job.result)
+	settlement_deaths = job.deaths
+	presentation_patch = job.result["cells"]
+	presentation_patch_ready = job.result["removed"].is_empty()
+	if job.recorder != null: state.replay_log.publish_worker(job.recorder, expected_sequence)
+	strategic_context = job.opponent.strategic_context.duplicate(true)
+	pending_orders = job.opponent.pending_orders.duplicate(true)
+	var actions: Array[Dictionary] = job.actions
+	job.packet = {}
+	job.clear_outputs()
+	job.recorder = null
+	execution.finish_sample(started, "simulation_publish")
+	if execution.trace.is_valid(): execution.trace.call({"stage":"simulation_worker", "ms":job.worker_ms})
+	return actions
 
 func _init(rules) -> void:
 	state = rules
@@ -24,20 +118,23 @@ func record_decision(action: Dictionary, planner) -> void:
 	state.record_replay("ai_decision", planner.faction, state.ai_last_decision)
 
 func prepare_ai_turn(faction: int) -> Array[Dictionary]:
-	if state.territory(faction) == 0 and not state.has_units(faction):
+	if is_cancelled() or state.territory(faction) == 0 and not state.has_units(faction):
 		return []
 	var before: Dictionary = state.cells.duplicate(true)
 	state.begin_turn(faction)
 	for purchase in range(int(Analysis.profile(state)["spending"])):
-		var planner = Strategist.new(state, faction, true) if state.uses_strategic_ai() else Planner.new(state, faction, true)
-		var action: Dictionary = planner.run()
-		if action.is_empty() or not Candidates.apply(state, action, faction):
+		if is_cancelled(): break
+		var planner = run_planner(faction, true)
+		var action: Dictionary = planner.best
+		if is_cancelled() or action.is_empty() or not Candidates.apply(state, action, faction):
 			break
 		record_decision(action, planner)
 	return preparation_records(before, faction)
 
 func prepare_async(host, faction: int) -> Array[Dictionary]:
+	presentation_patch_ready = false
 	var execution: Execution = Execution.adapt(host)
+	if can_simulate_on_worker(): return await simulate_async(execution, faction, true)
 	var before: Dictionary = state.cells.duplicate(true)
 	state.begin_turn(faction)
 	for purchase in range(int(Analysis.profile(state)["spending"])):
@@ -79,7 +176,9 @@ func search_async(host, faction: int, spending := false):
 	return job.planner
 
 func movements_async(host, faction: int, retry := true) -> Array[Dictionary]:
+	presentation_patch_ready = false
 	var execution: Execution = Execution.adapt(host)
+	if can_simulate_on_worker(): return await simulate_async(execution, faction, false)
 	if state.uses_strategic_ai():
 		if execution.is_cancelled(): return []
 		var cached := not pending_orders.is_empty()
@@ -113,11 +212,12 @@ func movements_async(host, faction: int, retry := true) -> Array[Dictionary]:
 	return result
 
 func ai_movements(faction: int, retry := true) -> Array[Dictionary]:
+	if is_cancelled(): return []
 	if state.uses_strategic_ai():
 		var cached := not pending_orders.is_empty()
 		if pending_orders.is_empty():
-			strategic_planner = Strategist.new(state, faction, false, false, strategic_context)
-			strategic_planner.run()
+			strategic_planner = run_planner(faction)
+			if is_cancelled(): return []
 			strategic_context = strategic_planner.context
 			pending_orders = strategic_planner.best_sequence.duplicate(true)
 		var result := commit_strategic(strategic_planner)
@@ -125,8 +225,8 @@ func ai_movements(faction: int, retry := true) -> Array[Dictionary]:
 			pending_orders.clear()
 			return ai_movements(faction, false)
 		return result
-	var planner = Planner.new(state, faction)
-	return commit_move(planner.run(), planner)
+	var planner = run_planner(faction)
+	return [] if is_cancelled() else commit_move(planner.best, planner)
 
 func finish_record(command: Dictionary, planner, movement: Dictionary) -> void:
 	if movement["faction"] == 0 and movement["before_target"]["event"] != "":
@@ -143,6 +243,7 @@ func needs_replan(movement: Dictionary) -> bool:
 func commit_strategic(planner, limit := 4, dependencies: Dictionary = {}) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
 	while not pending_orders.is_empty() and result.size() < limit:
+		if is_cancelled(): break
 		var command: Dictionary = pending_orders.pop_front()
 		var source: Vector2i = command["source"]
 		var target: Vector2i = command["coord"]

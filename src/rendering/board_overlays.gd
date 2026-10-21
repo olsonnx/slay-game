@@ -13,6 +13,59 @@ var kingdom_signature: Array = []
 var kingdom_batch: MultiMeshInstance3D
 var kingdom_slots: Dictionary = {}
 var kingdom_hidden: Dictionary = {}
+var building_storage: Node3D
+var building_ghosts: Dictionary = {}
+var building_materials: Dictionary = {}
+
+func prepare_building_previews() -> void:
+	if is_instance_valid(building_storage): return
+	building_storage = Node3D.new()
+	building_storage.name = "BuildingPreviewCache"
+	board.add_child(building_storage)
+	var color: Color = intent_color({"kind":"tower"})
+	for kind in ["tower", "house", "bridge"]:
+		var ghost := Node3D.new()
+		ghost.name = kind
+		ghost.set_meta("preview_kind", kind)
+		match kind:
+			"tower": board.add_tower(ghost, Vector3.ZERO, color)
+			"house": board.add_house(ghost, Vector3.ZERO)
+			"bridge": board.add_bridge(ghost)
+		for node in ghost.find_children("*", "MeshInstance3D", true, false):
+			var source: StandardMaterial3D = node.material_override
+			var key := source.get_instance_id()
+			if not building_materials.has(key):
+				var material: StandardMaterial3D = source.duplicate()
+				material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+				material.albedo_color = Color(source.albedo_color.lerp(color, 0.35), 0.60)
+				material.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_DISABLED
+				material.get_rid()
+				building_materials[key] = material
+				var role: String = source.get_meta("lighting_role", "")
+				if role != "": board.register_lighting_material(material, role)
+			node.material_override = building_materials[key]
+			node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			# Retain surfaces under the loading cover so Forward+ prepares their
+			# transparent variants before the cursor first requests a preview.
+			node.layers = 0
+		building_storage.add_child(ghost)
+		building_ghosts[kind] = ghost
+
+func store_building_previews() -> void:
+	for ghost in building_ghosts.values():
+		if ghost.get_parent() == building_storage: continue
+		for node in ghost.get_children():
+			if node is GeometryInstance3D: preload("res://src/rendering/batch_source_lifetime.gd").set_layers(node, 0)
+		ghost.name = ghost.get_meta("preview_kind")
+		ghost.reparent(building_storage, false)
+
+func show_building_preview(kind: String, parent: Node3D) -> void:
+	prepare_building_previews()
+	var ghost: Node3D = building_ghosts[kind]
+	ghost.reparent(parent, false)
+	ghost.name = "GhostBuilding"
+	for node in ghost.get_children():
+		if node is GeometryInstance3D: preload("res://src/rendering/batch_source_lifetime.gd").set_layers(node, 1)
 
 func _init(view) -> void:
 	board = view
@@ -32,12 +85,13 @@ func outline(coord: Vector2i, color: Color) -> void:
 	node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	board.overlay_root.add_child(node)
 
-func show_overlays(selected: Vector2i, hovered: Vector2i, valid: Dictionary, path: Array, active_capital: Vector2i, intent: Dictionary = {}, protector: Vector2i = Vector2i(999, 999)) -> void:
+func show_overlays(selected: Vector2i, hovered: Vector2i, valid: Dictionary, path: Array, active_capital: Vector2i, intent: Dictionary = {}, protector: Vector2i = Vector2i(999, 999), inspected: Vector2i = Vector2i(999, 999)) -> void:
 	if board.value_heatmap != null and board.value_heatmap.active:
 		return
 	var protected_tiles := Movement.unit_protection(board.cells, protector)
 	var protection_strength: int = board.cells.get(protector, {}).get("unit", 0)
-	var next_signature := [selected, hovered, valid.keys(), path.duplicate(), active_capital, intent.duplicate(true), Gameplay.clear_indicators, protector, protected_tiles.keys(), protection_strength]
+	var inspection := inspection_region(inspected) if intent.is_empty() and selected == board.NONE else {}
+	var next_signature := [selected, hovered, valid.keys(), path.duplicate(), active_capital, intent.duplicate(true), Gameplay.clear_indicators, protector, protected_tiles.keys(), protection_strength, inspected, inspection]
 	if signature == next_signature and board.overlay_root.get_child_count() == overlay_count:
 		update_upgrade_indicator()
 		return
@@ -47,6 +101,7 @@ func show_overlays(selected: Vector2i, hovered: Vector2i, valid: Dictionary, pat
 	var retain_reachable: bool = clear_move and reachable_signature == next_reachable and board.overlay_root.has_node("ReachableArea") and board.overlay_root.has_node("ReachWash")
 	var show_kingdom: bool = not clear_move and protected_tiles.is_empty() and active_capital != board.NONE
 	var retain_kingdom: bool = show_kingdom and kingdom_signature == [active_capital] and is_instance_valid(kingdom_batch) and kingdom_batch.get_parent() == board.overlay_root
+	store_building_previews()
 	for child in board.overlay_root.get_children():
 		if retain_reachable and child.name in ["ReachBacking", "ReachableArea", "ReachWash"]:
 			continue
@@ -120,6 +175,15 @@ func show_overlays(selected: Vector2i, hovered: Vector2i, valid: Dictionary, pat
 			dot.material_override = board.material(path_color, true)
 	if not intent.is_empty() and (board.cells.has(hovered) or intent["kind"] == "bridge"):
 		board.show_intent(hovered, intent, path)
+	if not inspection.is_empty():
+		var region: Dictionary = inspection.region
+		var border := show_area(region, inspection.color, "InspectionBacking", "InspectionRange", "InspectionWash", 0.08)
+		border.set_meta("region",region.keys())
+		border.set_meta("kind",inspection.kind)
+		border.set_meta("source",inspected)
+		var target: Vector2i = inspection.get("target",board.NONE)
+		if board.cells.has(target):
+			show_area({target:true}, Color("ef5350"), "TargetBacking", "AnimalTarget", "TargetWash", 0.14)
 	overlay_count = board.overlay_root.get_child_count()
 
 func build_kingdom_outline(capital: Vector2i) -> void:
@@ -304,6 +368,7 @@ func show_route(path: Array, color: Color) -> void:
 	node.set_meta("arrowheads", 1)
 
 func show_intent(coord: Vector2i, intent: Dictionary, path: Array) -> void:
+	store_building_previews()
 	var color: Color = board.intent_color(intent)
 	var clear_move: bool = Gameplay.clear_indicators and intent.has("source")
 	if not clear_move or not intent["valid"]:
@@ -368,22 +433,7 @@ func show_intent(coord: Vector2i, intent: Dictionary, path: Array) -> void:
 				var stroke: MeshInstance3D = board.box(board.intent_preview, Vector3(0, 0.06, 0.58), size, color)
 				stroke.material_override = board.material(color, true)
 		"tower", "house", "bridge":
-			var ghost := Node3D.new()
-			ghost.name = "GhostBuilding"
-			board.intent_preview.add_child(ghost)
-			if intent["kind"] == "tower":
-				board.add_tower(ghost, Vector3.ZERO, color)
-			elif intent["kind"] == "bridge":
-				board.add_bridge(ghost)
-			else:
-				board.add_house(ghost, Vector3.ZERO)
-			for node in ghost.find_children("*", "MeshInstance3D", true, false):
-				var ghost_mat: StandardMaterial3D = node.material_override.duplicate()
-				ghost_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-				ghost_mat.albedo_color = Color(ghost_mat.albedo_color.lerp(color, 0.35), 0.60)
-				ghost_mat.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_DISABLED
-				node.material_override = ghost_mat
-				node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			show_building_preview(intent["kind"], board.intent_preview)
 		"merge", "upgrade":
 			for size in [Vector3(0.36, 0.015, 0.08), Vector3(0.08, 0.015, 0.36)]:
 				var stroke: MeshInstance3D = board.box(board.intent_preview, Vector3(0, 0.06, 0.60), size, color)
@@ -426,3 +476,30 @@ func update_upgrade_indicator() -> void:
 	var up: Vector3 = board.camera.global_basis.y
 	var pixels_per_unit: float = absf(board.camera.unproject_position(head + up).y - board.camera.unproject_position(head).y)
 	indicator.global_position = head + up * maxf(1.25, 45.0 / maxf(pixels_per_unit, 0.001))
+
+func inspection_region(source: Vector2i) -> Dictionary:
+	if not board.cells.has(source): return {}
+	var cell: Dictionary = board.cells[source]
+	var wildlife = preload("res://src/game/wildlife.gd")
+	var grid = preload("res://src/game/hex_grid.gd")
+	var kind := ""
+	var radius := 0
+	var color := PROTECTION_COLOR
+	if cell.get("animal","") != "":
+		kind = "vision"
+		radius = wildlife.SIGHT
+		color = Color("71dce8")
+	elif cell.get("lair","") != "":
+		kind = "roaming"
+		radius = wildlife.ROAM_RADIUS
+		color = Color("c19af0")
+	elif cell.get("building","") == "tower":
+		kind = "defense"
+		radius = 1
+	else: return {}
+	var region := {}
+	for coord in board.cells:
+		if grid.distance(source,coord) > radius: continue
+		if kind == "defense" and coord != source and (cell.owner < 0 or board.cells[coord].owner != cell.owner): continue
+		region[coord] = true
+	return {"region":region,"color":color,"kind":kind,"target":cell.get("animal_target",board.NONE) if kind == "vision" else board.NONE}

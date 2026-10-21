@@ -1,5 +1,5 @@
 extends SceneTree
-## Explicitly refresh v10 determinism fixtures after an intentional generator change.
+## Explicitly refresh determinism fixtures after an intentional generator change.
 const Rules = preload("res://src/game/kingdom_rules.gd")
 const Sizes = preload("res://src/game/map_sizes.gd")
 static func digest(rules) -> String:
@@ -12,8 +12,8 @@ static func digest(rules) -> String:
 	return JSON.stringify(state).sha256_text()
 func _initialize() -> void: call_deferred("run")
 func run() -> void:
-	if "--update-generation-v10" not in OS.get_cmdline_user_args():
-		print("Pass -- --update-generation-v10 to replace the intentional v10 baseline.")
+	if "--update-generation-v12" not in OS.get_cmdline_user_args():
+		print("Pass -- --update-generation-v12 to replace the intentional v12 baseline.")
 		quit(1)
 		return
 	var samples: Array = []
@@ -27,5 +27,5 @@ func run() -> void:
 					samples.append({"generation_version":Rules.MapGenerator.GENERATION_VERSION, "mode":mode, "size":size_id, "count":count, "seed":seed_value, "digest":digest(rules)})
 	var file := FileAccess.open("res://tests/fixtures/generation_golden.json", FileAccess.WRITE)
 	file.store_string(JSON.stringify(samples, "\t") + "\n")
-	print("Recorded generation v10 fixtures: ", samples.size())
+	print("Recorded generation v12 fixtures: ", samples.size())
 	quit()

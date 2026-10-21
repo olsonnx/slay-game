@@ -3,6 +3,7 @@ extends RefCounted
 const NONE := Vector2i(999, 999)
 var selected := NONE
 var inspected_unit := NONE
+var inspected_animal := NONE
 var hovered := NONE
 var active_hex := NONE
 var inspected_hex := NONE
@@ -15,6 +16,7 @@ var preview_path: Array = []
 func reset() -> void:
 	selected = NONE
 	inspected_unit = NONE
+	inspected_animal = NONE
 	hovered = NONE
 	active_hex = NONE
 	inspected_hex = NONE

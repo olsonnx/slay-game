@@ -160,6 +160,7 @@ func run() -> void:
 		wheel.button_index = MOUSE_BUTTON_WHEEL_UP
 		wheel.pressed = true
 		game._unhandled_input(wheel)
+		game.view.navigation._process(0.1)
 		expect(game.view.zoom != zoom, "Finished maps retain scroll zoom")
 		var left := InputEventMouseButton.new()
 		left.button_index = MOUSE_BUTTON_LEFT
@@ -190,9 +191,12 @@ func run() -> void:
 		game.check_winner()
 		expect(replay.sequence == commands and replay.path == target, "Repeated result checks or saves cannot duplicate the result or file")
 		expect(Replay.read_replay(target)["error"] == "", "Manually saved replay remains fully reconstructable")
+		var summary := preload("res://src/game/replay_summary.gd").read_preview(target)
+		expect(summary.duration_seconds == 125 and summary.mode == "quick_play" and summary.result == ("victory" if victory else "defeat"), "Saved replay summary preserves the paused match clock, game mode and displayed result")
 		await app.return_to_main_menu()
 	await app.start_new_game(42, "very_small", "easy", 2, {}, 2)
 	var hotseat = app.game
+	expect(hotseat.rules.replay_log.header.metadata.mode == "hotseat", "Replay metadata distinguishes local multiplayer from Quick Play")
 	var unsaved_path := "res://artifacts/results-unsaved.jsonl"
 	if FileAccess.file_exists(unsaved_path): DirAccess.remove_absolute(unsaved_path)
 	hotseat.rules.replay_log.destination = unsaved_path
@@ -210,12 +214,11 @@ func run() -> void:
 	await app.return_to_main_menu()
 	expect(not FileAccess.file_exists(unsaved_path), "Leaving results without saving creates no replay file")
 	app.menus.open_options(app.menus.Screen.MAIN)
-	var tabs: TabBar = app.menus.options_view.get_child(0)
-	tabs.current_tab = 4
-	expect(app.menus.options_view.replays_page.visible and app.menus.options_view.replay_folder_button.visible, "Replay folder shortcut is available in Options")
+	var tabs = app.menus.options_view.get_child(0)
+	expect(tabs.tab_count == 4, "Options only contains audio, video, gameplay and controls")
+	tabs.current_tab = 3
 	await process_frame
-	for label in app.menus.options_view.replays_page.find_children("*", "Label", true, false):
-		expect(label.size.x <= 432, "Replay explanatory text wraps inside Options")
+	expect(app.menus.options_view.controls_page.visible and not app.menus.options_view.audio_page.visible, "The final options tab still opens Controls after removing Replays")
 	for button in app.menus.pause_panel.find_children("*", "Button", true, false):
 		expect(not button.text.contains("Replay"), "Pause menu has no replay folder shortcut")
 	await capture("options")

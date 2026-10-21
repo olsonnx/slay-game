@@ -79,6 +79,7 @@ func enter_step() -> void:
 	game.session.selection.selected = game.NONE
 	game.session.selection.action_mode = ""
 	game.session.selection.inspected_unit = game.NONE
+	game.session.selection.inspected_animal = game.NONE
 	game.message = ""
 	game.toast_time = 0
 	game.hud.toast_panel.hide()

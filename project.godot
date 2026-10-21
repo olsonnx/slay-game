@@ -14,7 +14,7 @@ config/name="Slay & Reign"
 run/main_scene="res://scenes/app.tscn"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="Godot/app_userdata/SlayGame"
-config/features=PackedStringArray("4.6", "GL Compatibility")
+config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://assets/icon.svg"
 config/custom_user_dir_name.linux="godot/app_userdata/SlayGame"
 
@@ -55,6 +55,4 @@ timers/tooltip_delay_sec=0.65
 [rendering]
 
 rendering_device/driver.windows="d3d12"
-renderer/rendering_method="gl_compatibility"
-renderer/rendering_method.mobile="gl_compatibility"
 anti_aliasing/quality/msaa_3d=2

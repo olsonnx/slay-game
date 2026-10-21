@@ -35,6 +35,15 @@ func set_turn(faction: int) -> void:
 		unit_batches.queue_sync(changed, false)
 		unit_batches.sync(true)
 
+func stage_turn(faction: int, cells: Dictionary) -> Dictionary:
+	turn_faction = faction
+	clear_unit_hover()
+	var changed := {}
+	for coord in unit_actors:
+		var actor: Node3D = unit_actors[coord]
+		if cells.has(coord) and is_instance_valid(actor) and actor.get_meta("unit_ready", false) != is_ready(cells[coord]): changed[coord] = true
+	return changed
+
 func apply_readiness(actor: Node3D, cell: Dictionary) -> void:
 	var animator = actor.get_node("UnitAnimation")
 	var ready := is_ready(cell)
@@ -76,9 +85,11 @@ func remove_unit(coord: Vector2i) -> void:
 	if unit_actors.has(coord):
 		var actor: Node3D = unit_actors[coord]
 		idle_units.erase(actor)
-		for sprite in units.duplicate():
-			if not is_instance_valid(sprite) or actor.is_ancestor_of(sprite):
-				units.erase(sprite)
+		# Removing by value validates freed Objects in a typed array and fails.
+		# Remove by index so stale references can actually be retired.
+		for index in range(units.size() - 1, -1, -1):
+			if not is_instance_valid(units[index]) or actor.is_ancestor_of(units[index]):
+				units.remove_at(index)
 		if is_instance_valid(actor) and not actor.is_queued_for_deletion():
 			actor.queue_free()
 		unit_actors.erase(coord)
@@ -110,6 +121,16 @@ func refresh_unit(coord: Vector2i, cell: Dictionary) -> void:
 	var state := [cell["unit"], owner, cell["moved"], cell["capital"] >= 0]
 	var position_wanted := Vector3(0.35, 0, 0.30) if cell["capital"] >= 0 else Vector3.ZERO
 	if actor.get_meta("unit_state", []) == state and actor.position == position_wanted:
+		if actor.get_meta("unit_ready", false) != is_ready(cell): apply_readiness(actor, cell)
+		return
+	var before: Array = actor.get_meta("unit_state", [])
+	if before.size() == 4 and before[0] == cell["unit"] and before[1] == owner:
+		# Movement/turn reset changes readiness, not the sprite, outline or pips.
+		actor.set_meta("unit_state", state)
+		actor.position = position_wanted
+		var animator = actor.get_node("UnitAnimation")
+		if animator.animation != "idle": animator.play("idle")
+		if actor.get_meta("unit_ready", false) != is_ready(cell): apply_readiness(actor, cell)
 		return
 	actor.get_node("UnitAnimation").configure(cell["unit"],owner)
 	actor.set_meta("unit_state", state)

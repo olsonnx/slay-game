@@ -45,10 +45,6 @@ func play(coord: Vector2i, rank: int) -> float:
 	return duration + (rank - 1) * 0.07
 
 func effect_material(alpha: float) -> StandardMaterial3D:
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.cull_mode = BaseMaterial3D.CULL_DISABLED
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_DISABLED
+	var material: StandardMaterial3D = board.playback.flash_material.duplicate()
 	material.albedo_color = Color(board.PLACEMENT_COLOR, alpha)
 	return material

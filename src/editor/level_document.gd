@@ -6,7 +6,9 @@ const Catalog = preload("res://src/game/game_catalog.gd")
 const Rules = preload("res://src/game/kingdom_rules.gd")
 const Sizes = preload("res://src/game/map_sizes.gd")
 const FIELDS := ["owner", "unit", "capital", "tree", "grave", "building", "value", "mana_source", "mountain", "event"]
-const TOOLS := ["Land", "Water", "Owner", "Value", "Mountain", "Tree", "Grave", "Mana source", "Capital", "Scout", "Soldier", "Knight", "House", "Tower", "Bridge", "Clear objects", "Event", "Player start"]
+const TOOLS := ["Land", "Water", "Owner", "Value", "Mountain", "Tree", "Grave", "Mana source", "Capital", "Scout", "Soldier", "Knight", "House", "Tower", "Bridge", "Clear objects", "Event", "Player start", "Bear cave", "Wolf den", "Boar burrow"]
+const LAIR_TOOLS := {"Bear cave":"bear", "Wolf den":"wolf", "Boar burrow":"boar"}
+const MODERN_TOOLS := ["Mountain", "Mana source", "Bridge", "Event", "Bear cave", "Wolf den", "Boar burrow"]
 const TILE_TOOLS := ["Land", "Water", "Mountain", "Bridge"]
 const MAX_CELLS := 4000
 var cells: Dictionary = {}
@@ -33,6 +35,7 @@ func state() -> Dictionary:
 		var row := {"q": coord.x, "r": coord.y}
 		for field in FIELDS:
 			row[field] = cells[coord][field]
+		if cells[coord].get("lair", "") != "": row["lair"] = cells[coord].lair
 		rows.append(row)
 	return {"format": "slay-level", "version": 1, "title": title, "size": map_size,
 		"rules": rule_mode, "seed": seed_value, "gold": starting_gold, "player_start": null if player_start == Rules.NONE else [player_start.x, player_start.y],
@@ -86,10 +89,12 @@ func generate(size_id: String, mode: String, blank := false) -> void:
 	rule_mode = mode
 	seed_value = int(Time.get_ticks_usec() % 2147483647)
 	starting_gold = 10 if mode == "modern" else 16
-	var rules = Rules.new()
-	rules.rule_mode = mode
-	rules.generate(seed_value, size_id, 2 if size_id == "very_small" else 4)
-	cells = {} if blank else rules.cells.duplicate(true)
+	cells = {}
+	if not blank:
+		var rules = Rules.new()
+		rules.rule_mode = mode
+		rules.generate(seed_value, size_id, 2 if size_id == "very_small" else 4)
+		cells = rules.cells.duplicate(true)
 	for cell in cells.values():
 		cell["event"] = ""
 		cell.erase("treasure")
@@ -103,11 +108,13 @@ func in_bounds(coord: Vector2i) -> bool:
 	return Vector2(at.x, at.z).length() <= Sizes.generation_bounds(map_size).x
 
 func clear_objects(cell: Dictionary) -> void:
+	for field in ["lair","lair_wait","animal","animal_home","animal_target"]: cell.erase(field)
 	cell.merge({"unit": 0, "capital": -1, "tree": false, "grave": false,
 		"building": "", "mana_source": false, "event": ""}, true)
 
 func paint(coord: Vector2i, tool: String, owner: int, value: int, event_id := "") -> bool:
 	if not in_bounds(coord) or tool not in TOOLS: return false
+	if rule_mode == "classic" and tool in MODERN_TOOLS: return false
 	if tool == "Player start":
 		if not cells.has(coord) or cells[coord]["owner"] < 0 or cells[coord]["mountain"] or cells[coord]["building"] == "bridge": return false
 		var changed := player_start != coord
@@ -135,6 +142,7 @@ func paint(coord: Vector2i, tool: String, owner: int, value: int, event_id := ""
 		var cell: Dictionary = cells[coord]
 		if tool == "Owner":
 			if cell["mountain"] or cell["building"] == "bridge": return false
+			if cell.get("lair", "") != "": clear_objects(cell)
 			cell["owner"] = owner
 			if cell["capital"] >= 0: cell["capital"] = owner
 			if owner < 0:
@@ -146,6 +154,11 @@ func paint(coord: Vector2i, tool: String, owner: int, value: int, event_id := ""
 			if rule_mode != "modern": return false
 			clear_objects(cell)
 			cell.merge({"mountain": true, "owner": -1, "value": 0}, true)
+		elif tool in LAIR_TOOLS:
+			if cell.owner >= 0 or cell.mountain or cell.building == "bridge": return false
+			clear_objects(cell)
+			cell["lair"] = LAIR_TOOLS[tool]
+			cell["lair_wait"] = 0
 		elif tool == "Clear objects":
 			if cell["building"] == "bridge": return false
 			clear_objects(cell)
@@ -153,6 +166,7 @@ func paint(coord: Vector2i, tool: String, owner: int, value: int, event_id := ""
 			if tool in ["Capital", "Scout", "Soldier", "Knight", "House", "Tower"] and cell["owner"] < 0: return false
 			if tool == "Mana source":
 				if rule_mode != "modern": return false
+				if cell.get("lair", "") != "": clear_objects(cell)
 				cell["mana_source"] = true
 			else:
 				# Mana is a terrain attribute and can coexist with structures.
@@ -182,6 +196,9 @@ func restore(data: Dictionary) -> void:
 		var cell: Dictionary = Rules.new().make_cell(int(row["owner"]))
 		for field in FIELDS:
 			cell[field] = row[field]
+		if row.get("lair", "") != "":
+			cell["lair"] = row.lair
+			cell["lair_wait"] = 0
 		for field in ["owner", "unit", "capital", "value"]: cell[field] = int(cell[field])
 		cells[Vector2i(int(row["q"]), int(row["r"]))] = cell
 	if data.has("player_start"):
@@ -245,6 +262,8 @@ func read_data(data: Variant) -> String:
 			if not row.get(field) is bool: return Loc.text("Invalid terrain attributes.")
 		if row.get("event") is String: row["event"] = Events.canonical_id(row["event"])
 		if row.get("building") not in ["", "house", "tower", "bridge"] or (row.get("event") != "" and not Events.EVENTS.has(row.get("event"))): return "Unsupported object."
+		if row.get("lair", "") not in ["","bear","wolf","boar"]: return "Unsupported object."
+		if row.get("lair", "") != "" and (data["rules"] != "modern" or row.owner != -1 or row.unit != 0 or row.capital >= 0 or row.tree or row.grave or row.mana_source or row.mountain or row.building != "" or row.event != ""): return Loc.text("Lairs need empty neutral land.")
 		if row["capital"] >= 0 and row["capital"] != row["owner"]: return Loc.text("Capital must belong to its province.")
 		if (row["unit"] > 0 or row["building"] in ["house", "tower"]) and row["owner"] < 0: return Loc.text("Units and buildings need an owner.")
 		var objects := int(row["tree"]) + int(row["grave"]) + int(row["building"] != "") + int(row["unit"] > 0) + int(row["capital"] >= 0) + int(row["event"] != "")

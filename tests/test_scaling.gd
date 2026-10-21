@@ -29,7 +29,7 @@ func run() -> void:
 		var rules = Rules.new()
 		rules.rule_mode = sample["mode"]
 		rules.generate(int(sample["seed"]), sample["size"], int(sample["count"]))
-		expect(sample.get("generation_version") == 10 and digest(rules) == sample["digest"], "Generation v10 preserves its recorded seeded state and RNG")
+		expect(sample.get("generation_version") == Rules.MapGenerator.GENERATION_VERSION and digest(rules) == sample["digest"], "Current generation preserves its recorded seeded state and RNG")
 	var game = load("res://scenes/main.tscn").instantiate()
 	game.initial_seed = 42
 	game.initial_rule_mode = "modern"
@@ -68,44 +68,28 @@ func run() -> void:
 	expect(bottom_vertices == exposed * 3, "Only exposed cliff sides reach the soil bottom, including across chunks")
 	board.zoom = 22
 	board.update_camera()
-	board.static_batches.advance_detail_fade(1.0)
+	board.lighting.advance(1.0)
 	await process_frame
-	expect(not board.detail_lod and board.shadow_lod == 0, "Close view retains grass and two shadow projections")
+	expect(board.sun.directional_shadow_mode == DirectionalLight3D.SHADOW_ORTHOGONAL, "Close view uses a stable shadow projection")
 	var near_instances: int = board.static_batches.visible_instance_count
-	board.zoom = 40
-	board.update_camera()
-	expect(board.static_batches.detail_alpha == 1.0, "Crossing the hide threshold starts from the current opacity")
-	board.static_batches.advance_detail_fade(0.055)
-	expect(board.static_batches.detail_alpha > 0.0 and board.static_batches.detail_alpha < 1.0, "Details have intermediate opacity during fade-out")
-	var intermediate: float = board.static_batches.detail_alpha
-	board.zoom = 30
-	board.update_camera()
-	expect(board.static_batches.detail_alpha == intermediate, "Reversing zoom continues from the current opacity without a jump")
-	board.static_batches.advance_detail_fade(0.025)
-	expect(board.static_batches.detail_alpha > intermediate and board.static_batches.detail_alpha < 1.0, "Details smoothly reverse toward visible")
-	board.zoom = 40
-	board.update_camera()
-	board.static_batches.advance_detail_fade(1.0)
-	await process_frame
-	expect(board.detail_lod and board.static_batches.visible_instance_count < near_instances, "Wide view hides retained grass batches")
-	board.zoom = 34
-	board.update_camera()
-	expect(board.detail_lod, "LOD hysteresis keeps distant grass hidden near the boundary")
-	board.zoom = 30
-	board.update_camera()
-	board.static_batches.advance_detail_fade(1.0)
-	await process_frame
-	expect(not board.detail_lod and board.static_batches.visible_instance_count == near_instances, "Zooming back in restores each grass patch exactly once")
+	for tile in board.tile_nodes.values():
+		expect(not tile.has_node("Features/GrassDetail"), "Grass and pebbles are no longer generated")
 	board.zoom = 64
 	board.update_camera()
-	expect(board.shadow_lod == 2 and board.sun.directional_shadow_mode == DirectionalLight3D.SHADOW_ORTHOGONAL, "Distant view simplifies shadows")
-	board.value_heatmap.set_active(true)
+	var original_opacity: float = board.sun.shadow_opacity
+	board.lighting.advance(0.025)
+	expect(board.sun.shadow_opacity < original_opacity and board.sun.shadow_opacity > board.lighting.shadow_target, "Distant shadows ease toward their reduced strength")
+	expect(board.sun.directional_shadow_mode == DirectionalLight3D.SHADOW_ORTHOGONAL and board.static_batches.visible_instance_count == near_instances, "Zoom never switches shadow projection or prop visibility")
+	var opacity: float = board.sun.shadow_opacity
 	board.zoom = 22
 	board.update_camera()
+	expect(board.sun.shadow_opacity == opacity, "Reversing zoom does not jump shadow strength")
+	board.lighting.advance(1.0)
+	expect(is_equal_approx(board.sun.shadow_opacity,1.0), "Close shadows regain full strength")
+	board.value_heatmap.set_active(true)
 	board.value_heatmap.set_active(false)
-	board.static_batches.advance_detail_fade(1.0)
 	await process_frame
-	expect(board.static_batches.visible_instance_count == near_instances, "Heatmap and LOD restore visible detail together")
+	expect(board.static_batches.visible_instance_count == near_instances, "Heatmap restores the retained props")
 	var rebuilds: int = board.static_batches.rebuild_count
 	var syncs: int = board.static_batches.sync_count
 	var terrain_meshes: Array = []

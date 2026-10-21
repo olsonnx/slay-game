@@ -212,7 +212,7 @@ func run() -> void:
 	for size_id in ["very_large", "huge"]:
 		await app.start_new_game(71, size_id, "normal", 4)
 		expect(app.game.rules.map_size == size_id and app.game.rules.faction_count == 4 and app.game.cells.size() >= Sizes.spec(size_id)["min_land"], "New larger presets reach gameplay with the chosen kingdom count")
-		expect(app.game.view.default_zoom >= Sizes.spec(size_id)["zoom"] and app.game.view.max_zoom >= app.game.view.default_zoom * 1.7, "Larger presets fit the generated layout and retain their zoom range")
+		expect(app.game.view.default_zoom >= Sizes.spec(size_id)["zoom"] and is_equal_approx(app.game.view.max_zoom, app.game.view.default_zoom * 1.08), "Larger presets fit the generated layout and keep a modest margin at maximum zoom")
 		var larger_cells: Dictionary = app.game.cells.duplicate(true)
 		await app.restart_current_level()
 		expect(app.game.rules.map_size == size_id and app.game.cells == larger_cells, "Restart reproduces the new larger preset")

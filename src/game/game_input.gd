@@ -66,11 +66,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			if event.pressed:
 				game.rmb_can_rotate = not game.hud.stats_shade.visible and game.can_navigate()
+				if game.rmb_can_rotate: game.view.zoom_reference = event.position
 		elif event.pressed and not game.hud.stats_shade.visible and game.can_navigate():
 			if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-				game.view.change_zoom(1)
+				game.view.change_zoom(1, event.position)
 			elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-				game.view.change_zoom(-1)
+				game.view.change_zoom(-1, event.position)
 			elif event.button_index == MOUSE_BUTTON_LEFT:
 				if game.inspecting_results_map: return
 				var hit: Dictionary = game.view.pick_at_screen(event.position, game.session.selection.action_mode == "bridge")

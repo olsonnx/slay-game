@@ -31,6 +31,43 @@ func run() -> void:
 	root.add_child(game)
 	game.set_process(false)
 	await process_frame
+	var reference := Vector2(420, 310)
+	var moved_cursor := Vector2(610, 390)
+	var right := InputEventMouseButton.new()
+	right.button_index = MOUSE_BUTTON_RIGHT
+	right.position = reference
+	right.pressed = true
+	game._input(right)
+	game._unhandled_input(right)
+	var rotation := InputEventMouseMotion.new()
+	rotation.position = moved_cursor
+	rotation.relative = moved_cursor - reference
+	game._input(rotation)
+	var anchor: Vector3 = game.view.navigation._ground_at(reference)
+	var wheel := InputEventMouseButton.new()
+	wheel.button_index = MOUSE_BUTTON_WHEEL_UP
+	wheel.position = moved_cursor
+	wheel.pressed = true
+	game._unhandled_input(wheel)
+	game.view.navigation._process(0.02)
+	expect(game.view.navigation.zoom_cursor == reference and game.view.camera.unproject_position(anchor).distance_to(reference) < 0.05, "RMB zoom uses the original press position after dragging")
+	game._input(rotation)
+	expect(game.view.navigation.zooming, "Orbit motion keeps smooth zoom running")
+	anchor = game.view.navigation._ground_at(reference)
+	wheel.button_index = MOUSE_BUTTON_WHEEL_DOWN
+	game._unhandled_input(wheel)
+	game.view.navigation._process(0.1)
+	expect(game.view.camera.unproject_position(anchor).distance_to(reference) < 0.05, "RMB zoom-out also uses the original press position")
+	right.pressed = false
+	game._input(right)
+	game._unhandled_input(wheel)
+	expect(game.view.navigation.zoom_cursor == moved_cursor, "Releasing RMB restores zoom at the current cursor")
+	right.pressed = true
+	game._input(right)
+	game._unhandled_input(right)
+	game._notification(Node.NOTIFICATION_WM_WINDOW_FOCUS_OUT)
+	expect(game.view.zoom_reference == Vector2(-1, -1), "Focus loss clears the held zoom reference")
+	game.center_camera()
 	var middle := InputEventMouseButton.new()
 	middle.button_index = MOUSE_BUTTON_MIDDLE
 	middle.pressed = true
@@ -149,16 +186,62 @@ func run() -> void:
 	game.choose_building("tower")
 	game.refresh_ui()
 	expect(game.view.intent_preview.has_node("GhostBuilding") and game.view.intent_preview.get_meta("kind") == "tower", "Tower placement previews a 3D ghost building")
+	var tower_ghost: Node3D = game.view.intent_preview.get_node("GhostBuilding")
+	var tower_material: Material = tower_ghost.get_child(0).material_override
+	game.view.overlays.invalidate()
+	game.refresh_ui()
+	expect(game.view.intent_preview.get_node("GhostBuilding") == tower_ghost and tower_ghost.get_child(0).material_override == tower_material, "Hover refresh retains preview meshes and materials")
 	game.choose_building("house")
 	game.refresh_ui()
 	expect(game.view.intent_preview.has_node("GhostBuilding") and game.view.intent_preview.get_meta("kind") == "house", "House placement previews the selected building")
+	expect(tower_ghost.get_parent() == game.view.overlays.building_storage and tower_ghost.get_child(0).layers == 0, "Inactive previews return to their hidden cache")
 	expect(game.view.unit_actors.size() == count_before and game.cells[empty]["building"] == "", "Previews never mutate gameplay or register as real units")
 	game.hovered = unit
 	game.refresh_ui()
 	expect(not game.view.intent_preview.get_meta("valid") and not game.view.intent_preview.has_node("GhostBuilding"), "Invalid building destination shows a red marker without a ghost")
 	game.cancel_action()
 	expect(game.view.intent_preview == null, "Cancellation clears the intent preview immediately")
+	game.hovered = empty
+	game.choose_building("tower")
+	game.refresh_ui()
+	expect(game.view.intent_preview.get_node("GhostBuilding") == tower_ghost, "Reselecting a building reuses its original preview")
+	expect(game.view.overlays.building_ghosts.size() == 3, "Preview retention is bounded to the three building kinds")
+	game.cancel_action()
 
+	var previous_mode: String = game.rules.rule_mode
+	game.rules.rule_mode = "modern"
+	game.cells[empty]["animal"] = "wolf"
+	game.cells[empty]["animal_home"] = empty
+	game.cells[empty]["animal_target"] = unit
+	game.view.render_cells(game.cells)
+	game.inspect_province(empty)
+	expect(game.province_view.visible, "Province panel starts open before selecting wildlife")
+	await game.click_hex(empty, "wildlife")
+	expect(not game.province_view.visible and game.session.selection.inspected_hex == game.NONE, "Clicking wildlife closes province information")
+	expect(game.session.selection.inspected_animal == empty and game.selected == game.NONE, "Wildlife is inspected independently from its province")
+	var animal_region: Dictionary = game.view.overlays.inspection_region(game.session.selection.inspected_animal)
+	expect(animal_region.get("kind") == "vision" and animal_region.get("target") == unit, "Animal selection retains its vision and chased target")
+	var animal: Sprite3D = game.view.wildlife.sprite_for(game.view.wildlife.actors[empty])
+	game.view.set_unit_hover(empty, "wildlife")
+	game.view.wildlife._process(0.12)
+	var animal_outline: Sprite3D = animal.get_node("HoverOutline")
+	expect(animal_outline.visible and animal_outline.texture != null and animal.modulate.r > 1.0, "Hovering wildlife outlines and brightens the animal")
+	var cached_outline: Texture2D = animal_outline.texture
+	game.view.wildlife._process(0.0)
+	expect(animal_outline.texture == cached_outline and animal_outline.pixel_size == animal.pixel_size, "Animal outlines reuse cached frames at the original pixel scale")
+	game.view.set_unit_hover(game.NONE)
+	game.view.wildlife._process(0.12)
+	expect(not animal_outline.visible and animal.modulate == Color.WHITE, "Moving off wildlife restores its normal appearance")
+	game.view.set_unit_hover(empty, "wildlife")
+	game.view.wildlife._process(0.12)
+	game.view.clear_unit_hover()
+	expect(not animal_outline.visible and animal.modulate == Color.WHITE, "Clearing unit hover also clears wildlife highlights")
+	game.cancel_action()
+	expect(game.session.selection.inspected_animal == game.NONE, "Cancellation clears animal inspection")
+	for key in ["animal", "animal_home", "animal_target"]: game.cells[empty].erase(key)
+	game.view.render_cells(game.cells)
+
+	game.rules.rule_mode = previous_mode
 	var a := Vector2i(0, 0)
 	var b := Vector2i(1, 0)
 	var c := Vector2i(2, 0)
@@ -197,6 +280,8 @@ func run() -> void:
 	await game.click_hex(c)
 	expect(not game.busy and game.cells[c]["owner"] == 0, "A fresh move still completes after prior moves were cancelled")
 	print("Input and preview checks: %d passed, %d failed" % [checks - failures, failures])
+	game.queue_free()
+	await process_frame
 	root.get_node("Sound").stop_all()
-	await create_timer(0.10).timeout
+	await create_timer(1.20).timeout
 	quit(1 if failures else 0)

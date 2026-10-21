@@ -11,6 +11,15 @@ var turn_difficulty := "normal"
 var turn_limit := 180.0
 var turn_units := 300
 var turn_algorithm := "auto"
+var turn_speed := 6.0
+var ablation := ""
+var turn_map := "huge"
+var diagnose_frames := false
+var turn_zoom := 0.0
+
+class NoRipplePlayback extends "res://src/rendering/board_playback.gd":
+	func action_marker(_coord: Vector2i, _color: Color) -> void:
+		pass
 
 static func crowded(size_id: String, seed_value: int, unit_count: int):
 	var model = Rules.new()
@@ -32,6 +41,9 @@ static func crowded(size_id: String, seed_value: int, unit_count: int):
 				queue.append(next)
 	for coord in model.cells:
 		var cell: Dictionary = model.cells[coord]
+		# This synthetic army board replaces neutral objectives with occupied
+		# provinces; retain no lairs beneath its directly assigned troops.
+		for field in ["animal","animal_home","lair","lair_wait"]: cell.erase(field)
 		cell["unit"] = 0
 		cell["event"] = ""
 		cell["moved"] = false
@@ -72,6 +84,11 @@ func install(size_id: String, unit_count: int) -> Dictionary:
 func run() -> void:
 	var label_suffix := ""
 	for arg in OS.get_cmdline_user_args():
+		if arg == "--diagnose": diagnose_frames = true
+		if arg.begins_with("--zoom="): turn_zoom = arg.trim_prefix("--zoom=").to_float()
+		if arg.begins_with("--map-size="): turn_map = arg.trim_prefix("--map-size=")
+		if arg.begins_with("--ablation="): ablation = arg.trim_prefix("--ablation=")
+		if arg.begins_with("--speed="): turn_speed = arg.trim_prefix("--speed=").to_float()
 		if arg.begins_with("--mode="): mode = arg.trim_prefix("--mode=")
 		if arg.begins_with("--duration="): duration = arg.trim_prefix("--duration=").to_float()
 		if arg.begins_with("--difficulty="): turn_difficulty = arg.trim_prefix("--difficulty=")
@@ -101,7 +118,7 @@ func run() -> void:
 	Engine.max_fps = 0
 	live_quality = true
 	config = {"resolution": "1920x1080", "msaa": video.antialiasing, "device": RenderingServer.get_video_adapter_name(),
-		"vsync": false, "fps_cap": 0, "seed": 71, "synthetic": true, "date": "2026-10-14", "mode": mode}
+		"vsync": false, "renderer": RenderingServer.get_current_rendering_method(), "ablation": ablation, "speed": turn_speed, "fps_cap": 0, "seed": 71, "synthetic": true, "date": "2026-10-20", "mode": mode}
 	config["algorithm"] = turn_algorithm
 	app = load("res://scenes/app.tscn").instantiate()
 	root.add_child(app)
@@ -123,10 +140,18 @@ func run() -> void:
 		game.view.unit_batches.sync()
 		await sample("hidden_units_hover", info)
 		for actor in game.view.unit_actors.values(): actor.show()
+	elif mode == "handoff":
+		await handoff_sample()
+	elif mode == "simulation":
+		await simulation_comparison()
 	elif mode == "ai":
-		for count in [120, 300, 600]:
-			var info := install("huge", count)
-			for difficulty in ["normal", "hard"]:
+		for count in [turn_units] if diagnose_frames else [120, 300, 600]:
+			var info := install(turn_map, count)
+			if diagnose_frames:
+				game.busy = true
+				await create_timer(1.0).timeout
+				await idle_timing_sample(info)
+			for difficulty in [turn_difficulty] if diagnose_frames else ["normal", "hard"]:
 				game.rules.ai_difficulty = difficulty
 				await worker_sample(info, difficulty)
 	elif mode == "ablate":
@@ -187,7 +212,7 @@ func run() -> void:
 		await sample("close", info)
 	elif mode == "turn":
 		for difficulty in [turn_difficulty]:
-			var info := install("huge", turn_units)
+			var info := install(turn_map, turn_units)
 			game.rules.ai_difficulty = difficulty
 			await turn_sample(info, difficulty)
 			if game.closing: break
@@ -224,12 +249,14 @@ func worker_sample(info: Dictionary, difficulty: String) -> void:
 	var snapshot_ms := (Time.get_ticks_usec() - started) / 1000.0
 	var task := WorkerThreadPool.add_task(job.run, false, "Heavy strain AI")
 	var frames: Array = []
+	var worker_timings := []
 	var previous := started
 	var timed_out := false
 	while not WorkerThreadPool.is_task_completed(task):
 		await RenderingServer.frame_post_draw
 		var now := Time.get_ticks_usec()
 		frames.append((now - previous) / 1000.0)
+		if diagnose_frames: worker_timings.append(timing_row((now - previous) / 1000.0))
 		previous = now
 		if now - started > search_limit * 1000000:
 			timed_out = true
@@ -240,6 +267,7 @@ func worker_sample(info: Dictionary, difficulty: String) -> void:
 	result.merge({"case": "worker_search", "difficulty": difficulty, "snapshot_main_thread_ms": snapshot_ms,
 		"timed_out": timed_out, "evaluated": job.planner.evaluated, "search_complete": job.planner.done,
 		"max_worker_step_ms": job.planner.max_step_usec / 1000.0, "sequence_length": job.planner.best_sequence.size()})
+	if diagnose_frames and not worker_timings.is_empty(): result["cpu_gpu_timings"] = timing_summary(worker_timings)
 	result["frame_intervals_ms"] = frames
 	results.append(result)
 	persist()
@@ -248,9 +276,27 @@ func worker_sample(info: Dictionary, difficulty: String) -> void:
 	game.busy = false
 
 func turn_sample(info: Dictionary, difficulty: String) -> void:
-	game.view.zoom = game.view.max_zoom
+	if ablation == "serial_simulation": game.ai_simulation_workers = false
+	if ablation == "effect_churn":
+		# Reproduce the original uninitialized, unretained shader templates.
+		game.view.playback.marker_material = game.view.playback.marker_material.duplicate()
+		game.view.playback.flash_material = game.view.playback.flash_material.duplicate()
+		for child in game.view.playback.get_children():
+			if child is MeshInstance3D: child.queue_free()
+		await process_frame
+	if ablation == "ripples":
+		game.view.playback.queue_free()
+		game.view.playback = NoRipplePlayback.new(game.view)
+		game.view.add_child(game.view.playback)
+	if ablation == "terrain":
+		game.view.static_batches.merge_terrain = false
+		game.view.refresh_static_batches()
+	if ablation == "simple":
+		root.get_node("Video").set_preference(&"atmospheric_lighting", false, false)
+	game.view.zoom = turn_zoom if turn_zoom > 0 else game.view.max_zoom
 	game.view.update_camera()
 	await create_timer(1.0).timeout
+	if diagnose_frames: await idle_timing_sample(info)
 	var started := Time.get_ticks_usec()
 	var previous := started
 	var frames: Array = []
@@ -262,16 +308,19 @@ func turn_sample(info: Dictionary, difficulty: String) -> void:
 	var timeout_rebuilds := 0
 	var timeout_syncs := 0
 	var observed_scales: Dictionary = {}
+	var phase_timings: Dictionary = {}
 	game.view.static_batches.profile_sync = true
+	game.view.unit_sprites.profile_frames = true
+	game.view.unit_sprites.frame_samples.clear()
 	game.view.profile_capture = true
 	game.view.capture_samples.clear()
 	game.view.static_batches.profile_samples.clear()
-	game.playback_speed.speed_held = true
+	game.playback_speed.speed_held = turn_speed > 1.0
 	# Benchmark intent must survive window-focus notifications resetting the
 	# human hold control. Pin it before processing each frame, only in this probe.
 	var keep_fast := func():
 		if game.busy and not game.closing:
-			game.playback_speed.speed_held = true
+			game.playback_speed.speed_held = turn_speed > 1.0
 			game.playback_speed.update()
 	process_frame.connect(keep_fast)
 	game.end_turn()
@@ -282,8 +331,12 @@ func turn_sample(info: Dictionary, difficulty: String) -> void:
 		observed_scales[scale_key] = observed_scales.get(scale_key, 0) + 1
 		var frame := (now - previous) / 1000.0
 		frames.append(frame)
+		if diagnose_frames:
+			var phase := "animation" if game.view.is_animating else "planning_or_settlement"
+			if not phase_timings.has(phase): phase_timings[phase] = []
+			phase_timings[phase].append(timing_row(frame))
 		if frame > 8:
-			slow.append({"ms": frame, "elapsed_ms": (now - started) / 1000.0,
+			slow.append({"frame":Engine.get_process_frames(),"pipelines":pipeline_counts(),"ms": frame, "elapsed_ms": (now - started) / 1000.0,
 				"animating": game.view.is_animating, "faction": game.active_faction,
 				"revision": game.rules.ai_revision, "rebuilds": game.view.static_batches.rebuild_count - rebuilds})
 		previous = now
@@ -296,13 +349,17 @@ func turn_sample(info: Dictionary, difficulty: String) -> void:
 	process_frame.disconnect(keep_fast)
 	var result := info.duplicate()
 	result.merge(frame_report(frames, (previous - started) / 1000.0))
-	result.merge({"case": "full_opponent_round_6x_playback", "difficulty": difficulty,
+	result.merge({"case": "full_opponent_round_%sx_playback" % turn_speed, "difficulty": difficulty,
 		"round_completed": game.round_number == 2, "timed_out": game.closing,
 		"ai_decisions": game.rules.ai_revision, "active_faction_at_end": game.active_faction,
 		"chunk_rebuilds": timeout_rebuilds if game.closing else game.view.static_batches.rebuild_count - rebuilds,
 		"syncs": timeout_syncs if game.closing else game.view.static_batches.sync_count - syncs})
+	if diagnose_frames:
+		result["phase_timings"] = {}
+		for phase in phase_timings: result["phase_timings"][phase] = timing_summary(phase_timings[phase])
 	result["terrain_rebuilds"] = game.view.static_batches.terrain_rebuild_count - terrain_rebuilds
 	result["playback_scale_frames"] = observed_scales
+	result["sprite_frames"] = game.view.unit_sprites.frame_samples.duplicate(true)
 	result["capture_profile"] = game.view.capture_samples.duplicate(true)
 	result["slow_frames"] = slow
 	result["batch_profile"] = timeout_batches if game.closing else game.view.static_batches.profile_samples.duplicate(true)
@@ -313,6 +370,7 @@ func turn_sample(info: Dictionary, difficulty: String) -> void:
 	result.erase("slow_frames")
 	result.erase("batch_profile")
 	result.erase("capture_profile")
+	result.erase("sprite_frames")
 	print(JSON.stringify(result))
 
 func cpu_probe() -> void:
@@ -341,3 +399,130 @@ func cpu_probe() -> void:
 			persist()
 			print(JSON.stringify(result))
 			await process_frame
+
+func simulation_comparison() -> void:
+	# Keep one rendered board fixed. Interleave identical computation-only phases
+	# to distinguish worker scheduling from startup/animation/GPU timing changes.
+	var info := install(turn_map, turn_units)
+	game.view.zoom = game.view.max_zoom
+	game.view.update_camera()
+	game.busy = true
+	var schema = preload("res://src/game/state_snapshot.gd")
+	var initial: Dictionary = schema.capture(game.rules)
+	await create_timer(1.0).timeout
+	for threaded in [false, true, true, false]:
+		schema.restore(game.rules, initial)
+		if game.rules.replay_log != null:
+			game.rules.replay_log = game.rules.replay_log.get_script().new()
+			game.rules.replay_log.start(game.rules)
+		var opponent = game.rules.KingdomAI.new(game.rules)
+		opponent.threaded_simulation = threaded
+		var completed := [false]
+		var samples := []
+		var execution = game.ai_execution()
+		execution.trace = func(row): samples.append(row)
+		var operation := func():
+			await opponent.prepare_async(execution, 1)
+			for batch in range(2): await opponent.movements_async(execution, 1)
+			completed[0] = true
+		var started := Time.get_ticks_usec()
+		var previous := started
+		var rows := []
+		operation.call()
+		while not completed[0]:
+			await RenderingServer.frame_post_draw
+			var now := Time.get_ticks_usec()
+			rows.append(timing_row((now - previous) / 1000.0))
+			previous = now
+		var result := info.duplicate()
+		result.merge(timing_summary(rows))
+		result["case"] = "worker" if threaded else "serial"
+		result["wall_ms"] = (Time.get_ticks_usec() - started) / 1000.0
+		result["samples"] = samples
+		result["position_hash"] = hash(schema.capture(game.rules)["cells"])
+		results.append(result)
+		persist()
+		var brief := result.duplicate()
+		brief.erase("samples")
+		print(JSON.stringify(brief))
+		await create_timer(0.3).timeout
+	game.busy = false
+
+func handoff_sample() -> void:
+	var info := install(turn_map, turn_units)
+	for cell in game.cells.values():
+		if cell["unit"] > 0: cell["moved"] = true
+	game.view.render_cells(game.cells)
+	game.busy = true
+	game.active_faction = 5
+	game.view.unit_presentation.set_turn(-1)
+	game.view.zoom = game.view.max_zoom
+	game.view.update_camera()
+	game.playback_speed.speed_held = true
+	game.playback_speed.update()
+	# The real handoff follows AI jobs; exclude first-use pool startup here too.
+	var warmup := WorkerThreadPool.add_task(func(): pass)
+	while not WorkerThreadPool.is_task_completed(warmup): await process_frame
+	WorkerThreadPool.wait_for_task_completion(warmup)
+	await create_timer(1.0).timeout
+	game.view.profile_capture = true
+	game.view.capture_samples.clear()
+	var previous := [Time.get_ticks_usec()]
+	var timings := []
+	var watch := func():
+		var now := Time.get_ticks_usec()
+		timings.append((now - previous[0]) / 1000.0)
+		previous[0] = now
+	RenderingServer.frame_post_draw.connect(watch)
+	var started := Time.get_ticks_usec()
+	game.round_number += 1
+	await preload("res://src/game/opponent_turns.gd").play_world(game)
+	await preload("res://src/game/opponent_turns.gd").finish_player_turn_handoff(game)
+	var result := info.duplicate()
+	result["handoff_ms"] = (Time.get_ticks_usec() - started) / 1000.0
+	await RenderingServer.frame_post_draw
+	await RenderingServer.frame_post_draw
+	RenderingServer.frame_post_draw.disconnect(watch)
+	result["frame_intervals_ms"] = timings
+	result["capture_profile"] = game.view.capture_samples.duplicate(true)
+	results.append(result)
+	persist()
+	print(JSON.stringify(result))
+
+func pipeline_counts() -> Array:
+	var values := []
+	for monitor in [Performance.PIPELINE_COMPILATIONS_CANVAS,Performance.PIPELINE_COMPILATIONS_MESH,Performance.PIPELINE_COMPILATIONS_SURFACE,Performance.PIPELINE_COMPILATIONS_DRAW,Performance.PIPELINE_COMPILATIONS_SPECIALIZATION]:
+		values.append(Performance.get_monitor(monitor))
+	return values
+
+func timing_row(frame_ms: float) -> Dictionary:
+	var viewport := root.get_viewport_rid()
+	return {"frame_ms":frame_ms,
+		"render_cpu_ms":RenderingServer.viewport_get_measured_render_time_cpu(viewport),
+		"render_gpu_ms":RenderingServer.viewport_get_measured_render_time_gpu(viewport),
+		"draw_calls":Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)}
+
+func timing_summary(rows: Array) -> Dictionary:
+	var report := {"frames":rows.size()}
+	for key in ["frame_ms","render_cpu_ms","render_gpu_ms","draw_calls"]:
+		var values := []
+		for row in rows: values.append(row[key])
+		report[key+"_p50"] = percentile(values,0.5)
+		report[key+"_p95"] = percentile(values,0.95)
+	return report
+
+func idle_timing_sample(info: Dictionary) -> void:
+	var rows := []
+	var started := Time.get_ticks_usec()
+	var previous := started
+	while Time.get_ticks_usec()-started < 2000000:
+		await RenderingServer.frame_post_draw
+		var now := Time.get_ticks_usec()
+		rows.append(timing_row((now-previous)/1000.0))
+		previous = now
+	var result := info.duplicate()
+	result["case"] = "idle_cpu_gpu"
+	result.merge(timing_summary(rows))
+	results.append(result)
+	persist()
+	print(JSON.stringify(result))

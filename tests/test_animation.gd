@@ -47,6 +47,7 @@ func run() -> void:
 	var f := Vector2i(1, 2)
 	var g := Vector2i(2, 2)
 	fixture({a: 0, b: 0, c: 0, e: 0, f: 0, g: 0}, {a: 1, e: 1})
+	var retained_features: Node3D = game.view.tile_nodes[c].get_node("Features")
 	var actor_a: Node3D = game.view.unit_actors[a]
 	var actor_e: Node3D = game.view.unit_actors[e]
 	var sprite: Sprite3D = game.view.units[0]
@@ -73,6 +74,7 @@ func run() -> void:
 	expect(game.view.unit_actors.has(c) and game.view.unit_actors.has(g) and not game.view.unit_actors.has(a), "Final unit positions match committed rules")
 	expect(game.view.unit_actors[c] == actor_a and game.view.unit_actors[g] == actor_e, "Settled travelers retain their original actors")
 	expect(game.view.units.has(sprite), "Settled movement retains its original picking sprite")
+	expect(game.view.tile_nodes[c].get_node("Features") == retained_features, "Friendly movement retains unchanged scenery")
 
 	fixture({a: 0, b: 0, c: 1, d: 1}, {a: 2, c: 1})
 	actor_a = game.view.unit_actors[a]
@@ -134,6 +136,7 @@ func run() -> void:
 	expect(game.round_number == round_before and game.busy, "End turn and restart cannot interrupt a traveling unit")
 	var playback_zoom_before: float = game.view.zoom
 	game.view.change_zoom(1)
+	game.view.navigation._process(0.1)
 	expect(game.view.zoom < playback_zoom_before, "Camera zoom remains available during playback")
 	while game.busy:
 		await process_frame
@@ -171,6 +174,11 @@ func run() -> void:
 		expect(simultaneous[faction] >= 2, "Each faction's moving units are displayed concurrently")
 	expect(game.active_faction == 0 and game.round_number == 2 and not game.busy, "Completed replay restores the player's turn")
 	print("Animation checks: %d passed, %d failed" % [checks - failures, failures])
+	game.shutdown()
+	await process_frame
+	game.queue_free()
+	await process_frame
 	root.get_node("Sound").stop_all()
-	await create_timer(0.10).timeout
+	# Let the dummy audio driver retire the streamed ambience before exit.
+	await create_timer(1.20).timeout
 	quit(1 if failures else 0)

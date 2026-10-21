@@ -292,7 +292,8 @@ func run() -> void:
 	scroll_event.button_index = MOUSE_BUTTON_WHEEL_UP
 	scroll_event.pressed = true
 	game._unhandled_input(scroll_event)
-	expect(game.view.zoom < old_zoom, "Scroll wheel zooms in")
+	game.view.navigation._process(0.1)
+	expect(game.view.zoom < old_zoom, "Scroll wheel smoothly zooms in")
 	game.view.pan(Vector2(1, -1), 0.1)
 	expect(game.view.focus != Vector3.ZERO, "Camera pans relative to its orientation")
 	var focus_before: Vector3 = game.view.focus

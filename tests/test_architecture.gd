@@ -173,7 +173,7 @@ func view_ownership() -> void:
 	var retained: StandardMaterial3D = factory.material(first_color)
 	for index in range(factory.MATERIAL_CACHE_LIMIT + 100):
 		factory.material(Color(float(index + 1) / 4096.0, 0.25, 0.5))
-		factory.detail_material(Color(0.25, float(index + 1) / 4096.0, 0.5))
+		factory.material(Color(0.25, float(index + 1) / 4096.0, 0.5))
 	expect(factory.material_cache.size() <= factory.MATERIAL_CACHE_LIMIT, "Streaming tint caches have an explicit resource budget")
 	expect(retained.albedo_color == first_color and retained != factory.material(first_color), "Eviction releases cache ownership without mutating materials retained by meshes")
 	expect(factory.material(first_color) == factory.material(first_color), "The retained cache continues to share repeated materials")

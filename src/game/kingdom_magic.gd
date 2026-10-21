@@ -141,7 +141,7 @@ func can_cast(state, spell: String, coord: Vector2i, faction: int, capital := NO
 			if cell["owner"] != faction or state.has_effect(faction, "trailblaze"):
 				return false
 		"empty_friendly_land":
-			if cell["owner"] != faction or cell["unit"] > 0 or cell["building"] != "" or state.kingdom_at(coord).is_empty():
+			if state.has_wildlife(coord) or cell["owner"] != faction or cell["unit"] > 0 or cell["building"] != "" or state.kingdom_at(coord).is_empty():
 				return false
 		"neutral_structure":
 			if cell["owner"] != -1 or cell["building"] == "":

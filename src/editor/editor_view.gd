@@ -6,7 +6,7 @@ const Hud = preload("res://src/ui/game_hud.gd")
 const EventText = preload("res://src/ui/event_text.gd")
 const Events = preload("res://src/game/event_catalog.gd")
 const Catalog = preload("res://src/game/game_catalog.gd")
-const TOOL_GROUPS := {"Tiles": ["Land", "Mountain", "Bridge", "Water"], "Units": ["Capital", "Scout", "Soldier", "Knight"], "Build": ["House", "Tower"], "Paint": ["Owner", "Value", "Tree", "Grave", "Mana source", "Clear objects"]}
+const TOOL_GROUPS := {"Tiles": ["Land", "Mountain", "Bridge", "Water"], "Units": ["Capital", "Scout", "Soldier", "Knight"], "Build": ["House", "Tower", "Bear cave", "Wolf den", "Boar burrow"], "Paint": ["Owner", "Value", "Tree", "Grave", "Mana source", "Clear objects"]}
 signal action_requested(action: StringName, arguments: Array)
 signal focus_release_requested
 signal title_changed(value: String)
@@ -16,6 +16,7 @@ signal value_changed
 signal random_values_changed(value: bool)
 signal brush_changed
 signal file_chosen(path: String)
+signal discard_cancelled
 signal discard_confirmed
 signal shortcuts_requested
 var context_panel
@@ -62,7 +63,7 @@ var gold_choice: SpinBox
 var undo_button: Button
 var redo_button: Button
 var file_dialog: FileDialog
-var confirm: ConfirmationDialog
+var confirm
 
 func command(action: StringName, arguments: Array = []) -> Callable:
 	return func(): action_requested.emit(action, arguments)
@@ -341,7 +342,7 @@ func render_context(tool: String, restart := false) -> void:
 		var index := variant_choice.item_count
 		variant_choice.add_item(Loc.text(variant))
 		variant_choice.set_item_metadata(index, variant)
-		variant_choice.set_item_disabled(index, not events_enabled and variant in ["Mountain", "Bridge", "Mana source"])
+		variant_choice.set_item_disabled(index, not events_enabled and variant in Document.MODERN_TOOLS)
 		if variant == tool: variant_choice.select(index)
 	variant_row.visible = variants.size() > 1
 	owner_row.visible = tool in ["Land", "Owner"]
@@ -362,6 +363,9 @@ func render_context(tool: String, restart := false) -> void:
 		"Knight": "Place a Knight on owned land. Keeps capitals and mana sources; replaces other objects.",
 		"House": "Place a house on owned land. Uses that province's owner and keeps mana sources.",
 		"Tower": "Place a tower on owned land. Uses that province's owner and keeps mana sources.",
+		"Bear cave": "Place a bear cave on neutral land. Replaces other objects. Its bear emerges on the first World turn.",
+		"Wolf den": "Place a wolf den on neutral land. Replaces other objects. Its wolf emerges on the first World turn.",
+		"Boar burrow": "Place a boar burrow on neutral land. Replaces other objects. Its boar emerges on the first World turn.",
 		"Tree": "Place trees on land. Replaces other objects and keeps mana sources.",
 		"Grave": "Place graves on land. Replaces other objects and keeps mana sources.",
 		"Mana source": "Add mana sources to land without replacing its units, buildings or decorations.",
@@ -431,13 +435,10 @@ func build_dialogs() -> void:
 	file_dialog.filters = PackedStringArray([Loc.text("*.json ; Slay levels")])
 	file_dialog.file_selected.connect(file_chosen.emit)
 	add_child(file_dialog)
-	confirm = ConfirmationDialog.new()
-	confirm.theme = ui_root.theme
-	confirm.title = "Unsaved level"
-	confirm.dialog_text = Loc.text("Discard changes to this level?")
-	confirm.ok_button_text = "Discard changes"
+	confirm = preload("res://src/editor/discard_dialog.gd").new()
+	ui_root.add_child(confirm)
 	confirm.confirmed.connect(discard_confirmed.emit)
-	add_child(confirm)
+	confirm.cancelled.connect(discard_cancelled.emit)
 
 func build_heatmap() -> void:
 	heatmap_legend = Hud.panel(ui_root, Rect2(24, 104, 254, 78), false)
@@ -499,15 +500,21 @@ func render_tools(group: String, rule_mode: String, active_tool: String, texture
 		button.toggle_mode = true
 		button.set_meta("tool", tool)
 		button.set_pressed_no_signal(active_tool == tool)
-		button.disabled = rule_mode == "classic" and tool in ["Mountain", "Mana source", "Bridge"]
+		button.disabled = rule_mode == "classic" and tool in Document.MODERN_TOOLS
 		button.tooltip_text = Loc.text("%s · %d\nLeft: place · right: %s") % [Loc.text(tool), index + 1, Loc.text("delete tile" if tool in Document.TILE_TOOLS else "clear decorations")]
 		var label := Hud.label_at(button, tool, Vector2(0, 74), 14)
 		label.size = Vector2(124, 20)
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		Hud.label_at(button, str(index + 1), Vector2(8, 5), 11, Color("9eb2a7"))
-		if tool in ["Scout", "Soldier", "Knight"]:
+		if tool in ["Scout", "Soldier", "Knight"] or tool in Document.LAIR_TOOLS:
 			var image := TextureRect.new()
-			image.texture = texture.call(["Scout", "Soldier", "Knight"].find(tool) + 1, maxi(0, owner_choice.selected - 1))
+			if tool in Document.LAIR_TOOLS:
+				var atlas := AtlasTexture.new()
+				atlas.atlas = preload("res://src/rendering/wildlife_presentation.gd").SHEETS[Document.LAIR_TOOLS[tool]]
+				atlas.region = Rect2(0,12,32,20)
+				image.texture = atlas
+			else:
+				image.texture = texture.call(["Scout", "Soldier", "Knight"].find(tool) + 1, maxi(0, owner_choice.selected - 1))
 			image.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 			image.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			image.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED

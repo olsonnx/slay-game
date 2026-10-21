@@ -26,8 +26,29 @@ func run() -> void:
 	root.add_child(app)
 	await process_frame
 	expect(app.game == null and app.menus.screen == app.menus.Screen.MAIN and not paused, "Application starts in a basic main menu")
-	app.menus.open_options(app.menus.Screen.MAIN)
+	expect(app.menus.main_panel.size.y == 350 and app.menus.main_utilities.size() == 4, "Main menu ends in a compact four-icon utility row")
+	for index in range(app.menus.main_utilities.size()):
+		var control: Button = app.menus.main_utilities[index]
+		expect(control.text == "" and control.icon != null and control.tooltip_text != "" and control.focus_mode == Control.FOCUS_ALL, "Utility icons retain tooltips and keyboard focus")
+		expect(control.position.y == 286 and control.get_rect().end.y < app.menus.main_panel.size.y, "Utility icons align at the bottom inside the menu")
+		if index > 0: expect(app.menus.main_utilities[index - 1].get_rect().end.x < control.position.x, "Utility icons have consistent horizontal spacing")
+	app.menus.main_utilities[2].pressed.emit()
 	expect(app.menus.options_panel.visible, "Options is accessible before a game exists")
+	var option_tabs = app.menus.options_view.get_child(0)
+	expect(option_tabs.tab_count == 4, "Options tabs exclude Replays")
+	await process_frame
+	for index in range(option_tabs.tab_count):
+		var rect: Rect2 = option_tabs.get_tab_rect(index)
+		expect(rect.position.x >= 0 and rect.end.x <= option_tabs.size.x and rect.position.y == 0, "Every options tab fits the same aligned row without scrolling")
+		expect(is_equal_approx(rect.size.x, option_tabs.get_tab_rect(0).size.x), "Options tabs have equal widths")
+	expect(option_tabs.get_tab_rect(0).position.x == 0 and option_tabs.get_tab_rect(3).end.x == option_tabs.size.x, "Options tabs span exactly the settings content width")
+	option_tabs.get_child(1).pressed.emit()
+	expect(app.menus.options_view.video_page.visible and not app.menus.options_view.audio_page.visible, "Clicking an options tab switches to its page")
+	var tab_arrow := InputEventKey.new()
+	tab_arrow.keycode = KEY_RIGHT
+	tab_arrow.pressed = true
+	option_tabs.get_child(1).gui_input.emit(tab_arrow)
+	expect(option_tabs.current_tab == 2 and app.menus.options_view.gameplay_page.visible, "Arrow keys switch options tabs while preserving keyboard focus")
 	escape(app.menus)
 	expect(app.menus.screen == app.menus.Screen.MAIN, "Escape backs out of main menu options")
 	await app.start_new_game()

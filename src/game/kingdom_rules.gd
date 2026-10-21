@@ -18,6 +18,7 @@ const Magic = preload("res://src/game/kingdom_magic.gd")
 const Movement = preload("res://src/game/kingdom_movement.gd")
 const Topology = preload("res://src/game/kingdom_topology.gd")
 const Construction = preload("res://src/game/kingdom_construction.gd")
+const Wildlife = preload("res://src/game/wildlife.gd")
 const MAX_VALUE := 6
 const DEVELOPMENT_BASE_COST := 2
 
@@ -52,6 +53,15 @@ func bridge_bounds() -> Vector2:
 
 func is_modern() -> bool:
 	return rule_mode == "modern"
+
+func has_wildlife(coord: Vector2i) -> bool:
+	return cells.has(coord) and Wildlife.present(cells[coord])
+
+func world_turn() -> Array[Dictionary]:
+	spread_trees()
+	var actions := Wildlife.world_turn(self)
+	record_replay("world_end", -1)
+	return actions
 
 func uses_strategic_ai() -> bool:
 	# Whole-board beam simulations already become costly in Large midgames.
@@ -152,6 +162,7 @@ func generate(seed_value: int = -1, size_id := "small", kingdom_count := 0) -> v
 	MapGenerator.new(self).generate(seed_value, size_id, kingdom_count)
 	magic.generate_events(self)
 	preload("res://src/game/treasure_placement.gd").generate(self)
+	Wildlife.generate(self)
 
 func has_effect(faction: int, effect: String) -> bool:
 	return magic.has_effect(self, faction, effect)
@@ -215,7 +226,7 @@ func mana_source_count(faction: int) -> int:
 	return total
 
 func mana_regeneration(faction: int) -> int:
-	return 1 + floori(mana_source_count(faction) / 4.0) if is_modern() else 0
+	return 1 + floori(mana_source_count(faction) / 4.0) + int(effects_by_faction.get(faction, {}).get("wildlife_mana_regen", 0)) if is_modern() else 0
 
 func mana_capacity(faction: int) -> int:
 	var total := 0
@@ -242,7 +253,7 @@ func mana_summary(faction: int) -> Dictionary:
 			if cell["owner"] == faction and cell.get("mana_source", false):
 				sources += 1
 				capacity += mana_source_capacity(cell)
-	var regeneration := 1 + floori(sources / 4.0) if is_modern() else 0
+	var regeneration := 1 + floori(sources / 4.0) + int(effects_by_faction.get(faction, {}).get("wildlife_mana_regen", 0)) if is_modern() else 0
 	var amount := clampi(int(mana_by_faction.get(faction, 0)), 0, capacity)
 	return {"amount": amount, "capacity": capacity, "regeneration": regeneration,
 		"income": mini(regeneration, capacity - amount)}
@@ -328,6 +339,9 @@ func local_defense(coord: Vector2i) -> int:
 
 func defense(coord: Vector2i) -> int:
 	return Movement.defense(self, coord)
+
+func attack_defense(coord: Vector2i, faction: int) -> int:
+	return Movement.attack_defense(self,coord,faction)
 
 func friendly_routes(source: Vector2i) -> Dictionary:
 	return Movement.friendly_routes(self, source)
@@ -420,7 +434,7 @@ func spread_trees() -> int:
 			continue
 		for next in shuffled(neighbors(coord)):
 			var cell: Dictionary = cells[next]
-			if not is_mountain(next) and not is_barrier(next) and cell["unit"] == 0 and cell["capital"] < 0 and cell["building"] == "" and not cell["tree"] and not cell["grave"]:
+			if not is_mountain(next) and not is_barrier(next) and not has_wildlife(next) and cell["unit"] == 0 and cell["capital"] < 0 and cell["building"] == "" and not cell["tree"] and not cell["grave"]:
 				growing[next] = true
 				break
 	for coord in growing:

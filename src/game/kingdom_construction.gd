@@ -22,7 +22,7 @@ static func can_relocate_capital(state, coord: Vector2i, faction: int) -> bool:
 	if not state.is_modern() or bank.is_empty() or bank["owner"] != faction:
 		return false
 	var cell: Dictionary = cells[coord]
-	return cell["owner"] == faction and cell["capital"] < 0 and not state.is_mountain(coord) and not state.is_bridge(coord) and not state.is_barrier(coord) and cell["building"] == "" and not cell["tree"] and not cell["grave"] and bank["gold"] >= capital_relocation_cost(state, faction)
+	return cell["owner"] == faction and cell["capital"] < 0 and not state.has_wildlife(coord) and not state.is_mountain(coord) and not state.is_bridge(coord) and not state.is_barrier(coord) and cell["building"] == "" and not cell["tree"] and not cell["grave"] and bank["gold"] >= capital_relocation_cost(state, faction)
 
 static func relocate_capital(state, coord: Vector2i, faction: int) -> bool:
 	var cells: Dictionary = state.cells
@@ -51,7 +51,7 @@ static func relocate_capital(state, coord: Vector2i, faction: int) -> bool:
 static func can_develop(state, coord: Vector2i, faction: int) -> bool:
 	var cells: Dictionary = state.cells
 	var kingdom: Dictionary = state.kingdom_at(coord)
-	return state.is_modern() and not state.is_mountain(coord) and not kingdom.is_empty() and kingdom["owner"] == faction and cells[coord].get("value", 1) < state.MAX_VALUE and kingdom["gold"] >= development_cost(state, coord)
+	return state.is_modern() and not state.has_wildlife(coord) and not state.is_mountain(coord) and not kingdom.is_empty() and kingdom["owner"] == faction and cells[coord].get("value", 1) < state.MAX_VALUE and kingdom["gold"] >= development_cost(state, coord)
 
 static func develop(state, coord: Vector2i, faction: int) -> bool:
 	var cells: Dictionary = state.cells
@@ -113,7 +113,7 @@ static func can_recruit(state, coord: Vector2i, faction: int, requested_tier := 
 
 static func recruitment_cost(state, coord: Vector2i, faction: int, requested_tier := 0, capital := NONE) -> int:
 	var cells: Dictionary = state.cells
-	if state.is_mountain(coord) or state.is_barrier(coord):
+	if state.is_mountain(coord) or state.is_barrier(coord) or state.has_wildlife(coord):
 		return -1
 	var kingdom: Dictionary = state.kingdom_at(coord)
 	if kingdom.is_empty() or kingdom["owner"] != faction or (capital != NONE and kingdom["capital"] != capital):
@@ -129,7 +129,7 @@ static func recruitment_cost(state, coord: Vector2i, faction: int, requested_tie
 
 static func can_build(state, coord: Vector2i, faction: int, kind: String, capital := NONE) -> bool:
 	var cells: Dictionary = state.cells
-	if state.is_mountain(coord) or state.is_barrier(coord):
+	if state.is_mountain(coord) or state.is_barrier(coord) or state.has_wildlife(coord):
 		return false
 	if kind == "bridge":
 		var position := Grid.to_world(coord)

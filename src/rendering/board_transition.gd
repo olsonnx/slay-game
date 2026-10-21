@@ -6,12 +6,15 @@ var tween: Tween
 var running := false
 var entering := true
 var destinations: Dictionary = {}
+var moving_batches
 
 func _init(owner_board) -> void:
 	board = owner_board
 
 func start(arriving: bool) -> void:
 	cancel()
+	board.birds.set_loading(not arriving)
+	board.birds.hide()
 	if board.static_batches != null:
 		board.static_batches.set_suspended(true)
 	if board.unit_batches != null:
@@ -31,6 +34,9 @@ func start(arriving: bool) -> void:
 	if not Video.level_transitions or destinations.is_empty():
 		finish()
 		return
+	moving_batches = preload("res://src/rendering/transition_batches.gd").new(board)
+	board.board_root.add_child(moving_batches)
+	moving_batches.capture()
 	running = true
 	board.controls_enabled = false
 	board.overlay_root.hide()
@@ -61,7 +67,26 @@ func _departing_position(amount: float, tile: Node3D, destination: Vector3) -> v
 	var home: Vector3 = board.coord_position(tile.get_meta("hex"))
 	tile.position = home.lerp(destination, amount)
 
+func release_batches() -> void:
+	if is_instance_valid(moving_batches):
+		moving_batches.release()
+		moving_batches.queue_free()
+	moving_batches = null
+
+func restore_settled_batches() -> void:
+	board.static_batches.set_suspended(false)
+	# Tile home transforms are unchanged: keep the already-uploaded settled
+	# meshes unless a setting or visible-board change actually invalidated them.
+	if board.static_refresh_pending:
+		board.refresh_static_batches()
+	else:
+		board.static_batches.suppress_cached_sources()
+		if board.batch_update_pending: board.flush_batch_update(0)
+	board.unit_batches.queue_sync()
+	board.unit_batches.sync()
+
 func finish() -> void:
+	release_batches()
 	if tween != null and tween.is_valid():
 		tween.kill()
 	for tile in destinations:
@@ -70,14 +95,17 @@ func finish() -> void:
 	destinations.clear()
 	board.water.material_override.set_shader_parameter("backdrop_depth", false)
 	running = false
+	board.birds.update_visibility()
+	if not entering: board.birds.hide()
 	board.controls_enabled = entering
 	if board.static_batches != null and entering:
-		board.static_batches.set_suspended(false)
-		board.refresh_static_batches()
+		restore_settled_batches()
 	board.overlay_root.visible = entering and not board.get_tree().paused
 	finished.emit()
 
 func cancel() -> void:
+	var was_running: bool = running or not destinations.is_empty()
+	release_batches()
 	if tween != null and tween.is_valid():
 		tween.kill()
 	for tile in destinations:
@@ -87,7 +115,6 @@ func cancel() -> void:
 	board.water.material_override.set_shader_parameter("backdrop_depth", false)
 	running = false
 	board.controls_enabled = true
-	if board.static_batches != null:
-		board.static_batches.set_suspended(false)
-		board.refresh_static_batches()
+	if board.static_batches != null and was_running:
+		restore_settled_batches()
 	board.overlay_root.visible = not board.get_tree().paused

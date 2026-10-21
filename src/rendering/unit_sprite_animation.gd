@@ -75,4 +75,5 @@ func update_frame() -> void:
 	sprite.position.y = Library.height(tier)
 	sprite.set_meta("animation",animation)
 	sprite.set_meta("animation_frame",frame_index)
+	if board.sprite_lighting != null: board.sprite_lighting.sync(sprite)
 

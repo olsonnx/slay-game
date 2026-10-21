@@ -13,6 +13,7 @@ signal save_replay_requested
 signal show_map_requested
 signal results_requested
 signal editor_requested
+signal replays_requested
 
 const Hud = preload("res://src/ui/game_hud.gd")
 const Options = preload("res://src/ui/options_view.gd")
@@ -24,6 +25,7 @@ var options_origin := Screen.MAIN
 var quit_destination := ""
 var backdrop: ColorRect
 var main_panel: Panel
+var main_utilities: Array[Button] = []
 var setup_panel: Panel
 var size_choice: OptionButton
 var kingdom_choice: OptionButton
@@ -73,16 +75,13 @@ func _ready() -> void:
 	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var theme := Hud.UiTheme.create_theme()
 	backdrop.theme = theme
-	main_panel = centered_panel(502)
+	main_panel = centered_panel(350)
 	side_panel(main_panel, 384)
 	Hud.label_at(main_panel, Loc.text("Slay & Reign"), Vector2(24, 21), 48)
 	button(main_panel, "Quick Play", 102, func(): show_screen(Screen.SETUP), true)
-	button(main_panel, "Tutorial", 166, func(): show_screen(Screen.TUTORIAL))
-	button(main_panel, "Multiplayer", 230, func(): show_screen(Screen.MULTIPLAYER))
-	button(main_panel, "Level editor", 294, func(): editor_requested.emit())
-	var main_options := button(main_panel, "Options", 358, func(): open_options(Screen.MAIN))
-	main_options.tooltip_text = Loc.text("Options — Audio, Video, Gameplay, Controls and Replays")
-	button(main_panel, "Quit game", 422, func(): quit_requested.emit())
+	button(main_panel, "Multiplayer", 158, func(): show_screen(Screen.MULTIPLAYER))
+	button(main_panel, "Tutorial", 214, func(): show_screen(Screen.TUTORIAL))
+	build_main_utilities()
 	setup_panel = centered_panel(490)
 	side_panel(setup_panel, 480)
 	Hud.label_at(setup_panel, "Quick Play", Vector2(24, 22), 28)
@@ -158,7 +157,7 @@ func _ready() -> void:
 	restart_button = button(pause_panel, "Restart", 158, confirm_restart)
 	restart_button.tooltip_text = Loc.text("Restart level\nSame island and starting state")
 	var pause_options := button(pause_panel, "Options", 222, func(): open_options(Screen.PAUSE))
-	pause_options.tooltip_text = Loc.text("Options — Audio, Video, Gameplay, Controls and Replays")
+	pause_options.tooltip_text = Loc.text("Options — Audio, Video, Gameplay and Controls")
 	button(pause_panel, "Quit", 286, func(): show_screen(Screen.QUIT))
 	options_panel = centered_panel(600)
 	Hud.label_at(options_panel, "Options", Vector2(24, 18), 28)
@@ -235,7 +234,7 @@ func _ready() -> void:
 	show_screen(Screen.HIDDEN)
 
 func show_results(game) -> void:
-	defeat_title.text = Loc.text("Match finished") if game.is_hotseat() else Loc.text("Victory") if game.rules.territory(0) > 0 else Loc.text("Defeat")
+	defeat_title.text = Loc.text("Match finished") if game.is_hotseat() else Loc.text("Victory") if game.rules.territory(game.player_faction) > 0 else Loc.text("Defeat")
 	defeat_description.text = game.message
 	defeat_description.visible = true
 	# Hotseat needs a separate row for the outcome and the statistics selector.
@@ -268,7 +267,7 @@ func refresh_results() -> void:
 
 func replay_saved(replay) -> void:
 	save_replay_button.disabled = replay.path != ""
-	if replay.path != "": replay_status.text = Loc.text("Replay saved. Find it in Options → Replays.")
+	if replay.path != "": replay_status.text = Loc.text("Replay saved. Open Replays from the main menu.")
 	elif replay.error != "": replay_status.text = Loc.text("Replay could not be saved. Try again.")
 
 func refresh_kingdom_choices() -> void:
@@ -284,6 +283,25 @@ func refresh_kingdom_choices() -> void:
 		kingdom_choice.add_item(Loc.text("%d kingdoms") % value)
 		kingdom_choice.set_item_metadata(kingdom_choice.item_count - 1, value)
 	kingdom_choice.select(count - 2)
+
+func build_main_utilities() -> void:
+	var icons = preload("res://src/ui/menu_icons.gd")
+	var actions := [
+		["Level editor", icons.editor(), func(): editor_requested.emit()],
+		["Replays", icons.replays(), func(): replays_requested.emit()],
+		["Options", icons.options(), func(): open_options(Screen.MAIN)],
+		["Quit game", icons.quit(), func(): quit_requested.emit()]]
+	for index in range(actions.size()):
+		var action: Array = actions[index]
+		var control := button(main_panel, action[0], 286, action[2])
+		control.name = action[0].replace(" ", "")
+		control.text = ""
+		control.tooltip_text = Loc.text(action[0])
+		control.icon = action[1]
+		control.icon_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		control.position.x = 24 + index * 86
+		control.size = Vector2(78, 48)
+		main_utilities.append(control)
 
 func centered_panel(height: float) -> Panel:
 	var node := Hud.panel(backdrop, Rect2(0, 0, 480, height))

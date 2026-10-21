@@ -9,6 +9,7 @@ var retiring_games := 0
 var transitioning := false
 var fps_counter
 var editor
+var replay_viewer
 var custom_level: Dictionary = {}
 
 func _ready() -> void:
@@ -29,9 +30,26 @@ func _ready() -> void:
 	menus.results_requested.connect(pause_game)
 	menus.rules_requested.connect(change_rules)
 	menus.editor_requested.connect(open_editor)
+	menus.replays_requested.connect(open_replays)
 	menus.tutorial_requested.connect(start_tutorial)
 	get_tree().paused = false
 	menus.show_screen(Menus.Screen.MAIN)
+
+func open_replays() -> void:
+	if transitioning or is_instance_valid(game) or is_instance_valid(editor) or is_instance_valid(replay_viewer): return
+	menus.show_screen(Menus.Screen.HIDDEN)
+	replay_viewer = preload("res://src/ui/replay_viewer.gd").new()
+	# Reuse the last menu image while its decorative 3D viewport stays stopped.
+	replay_viewer.library_backdrop = menus.menu_background.viewport.get_texture()
+	add_child(replay_viewer)
+	replay_viewer.ui_visibility_changed.connect(func(shown: bool):
+		if is_instance_valid(fps_counter): fps_counter.visible = shown)
+	replay_viewer.closed.connect(func():
+		var previous = replay_viewer
+		replay_viewer = null
+		remove_child(previous)
+		previous.queue_free()
+		menus.show_screen(Menus.Screen.MAIN))
 
 func start_tutorial(category := "basics") -> void:
 	if transitioning or is_instance_valid(game) or is_instance_valid(editor): return
@@ -94,6 +112,9 @@ func start_new_game(seed_value := -1, size_id := "small", difficulty := "", king
 	add_child(game)
 	game.hud.ui_root.hide()
 	game.view.controls_enabled = false
+	game.view.birds.set_loading(true)
+	var loading_camera_mask: int = game.view.camera.cull_mask
+	game.view.camera.cull_mask = 0
 	await game.prepare_board()
 	if custom_level.get("tutorial",false):
 		game.tutorial = preload("res://src/game/tutorial.gd").new(game)
@@ -102,6 +123,8 @@ func start_new_game(seed_value := -1, size_id := "small", difficulty := "", king
 		game.tutorial_exit_requested.connect(return_to_main_menu)
 	game.pause_requested.connect(pause_game)
 	game.defeat_requested.connect(pause_game)
+	game.view.camera.cull_mask = loading_camera_mask
+	await game.view.lighting.warmup()
 	# Covered rendering warms the actual meshes, shaders and shadow passes.
 	for frame in range(3):
 		await get_tree().process_frame
@@ -109,6 +132,7 @@ func start_new_game(seed_value := -1, size_id := "small", difficulty := "", king
 			await RenderingServer.frame_post_draw
 	await get_tree().process_frame
 	game.play_level_entry()
+	game.view.birds.set_loading(false)
 	await preparation.reveal()
 	game.match_clock.resume()
 	game.process_mode = Node.PROCESS_MODE_PAUSABLE
@@ -224,6 +248,7 @@ func retire_current_game() -> void:
 	# Cancellation unwinds existing coroutines before their scene is freed.
 	while previous.busy:
 		await get_tree().process_frame
+	await previous.view.retire_cells()
 	previous.queue_free()
 	retiring_games -= 1
 

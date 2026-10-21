@@ -164,6 +164,8 @@ static func movement_value(model, source: Vector2i, target: Vector2i, faction: i
 	var cell: Dictionary = model.cells[target]
 	var score := -2.0
 	var reason := "reposition"
+	if model.has_wildlife(target):
+		return [40.0 if cell.get("lair", "") != "" else 27.0,"clear a wildlife lair" if cell.get("lair", "") != "" else "hunt a dangerous animal"]
 	if cell["owner"] != faction and not model.is_bridge(target):
 		score = 8.0 + cell["value"] * 1.5
 		reason = "capture land"

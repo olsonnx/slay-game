@@ -17,6 +17,7 @@ var background_choice: OptionButton
 var stylized_water_toggle: CheckButton
 var vsync_toggle: CheckButton
 var shadow_toggle: CheckButton
+var lighting_toggle: CheckButton
 var camera_follow_toggle: CheckButton
 var level_transition_toggle: CheckButton
 var internal_borders_slider: HSlider
@@ -27,25 +28,20 @@ var status_label: Label
 var controls_page
 var language_choice: OptionButton
 var language_note: Label
-var replays_page: Control
-var replay_folder_button: Button
 
 func _ready() -> void:
-	var tabs := TabBar.new()
+	var tabs := preload("res://src/ui/options_tabs.gd").new()
 	tabs.size = Vector2(432, 36)
 	tabs.add_tab("Audio")
 	tabs.add_tab("Video")
 	tabs.add_tab("Gameplay")
 	tabs.add_tab("Controls")
-	tabs.add_tab("Replays")
 	tabs.tab_changed.connect(func(index: int):
 		Sound.play(&"ui_click")
 		audio_page.visible = index == 0
 		video_page.visible = index == 1
-		gameplay_page.visible = index == 2)
-	tabs.tab_changed.connect(func(index: int):
-		controls_page.visible = index == 3
-		replays_page.visible = index == 4)
+		gameplay_page.visible = index == 2
+		controls_page.visible = index == 3)
 	add_child(tabs)
 	audio_page = Control.new()
 	audio_page.position.y = 49
@@ -62,22 +58,6 @@ func _ready() -> void:
 	controls_page.position.y = 49
 	add_child(controls_page)
 	controls_page.hide()
-	replays_page = Control.new()
-	replays_page.position.y = 49
-	add_child(replays_page)
-	replays_page.hide()
-	var replay_note := Hud.label_at(replays_page, "", Vector2(0, 10), 15, Color("c5cdbb"))
-	replay_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	replay_note.size = Vector2(432, 90)
-	replay_note.text = Loc.text("Save a replay from the results screen after a victory or defeat. Replays are only saved when you choose to save them.")
-	replay_folder_button = preload("res://src/ui/tooltip_button.gd").new()
-	replay_folder_button.text = "Open replay folder"
-	replay_folder_button.position = Vector2(0, 116)
-	replay_folder_button.size = Vector2(432, 48)
-	Hud.UiTheme.style_button(replay_folder_button)
-	Sound.bind_button(replay_folder_button)
-	replays_page.add_child(replay_folder_button)
-	replay_folder_button.pressed.connect(open_replay_folder)
 	Hud.label_at(gameplay_page, "Rules", Vector2(0, 10), 15)
 	rules_choice = Tips.Choice.new()
 	rules_choice.position = Vector2(160, 0)
@@ -179,9 +159,15 @@ func _ready() -> void:
 		Video.set_preference(&"internal_borders", value / 100.0)
 		internal_borders_value.text = Loc.text("%d%%") % roundi(value))
 	stylized_water_toggle = check(video_page, Loc.text("Stylized water"), Vector2(0, 192))
-	stylized_water_toggle.size.x = 432
+	stylized_water_toggle.size.x = 210
+	stylized_water_toggle.clip_text = true
 	stylized_water_toggle.tooltip_text = Loc.text("On: flowing waves and foam\nOff: original calm water")
 	stylized_water_toggle.toggled.connect(func(value: bool): Video.set_preference(&"stylized_water", value))
+	lighting_toggle = check(video_page, Loc.text("Atmospheric lighting"), Vector2(216,192))
+	lighting_toggle.size.x = 216
+	lighting_toggle.clip_text = true
+	lighting_toggle.tooltip_text = Loc.text("On: warm sunlight, cool shadows and nearby light accents\nOff: original simple lighting\nChanges apply immediately and are saved automatically.")
+	lighting_toggle.toggled.connect(func(value: bool): Video.set_preference(&"atmospheric_lighting",value))
 	status_label = Hud.label_at(self, "", Vector2(0, 420), 13, Color("dfa08b"))
 	status_label.size.x = 432
 	Sound.settings_save_failed.connect(func(_error: Error): status_label.text = Loc.text("Audio settings could not be saved."))
@@ -225,6 +211,7 @@ func refresh() -> void:
 	stylized_water_toggle.set_pressed_no_signal(Video.stylized_water)
 	vsync_toggle.set_pressed_no_signal(Video.vsync)
 	shadow_toggle.set_pressed_no_signal(Video.shadows)
+	lighting_toggle.set_pressed_no_signal(Video.atmospheric_lighting)
 	camera_follow_toggle.set_pressed_no_signal(Video.follow_turn_camera)
 	level_transition_toggle.set_pressed_no_signal(Video.level_transitions)
 	internal_borders_slider.set_value_no_signal(Video.internal_borders * 100.0)
@@ -235,9 +222,3 @@ func refresh_language() -> void:
 	for index in range(language_choice.item_count):
 		if language_choice.get_item_metadata(index) == Languages.selected_locale: language_choice.select(index)
 	language_note.text = Loc.text("Restart the game to apply the selected language.") if Languages.restart_required() else Loc.text("Language changes apply the next time you launch the game.")
-
-func open_replay_folder() -> void:
-	var folder := ProjectSettings.globalize_path(preload("res://src/game/replay_log.gd").DIRECTORY)
-	var failure := DirAccess.make_dir_recursive_absolute(folder)
-	if failure == OK: failure = OS.shell_open(folder)
-	if failure != OK: status_label.text = Loc.text("Replay folder could not be opened.")

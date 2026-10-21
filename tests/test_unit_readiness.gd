@@ -47,6 +47,22 @@ func run() -> void:
 	await process_frame
 	await process_frame
 	var presentation = game.view.unit_presentation
+	var batches = game.view.unit_batches
+	batches.budgeted_sync = true
+	var chunk_edits: Dictionary = game.view.tile_nodes.duplicate()
+	# Empty chunks also occur when their final tile/source has just been removed.
+	chunk_edits[Vector2i(108,0)] = true
+	chunk_edits[Vector2i(144,0)] = true
+	batches.queue_sync(chunk_edits, false)
+	var chunks_before: int = batches.pending_chunks.size()
+	batches.flush_pending()
+	expect(chunks_before > 1 and batches.pending_chunks.size() == chunks_before - 1, "Budgeted settlement flush updates one chunk and retains the rest")
+	batches.queue_sync(chunk_edits, false)
+	batches.flush_pending()
+	expect(batches.pending_chunks.size() == chunks_before, "New edits coalesce without a second automatic chunk in the same frame")
+	await batches.wait_for_sync(game.ai_execution())
+	expect(not batches.sync_pending and batches.pending_chunks.is_empty(), "Settlement waits until all army chunks are ready before unlocking input")
+	batches.budgeted_sync = false
 	var animator = game.view.unit_actors[source].get_node("UnitAnimation")
 	var spent_animation = game.view.unit_actors[spent].get_node("UnitAnimation")
 	var enemy_animation = game.view.unit_actors[enemy].get_node("UnitAnimation")
@@ -63,7 +79,9 @@ func run() -> void:
 	expect(spent_animation.sprite.texture == spent_before and enemy_animation.sprite.texture == enemy_before, "Spent and inactive units keep their resting pose")
 	expect(game.view.unit_batches.upload_count == uploads and animator.sprite.layers == 0, "Idle frames animate inside existing army batches without instance uploads")
 	var slot: Array = game.view.unit_batches.sprite_slots[animator.sprite.get_instance_id()]
-	expect(slot[0].get_ref().material_override.albedo_texture == animator.sprite.texture, "Rendered batch and pixel picking use the same idle frame")
+	var displayed_material: Material = slot[0].get_ref().material_override
+	var displayed_texture: Texture2D = displayed_material.get_shader_parameter("sprite_texture") if displayed_material is ShaderMaterial else displayed_material.albedo_texture
+	expect(displayed_texture == animator.sprite.texture, "Rendered batch and pixel picking use the same idle frame")
 	presentation.set_unit_hover(source,true)
 	await create_timer(0.20).timeout
 	expect(animator.sprite.get_node("HoverOutline").texture == game.view.soldier_hover_outline(1,0,animator.frame_index), "Hover outlines follow the animated silhouette")
@@ -83,6 +101,11 @@ func run() -> void:
 	expect(not game.cells[spent].moved and spent_animation.sprite.get_meta("unit_ready"), "Previously moved troops regain idle animation at the next turn")
 	game.view.unit_batches.enabled = false
 	game.view.unit_batches.sync()
+	batches.budgeted_sync = true
+	batches.queue_sync(chunk_edits, false)
+	await batches.wait_for_sync(game.ai_execution())
+	expect(not batches.sync_pending, "Disabled batching cannot stall the player-turn handoff")
+	batches.budgeted_sync = false
 	before = animator.sprite.texture
 	await create_timer(0.20).timeout
 	expect(animator.sprite.layers != 0 and animator.sprite.texture != before, "Idle animation also works without army batching")

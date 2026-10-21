@@ -68,6 +68,8 @@ func run() -> void:
 	expect(game.rules.faction_count == 6 and game.player_faction == 0 and game.rules.human_factions == [0], "New palettes do not change faction count or turn ownership")
 	expect(game.NAMES[0] == "Iris" and game.view.COLORS[0] == Catalog.TERRAIN_COLORS[11] and game.COLORS[0] == Catalog.UI_COLORS[11], "Chosen kingdom names and colors reach the game and renderer")
 	expect(game.rules.replay_log.header.metadata.match.slots[0].color == 11 and game.rules.replay_log.header.names[0] == "Iris", "Replay metadata records the resolved kingdom")
+	var recorded_factions: Array = game.rules.replay_log.header.metadata.factions
+	expect(recorded_factions.size() == 12 and Color.html(recorded_factions[0].color) == game.COLORS[0] and Color.html(recorded_factions[0].terrain) == game.view.COLORS[0], "Replay records the exact live UI and terrain palette, including spare kingdom identities")
 	var baseline = preload("res://src/game/kingdom_rules.gd").new()
 	baseline.rule_mode = "modern"
 	baseline.generate(42,"small",6)
@@ -87,6 +89,19 @@ func run() -> void:
 	settings.set_quick_play_kingdom(-1,false)
 	await app.start_new_game(44,"small","normal",2)
 	expect(app.game.initial_match_config == Setup.quick_play("small",2,"normal",-1,44,"modern"), "Random resolves automatically for a fresh Quick Play match")
+	await app.return_to_main_menu()
+	var document = preload("res://src/editor/level_document.gd").new()
+	document.cells = baseline.cells.duplicate(true)
+	for cell in document.cells.values():
+		cell["event"] = ""
+		cell.erase("treasure")
+	document.player_faction = 0
+	document.factions[0] = {"name":"Authored kingdom", "color":"234567ff", "terrain":"8b4567ff"}
+	await app.start_new_game(42, "small", "normal", 6, document.state())
+	var authored_header: Dictionary = app.game.rules.replay_log.header
+	expect(authored_header.metadata.mode == "editor" and authored_header.metadata.map_title == document.title, "Authored replays retain their custom-map mode and title")
+	expect(authored_header.names[0] == "Authored kingdom" and authored_header.metadata.factions[0].color == "234567ff" and authored_header.metadata.factions[0].terrain == "8b4567ff", "Authored-map recordings capture their exact names, UI colors and terrain colors")
+	expect(preload("res://src/game/replay_identity.gd").resolve(authored_header).terrain == app.game.view.COLORS, "The recorded authored palette reconstructs the live renderer exactly")
 	await app.return_to_main_menu()
 	app.queue_free()
 	await process_frame

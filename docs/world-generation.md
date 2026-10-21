@@ -1,9 +1,16 @@
-# World generation v10 — 16 October 2026
+# World generation v12 — 19 October 2026
 
 The current playable sizes are Tiny (~80 tiles), Small (~150), Standard (~250),
 Large (~500) and Huge (~1,000). Very Small is retired from new-map selectors.
 Generation IDs and budgets are unchanged for saved maps and replays; historical
 size names below refer to the old lineup. Chests begin at the current Small size.
+
+Version 12 makes lairs rare objectives: Tiny/Small allow one, Standard two, Large
+three and Huge four, subject to safe placement. Lairs stay eight steps apart.
+
+Version 11 adds distant neutral animal lairs after events and treasure placement,
+using a separate seeded RNG. Lairs stay four steps from starting territory and
+five steps apart. See [wildlife](wildlife.md) for density, behavior and rewards.
 
 Version 10 adds one starting development point per Modern kingdom: total value
 and gross income rise from 10 to 11. With Scout upkeep now 4 G, opening net income
@@ -103,12 +110,12 @@ The editor retains its expanded bounds and shared 4,000-cell painting/loading ca
 The menu continues to use the same generator and shared terrain rendering.
 
 This intentionally changes the world associated with an older seed. Restarts are
-deterministic within v10, new replay metadata records generation version 10, and old
+deterministic within v12, new replay metadata records generation version 12, and old
 replays reconstruct their stored positions. The 360 golden samples cover all six
 sizes, both rulesets, and default, two-kingdom and maximum-kingdom requests:
 
 ```powershell
-godot --headless --path . --script tools/create_generation_golden.gd -- --update-generation-v10
+godot --headless --path . --script tools/create_generation_golden.gd -- --update-generation-v12
 ```
 
 The generation suite checks optional islands, balanced multi-landmass layouts,

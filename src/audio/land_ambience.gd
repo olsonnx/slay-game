@@ -5,7 +5,7 @@ const RECORDING = preload("res://assets/sfx/ambient/nature_closeup_ambience.ogg"
 const OVERVIEW_RECORDING = preload("res://assets/sfx/ambient/nature_zoomedout_ambience.ogg")
 const SILENT_ZOOM := 14.0
 const FULL_ZOOM := 8.0
-const OVERVIEW_START_ZOOM := 30.0
+const OVERVIEW_START_ZOOM := 14.0
 const VOLUME_DB := -26.0
 const OVERVIEW_VOLUME_DB := -34.0
 const FADE_SECONDS := 1.5
@@ -45,7 +45,7 @@ func close_mix() -> float:
 
 func overview_target_gain() -> float:
 	# High-altitude ambience follows zoom, including over the ocean.
-	var start := maxf(OVERVIEW_START_ZOOM, board.max_zoom * 0.75)
+	var start := maxf(OVERVIEW_START_ZOOM, board.max_zoom * 0.35)
 	return smoothstep(start, board.max_zoom, board.zoom) if board_audible() else 0.0
 
 func target_gain() -> float:

@@ -6,6 +6,7 @@ var batches: Dictionary = {}
 var suppressed: Dictionary = {}
 var sprite_meshes: Dictionary = {}
 var sprite_materials: Dictionary = {}
+var lit_sprite_materials: Dictionary = {}
 var shadow_mesh: PlaneMesh
 var shadow_material: StandardMaterial3D
 var sync_pending := false
@@ -15,14 +16,18 @@ var pending_chunks: Dictionary = {}
 var full_sync_pending := true
 var chunk_sources: Dictionary = {}
 var chunk_coords: Dictionary = {}
+var budgeted_sync := false
+var deferred_frame := -1
 
 func animate_idle(tick: int) -> void:
 	# Swap a shared texture per rank/faction/facing; instance buffers stay intact.
-	for material in sprite_materials.values():
+	for key in sprite_materials:
+		var material: StandardMaterial3D = sprite_materials[key]
 		if not material.has_meta("idle_unit"): continue
 		var unit: Vector2i = material.get_meta("idle_unit")
 		var count: int = preload("res://src/rendering/unit_sprite_library.gd").clip(unit.x,"idle")[1]
 		material.albedo_texture = board.unit_sprites.frame(unit.x,board.COLORS[unit.y],"idle",tick % count).texture
+		if lit_sprite_materials.has(key): preload("res://src/rendering/sprite_lighting.gd").bind_texture(lit_sprite_materials[key], material.albedo_texture)
 
 func tint(sprite: Sprite3D, color: Color) -> void:
 	var slot: Array = sprite_slots.get(sprite.get_instance_id(), [])
@@ -37,11 +42,12 @@ func _init(view) -> void:
 	shadow_mesh = PlaneMesh.new()
 	shadow_mesh.size = Vector2(0.9, 0.9)
 	shadow_material = StandardMaterial3D.new()
-	shadow_material.albedo_texture = board.shadow_texture
+	shadow_material.albedo_texture = preload("res://src/rendering/lighting_style.gd").contact_shadow() if Video.atmospheric_lighting else board.shadow_texture
 	shadow_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	shadow_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	shadow_material.depth_draw_mode = BaseMaterial3D.DEPTH_DRAW_DISABLED
 	shadow_material.vertex_color_use_as_albedo = true
+	shadow_material.vertex_color_is_srgb = true
 
 func queue_sync(coords: Dictionary = {}, full := true) -> void:
 	full_sync_pending = full_sync_pending or full
@@ -53,18 +59,53 @@ func queue_sync(coords: Dictionary = {}, full := true) -> void:
 		else: chunk_coords[chunk].erase(coord)
 	if not sync_pending:
 		sync_pending = true
-		sync.call_deferred(true)
+		flush_pending.call_deferred()
+
+func schedule_pending() -> void:
+	if not get_tree().process_frame.is_connected(flush_pending):
+		get_tree().process_frame.connect(flush_pending, CONNECT_ONE_SHOT)
+
+func flush_pending() -> void:
+	if not sync_pending or not is_inside_tree(): return
+	if get_tree().paused:
+		schedule_pending()
+		return
+	if not budgeted_sync or full_sync_pending or not enabled or board.level_transitioning or board.static_batches.suspended:
+		sync(true)
+		return
+	if deferred_frame == Engine.get_process_frames():
+		schedule_pending()
+		return
+	deferred_frame = Engine.get_process_frames()
+	if pending_chunks.size() <= 1:
+		sync(true)
+		return
+	var remaining := pending_chunks.duplicate()
+	var first = remaining.keys()[0]
+	remaining.erase(first)
+	pending_chunks = {first:true}
+	sync(true)
+	pending_chunks.merge(remaining)
+	sync_pending = true
+	schedule_pending()
+
+func wait_for_sync(execution) -> void:
+	while sync_pending and not execution.is_cancelled():
+		await execution.wait_until_resumed()
+		await execution.next_frame()
 
 func restore_sources() -> void:
 	for reference in suppressed.values():
 		var source: GeometryInstance3D = reference.get_ref()
 		if is_instance_valid(source):
-			source.layers = source.get_meta("army_layers", 1)
+			preload("res://src/rendering/batch_source_lifetime.gd").set_layers(source, source.get_meta("army_layers", 1))
 	suppressed.clear()
 	sprite_slots.clear()
 	chunk_sources.clear()
 
 func sync(queued := false) -> void:
+	# An immediate playback flush may already have drained the deferred request.
+	if queued and not sync_pending: return
 	var started := Time.get_ticks_usec() if board.profile_capture else 0
 	sync_pending = false
 	if not is_inside_tree(): return
@@ -124,12 +165,20 @@ func sync(queued := false) -> void:
 					material.alpha_scissor_threshold = child.alpha_scissor_threshold
 					material.cull_mode = BaseMaterial3D.CULL_DISABLED
 					material.vertex_color_use_as_albedo = true
+					material.vertex_color_is_srgb = true
 					sprite_materials[key] = material
+					material.set_meta("sprite_key",key)
+					var lit := preload("res://src/rendering/sprite_lighting.gd").make_material(child.texture,Vector2(child.texture.get_width(),child.texture.get_height()),child.pixel_size,child.flip_h)
+					lit.set_meta("sprite_key",key)
+					lit_sprite_materials[key] = lit
 				if ready:
 					var animator = actor.get_node("UnitAnimation")
 					sprite_materials[key].set_meta("idle_unit",Vector2i(animator.tier,animator.faction_id))
 				sprite_materials[key].albedo_texture = child.texture
-				append(groups, seen, "sprite:" + key, chunk, child, sprite_meshes[key], sprite_materials[key], inverse, child.modulate)
+				preload("res://src/rendering/sprite_lighting.gd").bind_texture(lit_sprite_materials[key], child.texture)
+				lit_sprite_materials[key].set_shader_parameter("normal_strength", board.sprite_lighting.normal_strength)
+				lit_sprite_materials[key].set_shader_parameter("normal_invert_y", board.sprite_lighting.normal_invert_y)
+				append(groups, seen, "sprite:" + key, chunk, child, sprite_meshes[key], lit_sprite_materials[key] if board.sprite_lighting != null and board.sprite_lighting.enabled else sprite_materials[key], inverse, child.modulate)
 			elif child is MeshInstance3D:
 				append(groups, seen, "shadow", chunk, child, shadow_mesh, shadow_material, inverse, Color.WHITE)
 			elif child.name == "Pips":
@@ -151,7 +200,7 @@ func sync(queued := false) -> void:
 	for id in cleanup.keys() if scoped else suppressed.keys():
 		if not seen.has(id) and suppressed.has(id):
 			var source: GeometryInstance3D = suppressed[id].get_ref()
-			if is_instance_valid(source): source.layers = source.get_meta("army_layers", 1)
+			if is_instance_valid(source): preload("res://src/rendering/batch_source_lifetime.gd").set_layers(source, source.get_meta("army_layers", 1))
 			suppressed.erase(id)
 	for key in batches.keys():
 		if scoped and not touched.has(batches[key].get_meta("chunk")): continue
@@ -191,7 +240,7 @@ func sync(queued := false) -> void:
 		render.set_meta("signature", records)
 		register_slots(key, render, records)
 		upload_count += 1
-	if board.profile_capture: board.capture_samples.append({"stage": "army_sync", "ms": (Time.get_ticks_usec() - started) / 1000.0})
+	if board.profile_capture: board.record_capture_sample({"stage": "army_sync", "ms": (Time.get_ticks_usec() - started) / 1000.0})
 
 func register_slots(key: String, render: MultiMeshInstance3D, records: Array) -> void:
 	if ":sprite:" in key:
@@ -212,7 +261,13 @@ func append(groups: Dictionary, seen: Dictionary, kind: String, chunk: Vector2i,
 	if not chunk_sources.has(chunk): chunk_sources[chunk] = {}
 	chunk_sources[chunk][id] = true
 	suppressed[id] = weakref(source)
-	source.layers = 0
+	preload("res://src/rendering/batch_source_lifetime.gd").set_layers(source, 0)
 
 func _exit_tree() -> void:
 	restore_sources()
+
+func refresh_sprite_lighting() -> void:
+	for render in batches.values():
+		var key: String = render.material_override.get_meta("sprite_key", "")
+		if key == "": continue
+		render.material_override = lit_sprite_materials[key] if board.sprite_lighting != null and board.sprite_lighting.enabled else sprite_materials[key]

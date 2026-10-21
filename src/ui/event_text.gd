@@ -12,33 +12,6 @@ const ACTIONS := "gain|gains|gained|earn|earns|earned|recruit|recruits|refund|re
 static func escape(value: String) -> String:
 	return value.replace("[", "\u0001").replace("]", "[rb]").replace("\u0001", "[lb]")
 
-static func regex_escape(value: String) -> String:
-	var result := ""
-	for letter in value:
-		if letter in "\\.^$|?*+()[]{}": result += "\\"
-		result += letter
-	return result
-
-static func unit_pattern() -> String:
-	var names: Array[String] = []
-	for name in ["Scout", "Scouts", "Soldier", "Soldiers", "Knight", "Knights", "unit", "units", "army", "armies", "garrison", "garrisons"]:
-		for word in [name, Loc.text(name)]:
-			if word != "" and word not in names: names.append(word)
-	names.sort_custom(func(a: String, b: String): return a.length() > b.length())
-	var escaped: Array[String] = []
-	for name in names: escaped.append(regex_escape(name))
-	return "(?<![\\p{L}\\p{N}_])(?:%s)(?![\\p{L}\\p{N}_])" % "|".join(escaped)
-
-static func mark_units(value: String) -> String:
-	var pattern := RegEx.new()
-	pattern.compile("(?i)" + unit_pattern())
-	return pattern.sub(value, "[b]$0[/b]", true)
-
-static func has_units(value: String) -> bool:
-	var pattern := RegEx.new()
-	pattern.compile("(?i)" + unit_pattern())
-	return pattern.search(value) != null
-
 static func clause(value: String, position: int) -> Dictionary:
 	var start := position
 	var end := position
@@ -75,18 +48,15 @@ static func quantity_color(value: String, context: Dictionary) -> String:
 
 static func rich_text(value: String) -> String:
 	var tokens := RegEx.new()
-	tokens.compile("(?i)(?<unit>" + unit_pattern() + ")|(?<quantity>[+−-]?\\d+(?:[–-]\\d+)?(?:\\s*/\\s*\\d+)?(?:\\s*(?:%|gold|mana|G)(?![\\p{L}]))?)|(?<action>\\b(?:" + ACTIONS + ")\\b)|(?<resource>\\b(?:mana|gold)\\b)")
+	tokens.compile("(?i)(?<quantity>[+−-]?\\d+(?:[–-]\\d+)?(?:\\s*/\\s*\\d+)?(?:\\s*(?:%|gold|mana|G)(?![\\p{L}]))?)|(?<action>\\b(?:" + ACTIONS + ")\\b)|(?<resource>\\b(?:mana|gold)\\b)")
 	var result := ""
 	var offset := 0
 	for found in tokens.search_all(value):
 		result += escape(value.substr(offset, found.get_start() - offset))
 		var token := escape(found.get_string())
 		var context := clause(value, found.get_start())
-		if found.get_string("unit") != "":
-			result += "[b]%s[/b]" % token
-		else:
-			var color := quantity_color(found.get_string(), context) if found.get_string("quantity") != "" else action_color(found.get_string().to_lower(), context["text"]) if found.get_string("action") != "" else MANA if found.get_string().to_lower() == "mana" else GOLD
-			result += "[color=#%s]%s[/color]" % [color, token]
+		var color := quantity_color(found.get_string(), context) if found.get_string("quantity") != "" else action_color(found.get_string().to_lower(), context["text"]) if found.get_string("action") != "" else MANA if found.get_string().to_lower() == "mana" else GOLD
+		result += "[color=#%s]%s[/color]" % [color, token]
 		offset = found.get_end()
 	return result + escape(value.substr(offset))
 
@@ -104,9 +74,9 @@ static func label(parent: Node, plain_text: String, at: Vector2, width: float, f
 	rich.position = at
 	rich.size.x = width
 	rich.text = rich_text(Loc.text(plain_text))
-	# Measure bold text conservatively, including before native tooltip layout.
-	var bold := rich.get_theme_font("bold_font")
-	rich.size.y = maxf(rich.get_content_height(), ceilf(bold.get_multiline_string_size(plain_text, HORIZONTAL_ALIGNMENT_LEFT, width, font_size).y) + 2)
+	# Native tooltip layout can run before the rich label shapes its text.
+	var font := rich.get_theme_font("normal_font")
+	rich.size.y = maxf(rich.get_content_height(), ceilf(font.get_multiline_string_size(plain_text, HORIZONTAL_ALIGNMENT_LEFT, width, font_size).y) + 2)
 	return rich
 
 static func decorate_choice(button: Button) -> void:
@@ -118,7 +88,7 @@ static func decorate_choice(button: Button) -> void:
 	button.clip_text = true
 	var rich := label(button, button.text, Vector2(12, 0), button.size.x - 24, 14, colors["font_color"])
 	# Button captions retain their state colours; their outcome tooltip carries semantics.
-	rich.text = "[center]" + mark_units(escape(button.text)) + "[/center]"
+	rich.text = "[center]" + escape(button.text) + "[/center]"
 	rich.custom_minimum_size.y = rich.size.y
 	button.size.y = maxf(38, rich.size.y + 16)
 	rich.position.y = (button.size.y - rich.size.y) / 2

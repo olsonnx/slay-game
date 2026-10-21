@@ -124,9 +124,6 @@ var stats_panel:
 var stats_rows:
 	get: return hud.stats_rows
 	set(value): hud.stats_rows = value
-var kingdom_rows:
-	get: return hud.kingdom_rows
-	set(value): hud.kingdom_rows = value
 var help_panel:
 	get: return hud.help_panel
 	set(value): hud.help_panel = value

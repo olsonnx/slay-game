@@ -40,7 +40,9 @@ var shop_kind := ""
 var stats_shade: ColorRect
 var stats_panel: Panel
 var stats_rows: VBoxContainer
-var kingdom_rows: VBoxContainer
+var ledger_graph
+var ledger_table_header: HBoxContainer
+var ledger_table_scroll: ScrollContainer
 var help_panel: Panel
 var world_tip: Panel
 var tip_label: RichTextLabel
@@ -110,23 +112,25 @@ func build_ui(actions: Dictionary, cue: Callable) -> void:
 	ui_root.add_child(view_controls)
 	view_controls.anchor_left = 1
 	view_controls.anchor_right = 1
-	view_controls.offset_left = -248
+	view_controls.offset_left = -308
 	view_controls.offset_right = -24
 	view_controls.offset_top = 24
 	view_controls.offset_bottom = 64
 	view_controls.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	view_button = button_at(view_controls, "", Rect2(0, 0, 50, 40), actions["view_button_activated"])
+	stats_button = button_at(view_controls, "", Rect2(0, 0, 50, 40), actions["toggle_stats"], Loc.text("Island ledger · kingdom finances, armies and income history."))
+	stats_button.icon = preload("res://assets/ui/ledger.svg")
+	view_button = button_at(view_controls, "", Rect2(60, 0, 50, 40), actions["view_button_activated"])
 	view_hold_indicator = preload("res://src/ui/hold_indicator.gd").new()
 	view_button.add_child(view_hold_indicator)
 	view_hold_indicator.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	view_button.button_down.connect(actions["begin_view_press"])
 	view_button.button_up.connect(actions["end_view_press"])
 	view_button.mouse_exited.connect(actions["cancel_view_press"])
-	heatmap_button = button_at(view_controls, "", Rect2(60, 0, 50, 40), actions["toggle_value_heatmap"])
+	heatmap_button = button_at(view_controls, "", Rect2(120, 0, 50, 40), actions["toggle_value_heatmap"])
 	heatmap_button.icon = HEATMAP_ICON
 	heatmap_button.toggle_mode = true
-	button_at(view_controls, "?", Rect2(120, 0, 44, 40), actions["toggle_help"], Loc.text("Camera controls and quick help."))
-	pause_button = button_at(view_controls, "", Rect2(174, 0, 50, 40), actions["open_pause"], Loc.text("Pause / options. Escape cancels an action first, then pauses."))
+	button_at(view_controls, "?", Rect2(180, 0, 44, 40), actions["toggle_help"], Loc.text("Camera controls and quick help."))
+	pause_button = button_at(view_controls, "", Rect2(234, 0, 50, 40), actions["open_pause"], Loc.text("Pause / options. Escape cancels an action first, then pauses."))
 	pause_button.icon = COG_ICON
 	var dock := panel(ui_root, Rect2(0, 0, 418, 82))
 	economy_dock = dock
@@ -161,10 +165,9 @@ func build_ui(actions: Dictionary, cue: Callable) -> void:
 	spell_button.hide()
 	turn_controls = Control.new()
 	ui_root.add_child(turn_controls)
-	pin_bottom(turn_controls, -288, -90, 264, 66, true)
+	pin_bottom(turn_controls, -198, -90, 174, 66, true)
 	turn_controls.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	stats_button = button_at(turn_controls, "Stats", Rect2(0, 8, 78, 50), actions["toggle_stats"], Loc.text("Open faction statistics and your kingdom finances."))
-	end_button = button_at(turn_controls, Loc.text("End turn  →"), Rect2(90, 8, 174, 50), actions["turn_button_activated"], Loc.text("End turn. Hold Ctrl to speed up movement. Shortcut: Space."), true)
+	end_button = button_at(turn_controls, Loc.text("End turn  →"), Rect2(0, 8, 174, 50), actions["turn_button_activated"], Loc.text("End turn. Hold Ctrl to speed up movement. Shortcut: Space."), true)
 	turn_spinner = preload("res://src/ui/turn_spinner.gd").new()
 	turn_spinner.position = Vector2(12, 17)
 	turn_spinner.size = Vector2(16, 16)
@@ -186,39 +189,35 @@ func build_ui(actions: Dictionary, cue: Callable) -> void:
 	ui_root.add_child(stats_shade)
 	stats_shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	stats_shade.hide()
-	stats_panel = panel(stats_shade, Rect2(-235, -222, 470, 444))
-	stats_panel.anchor_left = 0.5
-	stats_panel.anchor_right = 0.5
-	stats_panel.anchor_top = 0.5
-	stats_panel.anchor_bottom = 0.5
-	stats_panel.offset_left = -235
-	stats_panel.offset_right = 235
-	stats_panel.offset_top = -222
-	stats_panel.offset_bottom = 222
-	label_at(stats_panel, "Island ledger", Vector2(24, 18), 24)
-	UiTheme.place_close_button(button_at(stats_panel, "×", Rect2(), actions["toggle_stats"], "Close statistics."), 16)
-	label_at(stats_panel, "FACTION", Vector2(25, 68), 12, Color("98b0a7"))
-	label_at(stats_panel, "HEXES", Vector2(262, 68), 12, Color("98b0a7"))
-	label_at(stats_panel, "KINGDOMS", Vector2(363, 68), 12, Color("98b0a7"))
+	stats_panel = panel(stats_shade, Rect2())
+	stats_shade.resized.connect(layout_ledger)
+	layout_ledger()
+	label_at(stats_panel, "Island ledger", Vector2(24, 18), 26)
+	UiTheme.place_close_button(button_at(stats_panel, "×", Rect2(), actions["toggle_stats"], Loc.text("Close ledger.")), 16)
+	var ledger_body := VBoxContainer.new()
+	stats_panel.add_child(ledger_body)
+	ledger_body.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	ledger_body.offset_left = 24
+	ledger_body.offset_right = -24
+	ledger_body.offset_top = 72
+	ledger_body.offset_bottom = -24
+	ledger_body.add_theme_constant_override("separation", 12)
+	ledger_table_header = HBoxContainer.new()
+	ledger_table_header.add_theme_constant_override("separation", 8)
+	ledger_body.add_child(ledger_table_header)
+	ledger_body.add_child(HSeparator.new())
+	ledger_table_scroll = ScrollContainer.new()
+	ledger_table_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	ledger_body.add_child(ledger_table_scroll)
 	stats_rows = VBoxContainer.new()
-	var faction_scroll := ScrollContainer.new()
-	faction_scroll.position = Vector2(25, 94)
-	faction_scroll.size = Vector2(420, 170)
-	faction_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	stats_panel.add_child(faction_scroll)
 	stats_rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	stats_rows.add_theme_constant_override("separation", 10)
-	faction_scroll.add_child(stats_rows)
-	label_at(stats_panel, "Your kingdoms", Vector2(25, 277), 17)
-	var scroll := ScrollContainer.new()
-	scroll.position = Vector2(25, 312)
-	scroll.size = Vector2(420, 105)
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	stats_panel.add_child(scroll)
-	kingdom_rows = VBoxContainer.new()
-	kingdom_rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	kingdom_rows.add_theme_constant_override("separation", 10)
-	scroll.add_child(kingdom_rows)
+	stats_rows.add_theme_constant_override("separation", 0)
+	ledger_table_scroll.add_child(stats_rows)
+	ledger_graph = preload("res://src/ui/income_graph.gd").new()
+	ledger_graph.name = "IncomeGraph"
+	ledger_graph.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	ledger_graph.custom_minimum_size.y = 150
+	ledger_body.add_child(ledger_graph)
 	help_panel = panel(ui_root, Rect2(-338, 78, 314, 237))
 	help_panel.anchor_left = 1
 	help_panel.anchor_right = 1
@@ -362,3 +361,9 @@ func update_gold(amount: int, net: int, capital: Vector2i) -> void:
 	previous_gold = amount
 	previous_kingdom = capital
 
+
+func layout_ledger() -> void:
+	if not is_instance_valid(stats_panel): return
+	var extent := stats_shade.size - Vector2(48, 48)
+	stats_panel.size = Vector2(minf(900, extent.x), minf(680, extent.y))
+	stats_panel.position = (stats_shade.size - stats_panel.size)*0.5
