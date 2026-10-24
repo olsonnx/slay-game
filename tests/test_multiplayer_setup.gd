@@ -20,7 +20,9 @@ func run() -> void:
 	root.get_node("Video").set_preference(&"follow_turn_camera",false,false)
 	root.size = Vector2i(960,620)
 	var app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	await process_frame
 	var panel = app.menus.multiplayer_panel
 	expect(app.menus.main_panel.find_children("*","Button",true,false).any(func(node): return node.text == "Multiplayer"),"The main menu contains a separate Multiplayer option")
@@ -101,7 +103,7 @@ func run() -> void:
 	center /= game.active_kingdom()["hexes"].size()
 	expect(game.view.focus.distance_to(center) < 0.01,"The camera pans to the next human even with AI camera-follow disabled")
 	expect(game.view.camera.size == zoom and game.view.yaw == angle,"Turn panning preserves camera angle and zoom")
-	expect(game.round_label.text.contains("ALEX"),"The current player's chosen name identifies their turn")
+	expect(game.level_label.text == "Alex","The current player's chosen name identifies their turn")
 	await game.end_turn()
 	expect(game.player_faction == 1 and game.round_number == 2 and game.rules.ai_difficulty == "easy","The final computer uses its own difficulty and completes the round")
 	await app.restart_current_level()
@@ -115,8 +117,6 @@ func run() -> void:
 	expect(unique(order).size() == 4 and order[0] in [1,3],"Shuffled order contains every seat and starts with a human")
 	await app.restart_current_level()
 	expect(app.game.turn_order == order,"A shuffled match restarts with the same turn order")
-	await app.change_rules("classic")
-	expect(app.game.initial_match_config["slots"] == config["slots"] and not app.game.rules.is_modern(),"Changing rules preserves the roster, colours and per-seat difficulty")
 	app.continue_game()
 	await app.return_to_main_menu()
 	app.menus.new_game_requested.emit("very_small",2)

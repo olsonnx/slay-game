@@ -2,6 +2,7 @@ extends Panel
 const Loc = preload("res://src/localization/text.gd")
 signal start_requested(config: Dictionary)
 signal back_requested
+signal online_requested
 const Hud = preload("res://src/ui/game_hud.gd")
 const Catalog = preload("res://src/game/game_catalog.gd")
 const Sizes = preload("res://src/game/map_sizes.gd")
@@ -9,7 +10,6 @@ const Setup = preload("res://src/game/match_setup.gd")
 var size_choice: OptionButton
 var size_warning: Label
 var count_choice: OptionButton
-var rules_choice: OptionButton
 var order_choice: OptionButton
 var preset_choice: OptionButton
 var seed_input: LineEdit
@@ -38,8 +38,9 @@ func _ready() -> void:
 	offset_bottom = 295
 	add_theme_stylebox_override("panel", Hud.style(Color("17252a"), 13, true))
 	Hud.label_at(self, "Local multiplayer", Vector2(24, 20), 28)
+	action("Steam online…", Rect2(610, 20, 186, 36), func(): online_requested.emit())
 	players_tab = action("Players",Rect2(24,70,130,36),func(): show_page("players"))
-	map_tab = action(Loc.text("Map & rules"),Rect2(164,70,154,36),func(): show_page("map"))
+	map_tab = action(Loc.text("Map"),Rect2(164,70,154,36),func(): show_page("map"))
 	for tab in [players_tab,map_tab]:
 		tab.toggle_mode = true
 		Hud.UiTheme.style_button(tab,false,true)
@@ -86,12 +87,10 @@ func _ready() -> void:
 		refresh_map_controls())
 	action(Loc.text("Load editor map…"),Rect2(572,28,200,34),open_map_picker,map_group)
 	Hud.label_at(map_group,"Size",Vector2(0,94),14)
-	Hud.label_at(map_group,"Rules",Vector2(400,94),14)
-	size_choice = choice(Vector2(0,120),372,Sizes.IDS.map(func(id): return Sizes.choice_label(id)),map_group)
+	size_choice = choice(Vector2(0,120),772,Sizes.IDS.map(func(id): return Sizes.choice_label(id)),map_group)
 	for index in range(Sizes.IDS.size()): size_choice.get_popup().set_item_tooltip(index,Sizes.tile_tooltip(Sizes.IDS[index]))
 	size_warning = Hud.label_at(map_group,"",Vector2(0,162),13,Color("efc885"))
 	size_warning.size = Vector2(772,20)
-	rules_choice = choice(Vector2(400,120),372,["Modern","Classic"],map_group)
 	advanced_button = action("Advanced  ▸",Rect2(0,184,772,34),toggle_advanced,map_group)
 	advanced_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
 	advanced_group = group(map_group,Vector2(0,238),Vector2(772,70))
@@ -189,7 +188,6 @@ func load_config(saved: Dictionary) -> void:
 	map_path = ""
 	map_error = ""
 	size_choice.select(maxi(0, Sizes.IDS.find(config["size"])))
-	rules_choice.select(1 if config["rules"] == "classic" else 0)
 	order_choice.select(1 if config["order"] == "random" else 0)
 	seed_input.text = str(config["seed"]) if config["seed"] >= 0 else ""
 	refresh_counts()
@@ -249,7 +247,7 @@ func config() -> Dictionary:
 	for index in range(seat_count()):
 		var row: Dictionary = rows[index]
 		slots.append({"name":row["name"].text,"controller":"human" if row["controller"].selected == 0 else "ai","color":row["color"].selected,"difficulty":["easy","normal","hard"][row["difficulty"].selected]})
-	var settings := {"size":Sizes.IDS[size_choice.selected],"count":slots.size(),"rules":["modern","classic"][rules_choice.selected],"order":["fixed","random"][order_choice.selected],"seed":int(seed_input.text) if seed_input.text != "" else -1,"slots":slots}
+	var settings := {"size":Sizes.IDS[size_choice.selected],"count":slots.size(),"rules":"modern","order":["fixed","random"][order_choice.selected],"seed":int(seed_input.text) if seed_input.text != "" else -1,"slots":slots}
 	if using_editor_map():
 		settings["map_path"] = map_path
 		settings["size"] = selected_level["data"]["size"]
@@ -319,7 +317,6 @@ func load_editor_map(path: String, preserve_roster := false) -> void:
 func apply_level_settings() -> void:
 	var data: Dictionary = selected_level["data"]
 	size_choice.select(maxi(0, Sizes.IDS.find(data["size"])))
-	rules_choice.select(1 if data["rules"] == "classic" else 0)
 	count_choice.clear()
 	count_choice.add_item(str(selected_level["factions"].size()))
 	count_choice.select(0)
@@ -331,7 +328,7 @@ func refresh_map_controls() -> void:
 	if size_warning != null:
 		size_warning.text = Sizes.size_warning(size_id)
 	var authored := source_choice.selected == 1
-	for control in [size_choice,rules_choice,count_choice]:
+	for control in [size_choice,count_choice]:
 		control.disabled = authored
 		control.tooltip_text = Loc.text("Defined by the selected editor map.") if authored else ""
 	if not authored: size_choice.tooltip_text = Sizes.tile_tooltip(size_id)

@@ -16,7 +16,7 @@ func expect(value: bool, message: String) -> void:
 		push_error(message)
 
 func run() -> void:
-	for mode in ["classic", "modern"]:
+	for mode in ["modern"]:
 		for size_id in ["very_small", "small", "medium", "large"]:
 			var rules = Rules.new()
 			rules.rule_mode = mode

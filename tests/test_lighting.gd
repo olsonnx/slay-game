@@ -30,7 +30,7 @@ func run() -> void:
 	expect(options.lighting_toggle.get_rect().end.x <= 432 and options.stylized_water_toggle.get_rect().end.x <= options.lighting_toggle.position.x,"New video toggle fits the existing minimum-width options layout")
 	options.lighting_toggle.button_pressed = false
 	expect(not video.atmospheric_lighting and view.lighting.style == "simple","Options switches the live board to Simple immediately")
-	expect(view.sun.rotation_degrees.is_equal_approx(Vector3(-52,-32,0)) and is_equal_approx(view.sun.light_energy,0.88) and is_equal_approx(scene_env.ambient_light_energy,0.42) and scene_env.ambient_light_color == Color("b8c8d1") and not scene_env.adjustment_enabled,"Simple restores the original sun, ambient light and grading")
+	expect(view.sun.rotation_degrees.is_equal_approx(Vector3(-52,-32,0)) and is_equal_approx(view.sun.light_energy,0.94) and is_equal_approx(scene_env.ambient_light_energy,0.48) and scene_env.ambient_light_color == Color("b8c8d1") and not scene_env.adjustment_enabled,"Simple uses the brighter sun and ambient fill without atmospheric grading")
 	expect(view.unit_batches.shadow_material.albedo_texture == view.shadow_texture,"Simple restores original unit contact shadows")
 	options.lighting_toggle.button_pressed = true
 	expect(video.atmospheric_lighting and scene_env.adjustment_enabled and scene_env.adjustment_color_correction != null and scene_env.ambient_light_energy < 0.42,"Atmospheric restores directional contrast and shared colour grading")
@@ -64,7 +64,7 @@ func run() -> void:
 	decor.initial_seed = 42
 	root.add_child(decor)
 	decor.apply_background()
-	expect(is_equal_approx(decor.sun.light_energy,0.88),"Menu scenery uses Simple too")
+	expect(is_equal_approx(decor.sun.light_energy,0.94),"Menu scenery uses Simple too")
 	video.set_preference(&"atmospheric_lighting",true,false)
 	decor.apply_background()
 	expect(decor.environment.adjustment_enabled and is_equal_approx(decor.sun.light_energy,view.sun.light_energy),"Menu and board share the same atmospheric art direction")

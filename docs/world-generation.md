@@ -1,4 +1,4 @@
-# World generation v12 — 19 October 2026
+# World generation v13 — 21 October 2026
 
 The current playable sizes are Tiny (~80 tiles), Small (~150), Standard (~250),
 Large (~500) and Huge (~1,000). Very Small is retired from new-map selectors.
@@ -37,9 +37,7 @@ Kingdoms can start offshore. Starting territories use compact, crescent and
 elongated footprints, rotated and reflected to fit actual land. Modern kingdoms
 have six to nine provinces, including mixed sizes within a match. All total eleven
 province value, eleven gross income and seven net after their Scout's upkeep. They
-retain ten gold, one Scout, one mana and capital capacity two. Classic varies
-shape at seven tiles, preserving its seven gross/six net income and sixteen gold.
-No Classic per-tile economy rule changes are introduced.
+retain ten gold, one Scout, one mana and capital capacity two.
 
 Footprints are connected, stay within radius two of the capital and have no
 single-tile necks or tendrils. The capital has at least three friendly neighbors.
@@ -57,7 +55,7 @@ ownership. The camera/editor rules continue to use actual terrain extents.
 Every landmass remains connected and has a protected one-water-hex crossing into
 the landmass network. These can be reached with normal bridges at their existing
 price; no new travel mechanic is introduced. Islands have at least 13 tiles.
-Classic stays connected because its rules provide no bridges. The graph-based
+The graph-based
 `starting_land_reachable` check includes legal short water crossings; existing
 literal land-connectivity queries keep their original meaning.
 
@@ -86,14 +84,13 @@ territory or requiring a particular expansion route.
 
 Lake and landmass generation retain v4's geometry: the largest sampled lakes
 remain 19 tiles on Large and 52 on Huge, and five Large and seven Huge sample
-worlds have no lake of five or more tiles. Classic still has no mountains.
+worlds have no lake of five or more tiles.
 
 Modern event counts scale with actual eligible neutral land, rather than stopping
 at the kingdom count plus one. The target is the larger of that existing minimum
 and one event per sixteen neutral, non-mountain tiles without a mana source.
 Three-hex spacing is preserved, and generation stops safely if the target cannot
-fit. A caller's size label does not override the actual available area. Classic
-remains free of exploration events. Across sixteen seeded maps per size with low
+fit. A caller's size label does not override the actual available area. Across sixteen seeded maps per size with low
 and high kingdom counts, event averages were 3.8, 5.1, 6.5, 10.9, 27.5 and 57.0
 from Very Small through Huge.
 
@@ -110,12 +107,12 @@ The editor retains its expanded bounds and shared 4,000-cell painting/loading ca
 The menu continues to use the same generator and shared terrain rendering.
 
 This intentionally changes the world associated with an older seed. Restarts are
-deterministic within v12, new replay metadata records generation version 12, and old
-replays reconstruct their stored positions. The 360 golden samples cover all six
-sizes, both rulesets, and default, two-kingdom and maximum-kingdom requests:
+deterministic within v13, new replay metadata records generation version 13, and old
+replays reconstruct their stored positions. The 300 golden samples cover all five
+sizes, and default, two-kingdom and maximum-kingdom requests:
 
 ```powershell
-godot --headless --path . --script tools/create_generation_golden.gd -- --update-generation-v12
+godot --headless --path . --script tools/create_generation_golden.gd -- --update-generation-v13
 ```
 
 The generation suite checks optional islands, balanced multi-landmass layouts,
@@ -169,3 +166,7 @@ capital action now uses an icon and a confirmation with Cancel focused by defaul
 native previews include `artifacts/capital_confirmation_1280.png` and
 `artifacts/capital_confirmation_960.png`. The POI suite passed 1,579 checks and
 the localization catalogue verifies 734 English messages.
+
+Generation v13 changes event selection to weighted draws without replacement until all enabled event types have been used. Remaining markers allow weighted repeats. Terrain generation is unchanged.
+
+Generator golden fixtures pin the built-in event weights so editing the event pack does not invalidate terrain and RNG determinism checks. The fixture creation tool uses the same weights; event distribution and authored-event tests cover the editable pack separately.

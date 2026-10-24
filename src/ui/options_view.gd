@@ -3,10 +3,7 @@ const Loc = preload("res://src/localization/text.gd")
 ## Shared options screen for the main and pause menus.
 const Hud = preload("res://src/ui/game_hud.gd")
 const Tips = preload("res://src/ui/tooltip_widgets.gd")
-signal rules_requested(mode: String)
 var gameplay_page: Control
-var rules_choice: OptionButton
-var authored_rules := ""
 var indicators_toggle: CheckButton
 var sound_sliders: Dictionary = {}
 var sound_mute: CheckButton
@@ -18,6 +15,7 @@ var stylized_water_toggle: CheckButton
 var vsync_toggle: CheckButton
 var shadow_toggle: CheckButton
 var lighting_toggle: CheckButton
+var plastic_tiles_toggle: CheckButton
 var camera_follow_toggle: CheckButton
 var level_transition_toggle: CheckButton
 var internal_borders_slider: HSlider
@@ -58,26 +56,13 @@ func _ready() -> void:
 	controls_page.position.y = 49
 	add_child(controls_page)
 	controls_page.hide()
-	Hud.label_at(gameplay_page, "Rules", Vector2(0, 10), 15)
-	rules_choice = Tips.Choice.new()
-	rules_choice.position = Vector2(160, 0)
-	rules_choice.size = Vector2(272, 38)
-	rules_choice.add_item("Modern")
-	rules_choice.add_item("Classic")
-	Sound.bind_button(rules_choice)
-	gameplay_page.add_child(rules_choice)
-	rules_choice.item_selected.connect(func(index: int):
-		rules_requested.emit("modern" if index == 0 else "classic"))
-	var rules_note := Hud.label_at(gameplay_page, Loc.text("Modern adds province development, mana, spells,\nbridges and castle surrender.\n\nClassic keeps the original prototype rules.\n\nChanging rules resets your game and generates\na new island."), Vector2(0, 62), 15, Color("c5cdbb"))
-	rules_note.size = Vector2(432, 185)
-	rules_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	indicators_toggle = check(gameplay_page, Loc.text("Clear movement indicators"), Vector2(0, 260))
+	indicators_toggle = check(gameplay_page, Loc.text("Clear movement indicators"), Vector2(0, 10))
 	indicators_toggle.size.x = 432
 	indicators_toggle.tooltip_text = Loc.text("On: area border + curved arrow\nOff: tile outlines + dotted path")
 	indicators_toggle.toggled.connect(func(value: bool): Gameplay.set_clear_indicators(value))
-	Hud.label_at(gameplay_page, "Language", Vector2(0, 320), 15)
+	Hud.label_at(gameplay_page, "Language", Vector2(0, 70), 15)
 	language_choice = Tips.Choice.new()
-	language_choice.position = Vector2(160, 310)
+	language_choice.position = Vector2(160, 60)
 	language_choice.size = Vector2(272, 38)
 	language_choice.fit_to_longest_item = false
 	language_choice.clip_text = true
@@ -87,7 +72,7 @@ func _ready() -> void:
 		language_choice.set_item_metadata(language_choice.item_count - 1, language["locale"])
 	Sound.bind_button(language_choice)
 	gameplay_page.add_child(language_choice)
-	language_note = Hud.label_at(gameplay_page, "", Vector2(0, 360), 13, Color("c5cdbb"))
+	language_note = Hud.label_at(gameplay_page, "", Vector2(0, 110), 13, Color("c5cdbb"))
 	language_note.size = Vector2(432, 52)
 	language_note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	language_choice.item_selected.connect(func(index: int):
@@ -141,10 +126,16 @@ func _ready() -> void:
 	camera_follow_toggle.size.x = 432
 	camera_follow_toggle.tooltip_text = Loc.text("Follow the active faction\nManual camera movement stops following this turn")
 	camera_follow_toggle.toggled.connect(func(value: bool): Video.set_preference(&"follow_turn_camera", value))
-	level_transition_toggle = check(video_page, Loc.text("Animate level transitions"), Vector2(0, 306))
-	level_transition_toggle.size.x = 432
+	level_transition_toggle = check(video_page, Loc.text("Animate transitions"), Vector2(0, 306))
+	level_transition_toggle.size.x = 210
+	level_transition_toggle.clip_text = true
 	level_transition_toggle.tooltip_text = Loc.text("Tile arrival / departure animations\nTurning off finishes the current transition")
 	level_transition_toggle.toggled.connect(func(value: bool): Video.set_preference(&"level_transitions", value))
+	plastic_tiles_toggle = check(video_page, Loc.text("Plastic tiles"), Vector2(216, 306))
+	plastic_tiles_toggle.size.x = 216
+	plastic_tiles_toggle.clip_text = true
+	plastic_tiles_toggle.tooltip_text = Loc.text("On: reflective plastic tops and rubber bases\nOff: original matte tiles\nChanges apply immediately and are saved automatically.")
+	plastic_tiles_toggle.toggled.connect(func(value: bool): Video.set_preference(&"plastic_tiles", value))
 	Hud.label_at(video_page, "Internal borders", Vector2(0, 358), 15)
 	internal_borders_slider = Tips.RangeSlider.new()
 	internal_borders_slider.position = Vector2(160, 356)
@@ -199,7 +190,6 @@ func choice(items: Array, y: float) -> OptionButton:
 func refresh() -> void:
 	refresh_language()
 	indicators_toggle.set_pressed_no_signal(Gameplay.clear_indicators)
-	rules_choice.select(0 if (Gameplay.rule_mode if authored_rules == "" else authored_rules) == "modern" else 1)
 	for bus in sound_sliders:
 		sound_sliders[bus].set_value_no_signal(Sound.get_volume(bus) * 100)
 	sound_mute.set_pressed_no_signal(Sound.is_muted())
@@ -212,6 +202,7 @@ func refresh() -> void:
 	vsync_toggle.set_pressed_no_signal(Video.vsync)
 	shadow_toggle.set_pressed_no_signal(Video.shadows)
 	lighting_toggle.set_pressed_no_signal(Video.atmospheric_lighting)
+	plastic_tiles_toggle.set_pressed_no_signal(Video.plastic_tiles)
 	camera_follow_toggle.set_pressed_no_signal(Video.follow_turn_camera)
 	level_transition_toggle.set_pressed_no_signal(Video.level_transitions)
 	internal_borders_slider.set_value_no_signal(Video.internal_borders * 100.0)

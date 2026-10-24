@@ -19,7 +19,7 @@ func equivalent(a, b) -> void:
 	expect(a.mana_by_faction == b.mana_by_faction and a.effects_by_faction == b.effects_by_faction, "Selective reconstruction preserves mana and effects")
 	expect(a.rng.state == b.rng.state and a.pending_events == b.pending_events, "Selective reconstruction preserves encounters and RNG")
 func selective_checks() -> void:
-	for mode in ["classic", "modern"]:
+	for mode in ["modern"]:
 		for seed_value in range(10):
 			var current = Fixture.crowded("huge", seed_value, 120)
 			current.rule_mode = mode

@@ -20,7 +20,9 @@ func run() -> void:
 	root.get_node("Video").set_preference(&"level_transitions",true,false)
 	Engine.max_fps = 0 if "--uncapped" in OS.get_cmdline_user_args() else 120
 	app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	await process_frame
 	var size_id := "huge" if "--huge" in OS.get_cmdline_user_args() else "large"
 	root.get_node("Gameplay").set_rules("modern", false)

@@ -22,7 +22,7 @@ static func rebuild_kingdoms(state, affected_owners: Dictionary = {}) -> void:
 				# capitals, including those left by a duel in another faction.
 				cells[capital]["tree"] = false
 				cells[capital]["grave"] = false
-				cells[capital]["building"] = ""
+				if not preload("res://src/game/event_sites.gd").protected(cells[capital]): cells[capital]["building"] = ""
 	var visited: Dictionary = {}
 	for start in cells:
 		if not partial or affected_owners.has(cells[start]["owner"]): cells[start]["kingdom"] = NONE
@@ -41,7 +41,7 @@ static func rebuild_kingdoms(state, affected_owners: Dictionary = {}) -> void:
 				component.append(coord)
 				visited[coord] = true
 			for next in state.neighbors(coord):
-				if (cells[next]["owner"] == owner or (state.is_modern() and state.is_bridge(next))) and not state.is_mountain(next) and not connected.has(next):
+				if (cells[next]["owner"] == owner or (state.is_bridge(next))) and not state.is_mountain(next) and not connected.has(next):
 					connected[next] = true
 					pending.append(next)
 		var capital := NONE
@@ -60,7 +60,7 @@ static func rebuild_kingdoms(state, affected_owners: Dictionary = {}) -> void:
 		cells[capital]["capital"] = owner
 		cells[capital]["tree"] = false
 		cells[capital]["grave"] = false
-		cells[capital]["building"] = ""
+		if not preload("res://src/game/event_sites.gd").protected(cells[capital]): cells[capital]["building"] = ""
 		rebuilt[capital] = {"capital": capital, "owner": owner, "gold": gold, "hexes": component}
 		for coord in component:
 			cells[coord]["kingdom"] = capital

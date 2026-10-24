@@ -44,7 +44,7 @@ func run() -> void:
 	for action in Candidates.preparation(summon, 0):
 		if action.get("spell", "") == "summon": unsafe_summon = true
 	expect(not unsafe_summon, "Normal AI rejects Summon when spare income cannot pay its four-gold wage")
-	for mode in ["modern", "classic"]:
+	for mode in ["modern"]:
 		for source_tier in [0, 1, 2]:
 			var s = Rules.new()
 			s.rule_mode = mode
@@ -58,7 +58,7 @@ func run() -> void:
 			expect(not s.recruit(Vector2i.ZERO, 0, 3) and bank["gold"] == cost - 1 and s.cells[Vector2i.ZERO]["unit"] == source_tier, "Insufficient Knight funds reject without mutating unit or treasury")
 			bank["gold"] = cost
 			expect(s.recruit(Vector2i.ZERO, 0, 3) and bank["gold"] == 0 and s.cells[Vector2i.ZERO]["unit"] == 3, "Knight direct purchase and upgrades pay the full price difference in both rulesets")
-			expect(s.Catalog.unit_tooltip(3, mode == "modern").contains("Cost 40 G"), "Knight tooltip shows authoritative purchase price")
+			expect(s.Catalog.unit_tooltip(3).contains("Cost 40 G"), "Knight tooltip shows authoritative purchase price")
 		# Reproduce the formerly invulnerable seven-hex pocket in both modes.
 		var s = Rules.new()
 		s.rule_mode = mode

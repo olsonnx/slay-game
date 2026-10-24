@@ -22,15 +22,32 @@ func run() -> void:
 	var video_preferences = root.get_node("Video")
 	var original_transitions: bool = video_preferences.level_transitions
 	video_preferences.set_preference(&"level_transitions", false, false)
+	# Completion is persistent data, rather than a manually toggled menu choice.
+	var prefs = load("res://src/settings/gameplay_settings.gd").new()
+	prefs.settings_path = "user://tutorial-menu-test.cfg"
+	prefs.complete_tutorial("economy")
+	var loaded = load("res://src/settings/gameplay_settings.gd").new()
+	expect(loaded.load_settings(prefs.settings_path) == OK and loaded.completed_tutorials.get("economy",false),"Tutorial completion survives preference reload")
+	expect(not loaded.completed_tutorials.get("construction",false),"Incomplete tutorials remain unchecked")
+	prefs.free()
+	loaded.free()
 	var app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	await process_frame
+	var topics = app.menus.tutorial_panel
+	expect(is_equal_approx(topics.size.x,480) and is_equal_approx(topics.size.y,500),"Tutorial selector uses a compact panel")
+	for category in topics.category_buttons:
+		var row: Button = topics.category_buttons[category]
+		expect(row.get_child_count() == 2 and row.get_child(0) is CheckBox and row.get_child(1) is Label and row.tooltip_text == "","Topic rows contain only a checkbox and title")
+		expect(topics.completion_checks[category].mouse_filter == Control.MOUSE_FILTER_IGNORE and topics.completion_checks[category].focus_mode == Control.FOCUS_NONE,"Completion marks cannot be changed by clicking or keyboard focus")
 	expect(app.game == null and app.menus.screen == app.menus.Screen.MAIN and not paused, "Application starts in a basic main menu")
-	expect(app.menus.main_panel.size.y == 350 and app.menus.main_utilities.size() == 4, "Main menu ends in a compact four-icon utility row")
+	expect(app.menus.main_panel.size.y == 462 and app.menus.main_utilities.size() == 4 and app.menus.collection_button.text == "Collection", "Main menu fits Campaign, Collection and its four-icon utility row")
 	for index in range(app.menus.main_utilities.size()):
 		var control: Button = app.menus.main_utilities[index]
 		expect(control.text == "" and control.icon != null and control.tooltip_text != "" and control.focus_mode == Control.FOCUS_ALL, "Utility icons retain tooltips and keyboard focus")
-		expect(control.position.y == 286 and control.get_rect().end.y < app.menus.main_panel.size.y, "Utility icons align at the bottom inside the menu")
+		expect(control.position.y == 398 and control.get_rect().end.y < app.menus.main_panel.size.y, "Utility icons align at the bottom inside the menu")
 		if index > 0: expect(app.menus.main_utilities[index - 1].get_rect().end.x < control.position.x, "Utility icons have consistent horizontal spacing")
 	app.menus.main_utilities[2].pressed.emit()
 	expect(app.menus.options_panel.visible, "Options is accessible before a game exists")
@@ -65,6 +82,11 @@ func run() -> void:
 	expect(not game.stats_shade.visible and not paused, "Escape closes Stats before pausing")
 	escape(game)
 	expect(paused and app.menus.screen == app.menus.Screen.PAUSE and not game.ui_root.visible, "Escape with no pending action opens a full pause screen")
+	expect(app.menus.pause_duration.text == "Time played: %s" % preload("res://src/game/match_clock.gd").display(game.match_clock.seconds()), "Pause displays the existing active-play clock")
+	expect(app.menus.pause_seed.text == "Seed: %s" % str(game.rules.level_seed), "Pause displays the actual generated level seed")
+	expect(is_equal_approx(app.menus.pause_panel.size.y - app.menus.pause_quit_button.get_rect().end.y, 24.0), "Pause has a compact 24-pixel bottom margin below Quit")
+	expect(app.menus.pause_duration.get_rect().end.x < app.menus.pause_seed.position.x and app.menus.pause_seed.get_rect().end.x <= app.menus.pause_panel.size.x - 24.0, "Time and seed fit side by side inside the pause panel")
+	var paused_time: String = app.menus.pause_duration.text
 	var camera_before: Vector3 = game.view.camera.position
 	var round_before: int = game.round_number
 	game.choose_unit(1)
@@ -72,6 +94,7 @@ func run() -> void:
 	expect(game.action_mode == "" and not game.busy, "Gameplay commands cannot execute underneath the pause screen")
 	await create_timer(0.15, true).timeout
 	expect(game.view.camera.position == camera_before and game.round_number == round_before, "Paused game leaves camera and turn state frozen")
+	expect(app.menus.pause_duration.text == paused_time, "Solo pause does not count as played time")
 	app.menus.open_options(app.menus.Screen.PAUSE)
 	expect(paused and app.menus.options_view.video_page != null, "Pause options contains audio and video controls")
 	escape(app.menus)
@@ -194,8 +217,13 @@ func run() -> void:
 	escape(app.menus)
 	expect(app.menus.screen == app.menus.Screen.QUIT and is_instance_valid(app.game), "Backing out of quit confirmation keeps the session")
 	app.return_to_main_menu()
+	var observed_covered_retirement := false
 	while app.retiring_games > 0:
+		if app.game == null:
+			observed_covered_retirement = true
+			expect(is_instance_valid(app.departure_cover) and app.departure_cover.visible and app.menus.navigation_locked, "Retirement remains covered and navigation locked until the destination draws")
 		await process_frame
+	expect(observed_covered_retirement and app.departure_cover == null, "Returning removes the temporary cover after publishing the menu")
 	expect(not paused and app.game == null and app.menus.screen == app.menus.Screen.MAIN, "Main Menu safely discards the session and clears pause")
 	await app.start_new_game()
 	game = app.game

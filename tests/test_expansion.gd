@@ -99,11 +99,6 @@ func run() -> void:
 	rules.cells[tree]["grave"] = true
 	rules.perform_move(source, tree)
 	expect(rules.kingdom_at(tree)["gold"] == 50, "Walking onto a grave also gives no gold")
-	rules.rule_mode = "classic"
-	land_fixture(rules)
-	rules.cells[tree]["tree"] = true
-	rules.perform_move(source, tree)
-	expect(rules.kingdom_at(tree)["gold"] == 50 and not rules.can_build(Vector2i(-1, 0), 0, "bridge"), "Classic preserves its original clearing economy and excludes bridges")
 	rules.rule_mode = "modern"
 	land_fixture(rules)
 	land_fixture(rules)

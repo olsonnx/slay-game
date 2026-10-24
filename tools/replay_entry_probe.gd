@@ -3,7 +3,9 @@ func _initialize() -> void: call_deferred("run")
 
 func run() -> void:
 	var app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	await create_timer(0.5).timeout
 	var samples: Array = []
 	for cycle in range(5):

@@ -57,7 +57,7 @@ func run() -> void:
 	for size_id in Sizes.IDS:
 		var counts: Dictionary = {}
 		var total := 0
-		for mode in ["classic", "modern"]:
+		for mode in ["modern"]:
 			var positions: Dictionary = {}
 			var distances: Dictionary = {}
 			var silhouettes: Dictionary = {}
@@ -137,7 +137,9 @@ func run() -> void:
 	var transitions: bool = video.level_transitions
 	video.set_preference(&"level_transitions", false, false)
 	var app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	await process_frame
 	for child in app.menus.main_panel.get_children():
 		if child is Button and child.text == "Quick Play":
@@ -187,10 +189,6 @@ func run() -> void:
 	var old_path: String = preferences.settings_path
 	var old_mode: String = preferences.rule_mode
 	preferences.settings_path = "res://artifacts/map_sizes_gameplay_test.cfg"
-	app.change_rules("classic" if old_mode == "modern" else "modern")
-	while app.transitioning:
-		await process_frame
-	expect(app.game.rules.map_size == "large" and app.game.rules.level_seed != initial_seed and app.game.rules.faction_count == 6, "Changing rules generates a fresh level while retaining map size")
 	preferences.set_rules(old_mode, false)
 	preferences.settings_path = old_path
 	for cell in app.game.cells.values():
@@ -223,7 +221,7 @@ func run() -> void:
 	root.get_node("Sound").stop_all()
 	await create_timer(1.2).timeout
 	for count in [6,7,8,9]: expect(starting_sizes.has(count), "All four Modern starting sizes occur across generated maps")
-	expect(non_ring_starts["classic"] > 0 and non_ring_starts["modern"] > 0 and mixed_size_maps > 0, "Both rulesets vary their shapes and Modern can mix sizes in the same match")
+	expect(non_ring_starts["modern"] > 0 and mixed_size_maps > 0, "Starting territories vary their shapes and can mix sizes in the same match")
 	print("Modern starting-size distribution: ", starting_sizes, "; non-ring starts: ", non_ring_starts, "; mixed-size maps: ", mixed_size_maps)
 	print("Map size checks: %d passed, %d failed" % [checks - failures, failures])
 	quit(1 if failures else 0)
@@ -238,7 +236,7 @@ func independent_count_checks() -> void:
 				expect(bounds.inside_map(anchors[index] + direction), "Fallback homes stay within the size bounds")
 			for other in range(index + 1, anchors.size()):
 				expect(Rules.Grid.distance(anchors[index], anchors[other]) >= 5, "Bounded fallback preserves kingdom separation")
-		for mode in ["classic", "modern"]:
+		for mode in ["modern"]:
 			for count in range(2, Sizes.MAX_KINGDOMS[size_id] + 1):
 				for seed_value in range(8):
 					var rules = Rules.new()

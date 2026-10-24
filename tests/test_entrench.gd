@@ -64,9 +64,7 @@ func rules_checks() -> void:
 	expect(not model.is_entrenched(Vector2i(1,0)) and not model.cells[Vector2i(1,0)]["moved"], "Owner's next turn clears protection and readies the unit")
 	model.cells[Vector2i(1,0)]["moved"] = true
 	expect(not model.entrench(Vector2i(1,0),0), "A unit that already moved cannot entrench")
-	model.rule_mode = "classic"
 	model.cells[Vector2i(1,0)]["moved"] = false
-	expect(not model.entrench(Vector2i(1,0),0), "Classic retains its existing rules")
 	model = fixture(1)
 	model.cells[Vector2i.ZERO]["unit"] = 1
 	model.entrench(Vector2i(1,0),0)

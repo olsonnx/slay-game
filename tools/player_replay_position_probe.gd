@@ -62,7 +62,7 @@ func probe(sample: Dictionary) -> Dictionary:
 			var cheapest := 100000
 			for coord in bank["hexes"]:
 				var price: int = model.recruitment_cost(coord,faction,rank,capital)
-				var wages: int = model.Catalog.unit_upkeep(rank,true) - model.Catalog.unit_upkeep(model.cells[coord]["unit"],true)
+				var wages: int = model.Catalog.unit_upkeep(rank) - model.Catalog.unit_upkeep(model.cells[coord]["unit"])
 				if price >= 0 and price < cheapest and Analysis.sustainable(model,bank,wages,price,queries):
 					site = coord
 					cheapest = price

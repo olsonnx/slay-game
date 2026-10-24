@@ -80,8 +80,7 @@ static func evaluate(model, faction: int, queries = null) -> float:
 			score -= 150.0
 		elif net < 0:
 			score -= absf(net) * 2.0
-	if model.is_modern():
-		score += model.get_mana(faction) * 1.5
+	score += model.get_mana(faction) * 1.5
 	if own_capitals > 0:
 		score += 25.0 + (own_capitals - 1) * 2.0
 	if land == 0:
@@ -108,6 +107,8 @@ static func variation(model, source: Vector2i, target: Vector2i) -> float:
 	return key / 104729.0 * (0.65 if model.ai_difficulty == "easy" else 0.08)
 
 static func event_choice(model, event: Dictionary) -> int:
+	var entry: Dictionary = model.Events.EVENTS.get(event.id,{})
+	if entry.has("authored"): return preload("res://src/game/authored_event_runtime.gd").ai_choice(model,entry.authored,event)
 	var bank: Dictionary = model.kingdom_at(event["coord"])
 	match event["id"]:
 		"regroup": return 0 if not bank.is_empty() and bank["gold"] + model.income(bank) < model.upkeep(bank) else 1

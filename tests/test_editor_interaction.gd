@@ -69,5 +69,7 @@ func run() -> void:
 	expect(doc.undo_stack.size() == 1 and editor.document_status.contains(" *"), "Finishing the stroke preserves undo and dirty-state reporting")
 	editor.queue_free()
 	await process_frame
+	# Let the audio mixing thread release the board's stopped ambience loops.
+	await create_timer(1.2).timeout
 	print("Editor interaction checks: %d passed, %d failed" % [checks - failures, failures])
 	quit(1 if failures else 0)

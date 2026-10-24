@@ -41,10 +41,13 @@ func run() -> void:
 	var c := Vector2i(2, 0)
 	var mountain := Vector2i(0, 1)
 	var bridge := Vector2i(1, 1)
+	var distant := Vector2i(30, 0)
 	game.rules.cells.clear()
 	game.rules.kingdoms.clear()
 	for coord in [a, b, c, mountain, bridge]:
 		game.cells[coord] = game.rules.make_cell(0 if coord in [a, b] else 1 if coord == c else -1)
+	game.cells[distant] = game.rules.make_cell(-1)
+	game.cells[distant].value = 2
 	game.cells[a]["unit"] = 3
 	game.cells[a]["tree"] = true
 	game.cells[a]["value"] = 3
@@ -69,7 +72,12 @@ func run() -> void:
 	var original_surface: MeshInstance3D = original_tile.get_meta("surface")
 	var original_mesh: Mesh = original_surface.mesh
 	var original_material: Material = original_surface.material_override
+	await heatmap.prepare()
+	expect(not heatmap.active and original_surface.material_override == original_material and game.cells == before and game.rules.rng.state == rng_before, "Loading prepares both value views without changing the normal board or rules")
+	var prepared_syncs: int = game.view.static_batches.sync_count
+	var prepared_rebuilds: int = game.view.static_batches.terrain_rebuild_count
 	game._unhandled_input(key(KEY_F))
+	expect(game.view.static_batches.sync_count == prepared_syncs and game.view.static_batches.terrain_rebuild_count == prepared_rebuilds, "The first prepared activation needs no batch scan or terrain upload")
 	expect(heatmap.active and game.heatmap_legend.visible and game.heatmap_button.button_pressed, "F enables heatmap and legend/button feedback")
 	expect(game.heatmap_button.size == game.view_button.size and game.heatmap_button.icon != null, "Heatmap icon button matches camera button dimensions")
 	expect(game.cells == before and game.rules.rng.state == rng_before and game.view.camera.transform == camera_before, "Heatmap leaves rules, RNG and camera untouched")
@@ -135,6 +143,26 @@ func run() -> void:
 	game._unhandled_input(key(KEY_F))
 	expect(not heatmap.active and not game.heatmap_legend.visible and game.view.board_root.visible and game.view.animation_root.visible and game.view.sky_backdrop.visible, "F restores normal terrain/details and latest background setting")
 	expect(original_surface.material_override == original_material, "Filter restores the original surface material exactly")
+	# Updating the normal view must invalidate its cached filtered counterpart.
+	game.cells[b]["value"] = 2
+	game.view.render_cells(game.cells)
+	heatmap.set_active(true)
+	expect(heatmap.tiles[b].get_node("Value").text == "2" and original_surface.material_override.albedo_color == heatmap.value_color(2, heatmap.maximum), "A cached value view refreshes development that happened while it was hidden")
+	var distant_surface = game.view.tile_nodes[distant].get_meta("surface")
+	var distant_tint := Color.TRANSPARENT
+	var records = preload("res://src/rendering/batch_records.gd")
+	for record in game.view.static_batches.tile_records[game.view.tile_nodes[distant].get_instance_id()].records:
+		if record[records.Source.NODE] == distant_surface: distant_tint = record[records.Source.COLOR]
+	expect(distant_tint == heatmap.value_color(2, heatmap.maximum), "A changed maximum refreshes cached colors in distant untouched chunks")
+	heatmap.set_active(false)
+	game.cells[b].value = 1
+	game.view.render_cells(game.cells)
+	heatmap.set_active(true)
+	var updated_tint := Color.TRANSPARENT
+	for record in game.view.static_batches.tile_records[original_tile.get_instance_id()].records:
+		if record[records.Source.NODE] == original_surface: updated_tint = record[records.Source.COLOR]
+	expect(heatmap.maximum == 3 and updated_tint == heatmap.LOW, "Value-only changes refresh hidden uploads even when the maximum and normal geometry stay unchanged")
+	heatmap.set_active(false)
 	keys.set_binding("heatmap", KEY_H, false)
 	game._unhandled_input(key(KEY_F))
 	expect(not heatmap.active, "Old heatmap key stops working after rebind")

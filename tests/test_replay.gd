@@ -112,6 +112,8 @@ func run() -> void:
 	expect(site != model.NONE and model.build_structure(site, faction, "house", capital), "Construction command executes")
 	expect(model.recruit(capital, faction, 3), "Recruitment command executes")
 	var encounter := {"id":"gold", "coord":capital, "faction":faction}
+	if model.Events.EVENTS.gold.has("authored"):
+		model.magic.Encounters.Authored.prepare(model, model.Events.EVENTS.gold.authored, encounter)
 	model.pending_events.append(encounter)
 	model.record_replay("fixture_setup", faction)
 	model.event_definition(encounter)

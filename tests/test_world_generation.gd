@@ -130,8 +130,6 @@ func run() -> void:
 	isolated.cells[Vector2i(1, 0)]["mountain"] = true
 	expect(not isolated.starting_land_reachable(), "A mountain blocks the apparent crossing between two passable regions")
 	isolated.cells.erase(Vector2i(1, 0))
-	isolated.rule_mode = "classic"
-	expect(not isolated.starting_land_reachable(), "Classic cannot reach land across water")
 	for size_id in Sizes.IDS:
 		var vertical := 0
 		var horizontal := 0
@@ -142,7 +140,7 @@ func run() -> void:
 		var lakes := 0
 		var largest_lake := 0
 		var quiet_worlds := 0
-		for mode in ["classic", "modern"]:
+		for mode in ["modern"]:
 			for seed_value in range(16):
 				var rules = Rules.new()
 				rules.rule_mode = mode
@@ -176,7 +174,6 @@ func run() -> void:
 						expect(ridge.size() >= 2 and ridge.size() <= clampi(roundi(sqrt(rules.cells.size()) * 0.55), 5, 18), "Mountain ranges respect size limits")
 						if ridge.size() >= 4: long_ranges += 1
 				expect(rules.cells.size() >= Sizes.spec(size_id)["min_land"], "Land budget includes offshore expansion space")
-				if mode == "classic": expect(regions.size() == 1, "Classic has no unreachable offshore land")
 				expect(regions.size() <= 3, "Worlds have one, two or three landmasses")
 				var membership := {}
 				for index in range(regions.size()):
@@ -229,6 +226,8 @@ func run() -> void:
 			expect(screen.has_point(view.camera.unproject_position(at)) and screen.has_point(view.camera.unproject_position(at + Vector3.UP * 3.0)), "Initial camera fits tall, wide and offshore terrain with prop clearance")
 		view.queue_free()
 		await process_frame
+	root.get_node("Sound").stop_all()
+	await create_timer(1.1).timeout
 	print("World generation checks: %d passed, %d failed" % [checks-failures, failures])
 	quit(1 if failures else 0)
 

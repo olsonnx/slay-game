@@ -12,7 +12,7 @@ static func normalize(value: Dictionary) -> Dictionary:
 	# Authored maps retain retired size metadata; generated lobbies use current choices.
 	if size_id not in Sizes.IDS and not (map_path != "" and Sizes.SPECS.has(size_id)): size_id = "small"
 	count = clampi(count if count is int else 4, 2, 6) if map_path != "" else Sizes.clamp_kingdom_count(size_id, count if count is int else 4)
-	var result := {"size": size_id, "count": count, "rules": "classic" if value.get("rules") == "classic" else "modern", "seed": -1, "order": "random" if value.get("order") == "random" else "fixed", "slots": []}
+	var result := {"size": size_id, "count": count, "rules": "modern", "seed": -1, "order": "random" if value.get("order") == "random" else "fixed", "slots": []}
 	if map_path != "": result["map_path"] = map_path
 	var seed_value = value.get("seed", -1)
 	if seed_value is int: result["seed"] = clampi(seed_value, -1, 2147483647)
@@ -34,7 +34,7 @@ static func normalize(value: Dictionary) -> Dictionary:
 		result["slots"].append({"name": name_value if name_value != "" else Loc.text("Player %d") % (index + 1) if controller == "human" else Catalog.FACTIONS[color], "color": color, "controller": controller, "difficulty": difficulty})
 	return result
 
-static func quick_play(size_id: String, count: int, difficulty: String, kingdom: int, seed_value: int, rule_mode: String) -> Dictionary:
+static func quick_play(size_id: String, count: int, difficulty: String, kingdom: int, seed_value: int, _rule_mode: String) -> Dictionary:
 	# Palette selection never consumes the map/gameplay RNG or changes seat IDs.
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value ^ 0x5A17C01
@@ -51,7 +51,7 @@ static func quick_play(size_id: String, count: int, difficulty: String, kingdom:
 	for index in range(Sizes.clamp_kingdom_count(size_id,count)):
 		var color: int = palettes[index]
 		slots.append({"name":Catalog.FACTIONS[color], "color":color, "controller":"human" if index == 0 else "ai", "difficulty":difficulty})
-	return {"size":size_id,"count":slots.size(),"rules":rule_mode,"seed":seed_value,"order":"fixed","slots":slots}
+	return {"size":size_id,"count":slots.size(),"rules":"modern","seed":seed_value,"order":"fixed","slots":slots}
 
 static func human_count(config: Dictionary) -> int:
 	var count := 0

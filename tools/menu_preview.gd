@@ -14,7 +14,9 @@ func capture() -> void:
 		if "--" + background in OS.get_cmdline_user_args():
 			root.get_node("Video").set_preference(&"background", background, false)
 	var app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	app.menus.set_process_unhandled_input(false)
 	var args := OS.get_cmdline_user_args()
 	if "--small-window" in args:

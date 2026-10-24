@@ -201,7 +201,7 @@ func view_ownership() -> void:
 	editor_view.settings_shade.show()
 	await process_frame
 	await process_frame
-	for field in [editor_view.gold_choice, editor_view.size_choice, editor_view.mode_choice]:
+	for field in [editor_view.gold_choice, editor_view.size_choice]:
 		expect(field.get_global_rect().end.x <= editor_view.panel.get_global_rect().end.x - 20, "Container form fields retain the panel's right padding")
 	editor_view.name_edit.text_changed.emit("A view-only edit")
 	editor_view.command(&"new_island", [true]).call()

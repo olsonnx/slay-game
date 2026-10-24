@@ -13,10 +13,12 @@ EXTRA = {
     "src/game/replay_summary.gd",
     "src/game/wildlife.gd",
     "src/game/game.gd", "src/game/game_catalog.gd", "src/game/spell_catalog.gd",
+    "src/game/authored_event_runtime.gd",
     "src/game/event_catalog.gd", "src/game/encounter_rules.gd", "src/game/tutorial.gd", "src/game/tutorial_lessons.gd",
     "src/game/player_actions.gd", "src/game/opponent_turns.gd", "src/game/kingdom_magic.gd",
     "src/game/match_setup.gd", "src/game/map_sizes.gd", "src/game/game_input.gd",
     "src/settings/key_settings.gd", "src/app/app.gd",
+    "src/network/steam_online.gd", "src/network/network_match.gd",
     "src/editor/level_document.gd", "src/editor/level_editor.gd", "src/editor/editor_view.gd",
     "src/editor/discard_dialog.gd",
     "src/localization/native_messages.gd",
@@ -56,6 +58,9 @@ def readable(value):
         return False
     if "_" in value and not re.search(r"\s", value):
         return False
+    # A single-word loading label with an ASCII ellipsis is still UI text.
+    if value.endswith("..."):
+        return readable(value[:-3])
     if re.fullmatch(r"[A-Za-z0-9_./:@#&]+", value):
         return value[0].isupper() and "_" not in value and "." not in value and not re.search(r"[a-z][A-Z]", value)
     return True
@@ -74,6 +79,21 @@ def catalogue():
                 continue
             line = source.count("\n", 0, start) + 1
             messages.setdefault(value, []).append(f"{relative}:{line}")
+    event_pack = ROOT / "resources/events/custom_events.json"
+    if event_pack.exists():
+        pack = json.loads(event_pack.read_text(encoding="utf-8-sig"))
+        def event_text(value, context):
+            if isinstance(value, dict):
+                for key, item in value.items():
+                    if key in {"title", "text", "label", "hint", "requirements", "painting_title", "painting_artist"} and isinstance(item, str) and readable(item):
+                        messages.setdefault(item, []).append(context + ":" + key)
+                    else:
+                        event_text(item, context + ":" + key)
+            elif isinstance(value, list):
+                for index, item in enumerate(value):
+                    event_text(item, context + ":" + str(index))
+        for event in pack.get("events", []):
+            event_text(event, "resources/events/custom_events.json:" + str(event.get("id", "event")))
     return {key: messages[key] for key in sorted(messages)}
 
 def main():

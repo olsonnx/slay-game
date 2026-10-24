@@ -21,7 +21,9 @@ func run() -> void:
 			for shadows in ([false, true] if repetition == 0 else [true, false]):
 				video.set_preference(&"shadows", shadows, false)
 				var app = load("res://scenes/app.tscn").instantiate()
+				app.onboarding_enabled = false
 				root.add_child(app)
+				await app.startup_finished
 				var background = app.menus.menu_background
 				background.set_process(false)
 				var old = background.map

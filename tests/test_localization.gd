@@ -67,7 +67,7 @@ func run() -> void:
 	expect(Loc.text("Level %d") % 12 == "TEST::LEVEL 12", "Dynamic messages translate before formatting")
 	expect(Loc.text("Build") == "Build" and Loc.text("Recruit") == "Recruit", "Blank and invalid entries fall back to readable English")
 	expect(Loc.text("Income %+d G / turn") % 3 == "Income +3 G / turn", "Rejected placeholders cannot break numeric formatting")
-	expect(Catalog.unit_tooltip(3, true).begins_with("TEST::UNIT TEST::KNIGHT 3 40 36"), "Unit descriptions translate their template and rank while retaining actual prices and wages")
+	expect(Catalog.unit_tooltip(3).begins_with("TEST::UNIT TEST::KNIGHT 3 40 36"), "Unit descriptions translate their template and rank while retaining actual prices and wages")
 	expect(Sizes.choice_label("small") == "TEST::MAP TEST::TINY 80", "Data-driven names are translated before being inserted into a caption")
 	var keys = root.get_node("Keys")
 	var key_code: int = keys.bindings["end_turn"]

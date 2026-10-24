@@ -11,8 +11,8 @@ const LAIR_BUDGETS := {"very_small":0,"small":1,"medium":1,"large":2,"very_large
 const RESPAWN_TURNS := 3
 const KINDS := ["bear", "wolf", "boar"]
 const DEFINITIONS := {
-	"bear":{"name":"Bear","lair":"Bear cave","defense":2,"attack":3,"reward":"Permanent income +5 G / turn"},
-	"wolf":{"name":"Wolf","lair":"Wolf den","defense":1,"attack":2,"reward":"Permanent mana regeneration +1 / turn"},
+	"bear":{"name":"Bear","lair":"Bear cave","defense":2,"attack":3,"reward":"Landmark: +5 G / turn to its kingdom while controlled"},
+	"wolf":{"name":"Wolf","lair":"Wolf den","defense":1,"attack":2,"reward":"Landmark: +1 mana / turn to its owner"},
 	"boar":{"name":"Boar","lair":"Boar burrow","defense":1,"attack":3,"reward":"20 G and 2 mana"}}
 
 static func present(cell: Dictionary) -> bool:
@@ -24,7 +24,6 @@ static func defense(cell: Dictionary) -> int:
 	return maxi(int(DEFINITIONS.get(animal, {}).get("defense",0)),int(DEFINITIONS.get(lair, {}).get("defense",0)))
 
 static func generate(state) -> void:
-	if not state.is_modern(): return
 	var wanted: int = LAIR_BUDGETS.get(state.map_size,1)
 	if wanted <= 0: return
 	# Separate placement RNG preserves existing resources, encounters and turn RNG.
@@ -77,16 +76,11 @@ static func destroy_lair(state, coord: Vector2i, faction: int, bank: Dictionary)
 	# Erase before granting anything: revisits and reconnections cannot pay again.
 	cell.erase("lair")
 	cell.erase("lair_wait")
-	if not state.effects_by_faction.has(faction): state.effects_by_faction[faction] = {}
-	var effects: Dictionary = state.effects_by_faction[faction]
-	match kind:
-		"bear": state.magic.Encounters.change_income(state,faction,bank,5,"bear")
-		"wolf":
-			effects["wildlife_mana_regen"] = int(effects.get("wildlife_mana_regen",0))+1
-			state.magic.Encounters.add_source(effects,"mana_sources","wolf")
-		"boar":
-			bank.gold += 20
-			state.set_mana(faction,state.get_mana(faction)+2)
+	var sites = preload("res://src/game/event_sites.gd")
+	sites.create(state,coord,kind,5 if kind == "bear" else 0,1 if kind == "wolf" else 0)
+	if kind == "boar":
+		bank.gold += 20
+		state.set_mana(faction,state.get_mana(faction)+2)
 
 static func attack_kind(state, coord: Vector2i, kind: String) -> String:
 	var cell: Dictionary = state.cells[coord]
@@ -177,7 +171,7 @@ static func raid(state, target: Vector2i, kind: String) -> String:
 	var owner: int = cell.owner
 	cell.owner = -1
 	cell.capital = -1
-	cell.building = ""
+	if not preload("res://src/game/event_sites.gd").protected(cell): cell.building = ""
 	cell.erase("entrenched_by")
 	cell.fortified = false
 	cell.fortified_by = -1
@@ -210,7 +204,6 @@ static func spawn_site(state, home: Vector2i) -> Vector2i:
 
 static func world_turn(state) -> Array[Dictionary]:
 	var result: Array[Dictionary] = []
-	if not state.is_modern(): return result
 	# Snapshot actors: new spawns never also move/attack on their emergence turn.
 	var animals := []
 	var occupied_homes := {}

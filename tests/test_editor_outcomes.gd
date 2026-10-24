@@ -17,10 +17,12 @@ func run() -> void:
 	root.get_node("Video").set_preference(&"level_transitions", false, false)
 	root.get_node("Sound").set_muted(true, false)
 	var app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	await process_frame
 	app.open_editor()
-	for mode in ["modern", "classic"]:
+	for mode in ["modern"]:
 		for enemy in [0, 1]:
 			for victory in [false, true]:
 				var doc = app.editor.document
@@ -45,6 +47,11 @@ func run() -> void:
 						cell["owner"] = -1
 						cell["capital"] = -1
 						cell["unit"] = 0
+				if not victory:
+					var remnant := Vector2i(20, 0)
+					game.cells[remnant] = game.rules.make_cell(11)
+					game.cells[remnant]["building"] = "house"
+				game.rules.rebuild_kingdoms()
 				game.check_winner()
 				expect(game.game_over and paused, "Actual victory or loss ends the authored game")
 				expect(app.menus.defeat_title.text == ("Victory" if victory else "Defeat"), "Results title follows the selected player's outcome")

@@ -17,7 +17,7 @@ static func site_score(state, coord: Vector2i, capitals: Array) -> float:
 	return nearest + detour * 2.0 + coast * 0.7
 
 static func generate(state) -> void:
-	if not state.is_modern() or state.map_size not in ["medium", "large", "very_large", "huge"]: return
+	if state.map_size not in ["medium", "large", "very_large", "huge"]: return
 	var capitals: Array = state.kingdoms.keys()
 	var sites: Array = []
 	var neutral := 0

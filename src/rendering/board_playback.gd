@@ -223,8 +223,7 @@ func start_motion(actor: Node3D, defender: Node3D, action: Dictionary) -> void:
 	board.motion_stage.emit(action, "travel")
 	var path: Array = action["path"]
 	var end: Vector3 = board.coord_position(action["target"])
-	if action["after_target"]["capital"] >= 0:
-		end += Vector3(0.35, 0, 0.30)
+	end += preload("res://src/rendering/tile_layout.gd").unit_offset(action["after_target"])
 	var attacking: bool = action["kind"] in ["attack", "blocked_attack", "knight_duel"]
 	var animator = actor.get_node("UnitAnimation")
 	animator.play("charge" if attacking and animator.tier == 3 else "run", true)
@@ -265,8 +264,8 @@ func start_motion(actor: Node3D, defender: Node3D, action: Dictionary) -> void:
 			var stop_index: int = maxi(0, path.find(landing))
 			for index in range(path.size() - 2, stop_index - 1, -1):
 				var retreat: Vector3 = board.coord_position(path[index])
-				if index == stop_index and action.get("after_landing", action["before_source"])["capital"] >= 0:
-					retreat += Vector3(0.35, 0, 0.30)
+				if index == stop_index:
+					retreat += preload("res://src/rendering/tile_layout.gd").unit_offset(action.get("after_landing", action["before_source"]))
 				tween.tween_callback(animator.face.bind(retreat))
 				tween.tween_property(actor, "global_position", retreat, STEP_SECONDS).set_trans(Tween.TRANS_LINEAR)
 		elif action["kind"] != "knight_duel":
@@ -313,7 +312,7 @@ func impact(defender: Node3D, action: Dictionary) -> void:
 		return
 	if is_instance_valid(defender):
 		board.cells[action["target"]]["unit"] = 0
-	if action["capture"] and (action["before_target"]["capital"] >= 0 or action["before_target"]["building"] != ""):
+	if action["capture"] and not preload("res://src/game/event_sites.gd").protected(action["before_target"]) and (action["before_target"]["capital"] >= 0 or action["before_target"]["building"] != ""):
 		clear_features(action["target"])
 		board.cells[action["target"]]["building"] = ""
 		board.cells[action["target"]]["capital"] = -1

@@ -55,14 +55,14 @@ func run() -> void:
 	var layouts := {}
 	for seed_value in range(100):
 		board.generate(seed_value)
-		expect(board.connected_land(), "Generated island is connected")
+		expect(board.starting_land_reachable(), "Generated islands have bridge-reachable routes")
 		expect(board.cells.size() >= 65, "Island has enough expansion space")
 		expect(board.territory(-1) > board.cells.size() / 2, "Most starting land is neutral")
 		expect(board.kingdoms.size() == 4, "Each faction starts with one kingdom")
 		for coord in board.cells:
 			expect(board.inside_map(coord), "Map fits the screen")
 		for faction in range(4):
-			expect(board.territory(faction) == 7, "Classic keeps seven tiles so starting income stays equal")
+			expect(board.territory(faction) >= 6 and board.territory(faction) <= 9, "Starting territories contain six to nine provinces")
 		var keys: Array = board.cells.keys()
 		keys.sort()
 		layouts[str(keys)] = true
@@ -132,7 +132,7 @@ func run() -> void:
 	expect(board.cells[c]["tree"] and not board.cells[c]["grave"], "Uncleared grave becomes a tree next owner turn")
 
 	# Capital capture destroys stored money, while replacements keep the kingdom alive.
-	fixture({a: 0, b: 0, c: 0, Vector2i(0, -1): 1, Vector2i(1, -1): 1})
+	fixture({a: 0, b: 0, c: 0, d: 0, Vector2i(0, -1): 1, Vector2i(1, -1): 1})
 	# Author an exposed capital explicitly; automatic placement now avoids it.
 	for coord in [a, b, c]: board.cells[coord]["capital"] = -1
 	board.cells[a]["capital"] = 0
@@ -162,7 +162,7 @@ func run() -> void:
 	board.cells[d]["unit"] = 1
 	expect(board.move_unit(d, b) and not board.cells[b]["grave"], "Unit clears a grave by landing")
 	expect(board.recruit(c, 0) and not board.cells[c]["tree"], "Recruitment can clear a tree")
-	expect(board.kingdom_at(c)["gold"] == 90, "Recruit charges local treasury")
+	expect(board.kingdom_at(c)["gold"] == 91, "Recruit charges local treasury and rewards clearing the tree")
 	board.cells[b]["moved"] = false
 	expect(board.move_unit(b, c) and board.cells[c]["unit"] == 2, "Distant equal units merge")
 	expect(not board.cells[c]["moved"] and board.can_move(c, d), "Merged unit is ready to move again")
@@ -183,8 +183,10 @@ func run() -> void:
 	fixture({a: 0, b: 0, c: 0, d: 0})
 	board.cells[b]["unit"] = 1
 	expect(board.recruit(b, 0, 2) and board.move_unit(b, c), "Scout upgraded to Soldier can move in the same turn")
-	expect(not board.recruit(c, 0, 3), "A moved Soldier cannot reset its movement by upgrading")
-	for mode in ["classic", "modern"]:
+	var upgrade_gold: int = board.kingdom_at(c)["gold"]
+	expect(board.recruit(c, 0, 3) and board.cells[c]["unit"] == 3 and board.kingdom_at(c)["gold"] == upgrade_gold - 20, "A moved Soldier can upgrade for the normal twenty-gold difference")
+	expect(board.cells[c]["moved"] and board.reachable_targets(c).is_empty(), "Upgrading a moved Soldier preserves its spent action")
+	for mode in ["modern"]:
 		board.rule_mode = mode
 		for tier in [1, 2]:
 			for on_bridge in [false, true]:
@@ -204,7 +206,7 @@ func run() -> void:
 						expect(not board.can_move(c, b), "Moved unit cannot initiate a merge")
 					expect(board.move_unit(b, c) and board.cells[c]["unit"] == tier + 1, "Ready unit merges into an equal-tier ally on land or bridge in " + mode)
 					expect(board.cells[b]["unit"] == 0 and board.cells[c]["moved"] == receiver_moved and board.can_move(c, d) == not receiver_moved, "Merge consumes source and preserves the receiving unit's movement status")
-	board.rule_mode = "classic"
+	board.rule_mode = "modern"
 
 	# Construction, adjacent defense, strict strength, and captured building removal.
 	fixture({a: 0, b: 0, c: 0, d: 1, e: 1, Vector2i(5, 0): 1})
@@ -265,7 +267,7 @@ func run() -> void:
 	expect(game.action_mode == "recruit" and game.recruit_tier == 2 and not game.shop_panel.visible, "Selecting Soldier activates placement and closes its list")
 	game.cancel_action()
 	game.build_button.pressed.emit()
-	expect(game.shop_panel.visible and game.shop_items.get_child_count() == 2, "Build button opens tower and house choices")
+	expect(game.shop_panel.visible and game.shop_items.get_child_count() == 3, "Build button opens tower, house and bridge choices")
 	game.shop_items.get_child(0).pressed.emit()
 	expect(game.action_mode == "tower" and not game.shop_panel.visible, "Tower card activates building placement")
 	game.cancel_action()
@@ -323,6 +325,7 @@ func run() -> void:
 	game.toggle_action("house")
 	expect(game.action_mode == "", "Repeating action cancels it")
 	var owned: Array = game.active_kingdom()["hexes"]
+	game.active_kingdom()["gold"] = 16
 	game.toggle_action("tower")
 	var tower_hex := Rules.NONE
 	for coord in owned:
@@ -372,7 +375,7 @@ func run() -> void:
 			cell["owner"] = -1
 	game.check_winner()
 	expect(game.game_over and game.message.contains("Victory"), "Defeating rivals wins even with neutral land remaining")
-	for mode in ["classic", "modern"]:
+	for mode in ["modern"]:
 		game.new_game()
 		game.rules.rule_mode = mode
 		game.rules.faction_count = 6
@@ -392,6 +395,28 @@ func run() -> void:
 		game.rules.rebuild_kingdoms()
 		game.check_winner()
 		expect(game.game_over and game.message.contains("Victory") and game.rules.territory(1) == 1 and game.rules.has_units(5), "Enemy singletons and stranded troops cannot prevent victory once all enemy capitals are gone")
+	for mode in ["modern"]:
+		for building in ["", "house", "tower", "monument"]:
+			game.new_game()
+			game.rules.rule_mode = mode
+			game.cells.clear()
+			game.rules.kingdoms.clear()
+			game.cells[Vector2i.ZERO] = game.rules.make_cell(0)
+			game.cells[Vector2i.ZERO]["building"] = building
+			for coord in [Vector2i(4, 0), Vector2i(5, 0)]:
+				game.cells[coord] = game.rules.make_cell(1)
+			game.rules.rebuild_kingdoms()
+			game.check_winner()
+			expect(game.game_over and game.message.contains("fallen") and game.rules.territory(0) == 1, "An isolated province cannot prevent defeat, including a remaining %s in %s" % [building, mode])
+		game.new_game()
+		game.rules.rule_mode = mode
+		game.cells.clear()
+		game.rules.kingdoms.clear()
+		for coord in [Vector2i.ZERO, Vector2i(1, 0), Vector2i(4, 0), Vector2i(5, 0)]:
+			game.cells[coord] = game.rules.make_cell(0 if coord.x < 2 else 1)
+		game.rules.rebuild_kingdoms()
+		game.check_winner()
+		expect(not game.game_over and game.rules.has_capital(0), "A surviving two-province kingdom keeps the player alive in %s" % mode)
 	game.new_game()
 	for cell in game.cells.values():
 		if cell["owner"] == 0:
@@ -399,7 +424,10 @@ func run() -> void:
 	game.check_winner()
 	expect(game.game_over and game.message.contains("fallen"), "Losing all owned land triggers defeat")
 	print("Game checks: %d passed, %d failed" % [checks - failures, failures])
+	game.shutdown()
+	game.queue_free()
+	await process_frame
 	root.get_node("Sound").stop_all()
-	# Give the dummy audio driver time to retire the longest supplied clip.
+	# Let the audio mixing thread release stopped ambience and one-shot playback.
 	await create_timer(1.20).timeout
 	quit(1 if failures else 0)

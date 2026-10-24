@@ -95,7 +95,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				game.activate_ui(game.open_shop.bind("recruit"))
 			elif Keys.matches(event, "build"):
 				game.activate_ui(game.open_shop.bind("build"))
-			elif Keys.matches(event, "spells") and game.rules.is_modern():
+			elif Keys.matches(event, "spells"):
 				game.activate_ui(game.open_shop.bind("spells"))
 			elif Keys.matches(event, "view"):
 				game.activate_ui(game.toggle_view)

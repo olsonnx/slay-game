@@ -1,0 +1,15 @@
+# Graphics warmup
+
+The application shows “Loading...” with a progress bar and percentage once at launch, before the main menu becomes visible or interactive. No match is created during this step.
+
+Loading progress follows completed work: cached animation frames and outlines, then rendering preparation. Match loading shows “Creating map...” and advances through background generation, session setup, tile construction, scenery publication and covered rendering. Percentages represent weighted stages, not remaining time; generation and scenery publication can hold at their current milestone until complete. Both bars reach 100% before the cover disappears, and late updates cannot move them backwards. Authored maps and restarts use the same progress path.
+
+`src/app/app.gd` creates an isolated startup viewport using the main viewport's MSAA level. `src/rendering/graphics_warmup.gd` prepares all twelve standard kingdom palettes and all three unit tiers: portraits, every animation frame and every idle hover outline. CPU preparation yields after approximately 4 ms of work; an individual operation may exceed that budget.
+
+The warmup renders representative sprites, fading sprites, outlines, scenery, protection effects, action-effect surfaces and building previews for three frames. The startup viewport then stops rendering and retains its hidden specimens for the application's lifetime, keeping their material variants alive. Color-keyed animation and outline caches are shared by board factories, so matches, restarts, replays and the editor reuse the prepared textures. Keys use actual colors rather than faction indices, preserving custom authored palettes. Custom colors not known at launch are generated on demand.
+
+Actual draws also cover the Compatibility renderer, where invisible surfaces alone cannot warm shaders. See [Godot's pipeline compilation documentation](https://docs.godotengine.org/en/4.6/tutorials/performance/pipeline_compilations.html). Match loading still builds and renders the actual island and runs its existing Compatibility accent-light preparation. It does not repeat the application graphics warmup. Startup does not play game actions, consume resources, advance a match RNG or create animation tweens. Headless startup prepares caches but skips GPU signal waits.
+
+The tradeoff is additional launch time and retained texture/resource memory. `app.startup_warmup_ms` records preparation time. This targets first-use loading and compilation; it does not eliminate stalls from large board updates, simulation or subsequent video setting changes.
+
+Verification: `tests/test_startup.gd` checks the startup cover/navigation lock, completion before the main menu, cache reuse across scenes, stopped startup rendering, idempotence, restored preview/effect masks, native draw passes, exact seeded game state and authored restart parity. Run with `--headless`, the default native renderer, or `--rendering-method gl_compatibility`. Native validation does not establish a cold-driver performance improvement; that requires paired action traces on a cold cache.

@@ -1,6 +1,7 @@
 extends Node
 ## Owns settled actors, sprites and hover tweens. Playback borrows actors by hex.
 ## Metadata written here: unit_role, unit_state, hex, image, base_modulate, HoverOutline.
+const Layout = preload("res://src/rendering/tile_layout.gd")
 const Assets = preload("res://src/rendering/board_assets.gd")
 const Sprites = preload("res://src/rendering/unit_sprite_library.gd")
 const SPENT_COLOR := Color("a8b2ae")
@@ -116,10 +117,11 @@ func refresh_unit(coord: Vector2i, cell: Dictionary) -> void:
 		return
 	if actor == null:
 		unit_actors[coord] = add_unit(tile_nodes[coord], cell["unit"], cell.get("unit_owner", -1) if cell["building"] == "bridge" else cell["owner"], cell["moved"], cell["capital"] >= 0)
+		unit_actors[coord].position = Layout.unit_offset(cell)
 		return
 	var owner: int = cell.get("unit_owner", -1) if cell["building"] == "bridge" else cell["owner"]
 	var state := [cell["unit"], owner, cell["moved"], cell["capital"] >= 0]
-	var position_wanted := Vector3(0.35, 0, 0.30) if cell["capital"] >= 0 else Vector3.ZERO
+	var position_wanted := Layout.unit_offset(cell)
 	if actor.get_meta("unit_state", []) == state and actor.position == position_wanted:
 		if actor.get_meta("unit_ready", false) != is_ready(cell): apply_readiness(actor, cell)
 		return

@@ -19,7 +19,7 @@ func line(mode: String, length: int):
 	return state
 
 func run() -> void:
-	for mode in ["classic", "modern"]:
+	for mode in ["modern"]:
 		for incremental in [false, true]:
 			var state = line(mode, 6)
 			state.incremental_kingdoms = incremental

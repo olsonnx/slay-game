@@ -16,6 +16,7 @@ signal motion_stage(action: Dictionary, stage: String)
 signal visible_board_changed
 signal manual_camera_moved
 signal level_transition_finished
+var roads = preload("res://src/rendering/kingdom_roads.gd").new()
 var navigation = preload("res://src/rendering/board_navigation.gd").new()
 var active := true
 var lighting
@@ -133,7 +134,7 @@ func _init() -> void:
 	add_child(navigation)
 	add_child(unit_presentation)
 
-func build_initial_cells(new_cells: Dictionary) -> void:
+func build_initial_cells(new_cells: Dictionary, report: Callable = Callable()) -> void:
 	# Initial construction only. Ordinary commands keep their atomic render path.
 	assert(tile_nodes.is_empty())
 	var was_rebuilding := bulk_rebuilding
@@ -144,13 +145,16 @@ func build_initial_cells(new_cells: Dictionary) -> void:
 	var cpu_usec := 0
 	var max_batch_usec := 0
 	var batches := 0
+	var built := 0
 	for coord in cells:
 		build_tile(coord, cells[coord])
+		built += 1
 		var elapsed := Time.get_ticks_usec() - batch_started
 		if elapsed >= 4000:
 			cpu_usec += elapsed
 			max_batch_usec = maxi(max_batch_usec, elapsed)
 			batches += 1
+			if report.is_valid(): report.call(0.8 * built / maxf(cells.size(), 1))
 			await get_tree().process_frame
 			batch_started = Time.get_ticks_usec()
 	var elapsed := Time.get_ticks_usec() - batch_started
@@ -158,6 +162,7 @@ func build_initial_cells(new_cells: Dictionary) -> void:
 	max_batch_usec = maxi(max_batch_usec, elapsed)
 	startup_timings = {"scene_build_ms": cpu_usec / 1000.0, "build_wall_ms": (Time.get_ticks_usec() - started) / 1000.0, "max_batch_ms": max_batch_usec / 1000.0, "batches": batches + 1}
 	dirty_tiles.clear()
+	if report.is_valid(): report.call(0.8)
 	var publish_started := Time.get_ticks_usec()
 	if not was_rebuilding:
 		await static_batches.sync_tiles(tile_nodes, {}, true, {}, 4000)
@@ -171,6 +176,7 @@ func build_initial_cells(new_cells: Dictionary) -> void:
 	if not was_rebuilding:
 		unit_batches.queue_sync()
 		unit_batches.sync()
+	if report.is_valid(): report.call(1.0)
 
 func retire_cells() -> void:
 	# A restarted playtest must not free thousands of source nodes in one frame.
@@ -242,6 +248,7 @@ func _ready() -> void:
 	overlays = BoardOverlays.new(self)
 	visible_board_changed.connect(overlays.invalidate)
 	set_internal_border_visibility(Video.internal_borders)
+	set_plastic_tiles(Video.plastic_tiles)
 	visible_board_changed.connect(invalidate_pick)
 	playback = BoardPlayback.new(self)
 	add_child(playback)
@@ -319,7 +326,6 @@ func _ready() -> void:
 	land_ambience = preload("res://src/audio/land_ambience.gd").new(self)
 	add_child(land_ambience)
 	_apply_background()
-	add_child(preload("res://src/rendering/screen_edge_softening.gd").new())
 	island_transition = BoardTransition.new(self)
 	island_transition.finished.connect(func(): level_transition_finished.emit())
 	island_transition.finished.connect(lighting.update_camera)
@@ -339,6 +345,7 @@ func _ready() -> void:
 	unit_batches.name = "ArmyBatches"
 	board_root.add_child(unit_batches)
 	unit_presentation.unit_batches = unit_batches
+	visible_board_changed.connect(roads.sync.bind(self))
 	visible_board_changed.connect(refresh_static_batches)
 	birds = preload("res://src/rendering/ambient_birds.gd").new(self)
 	board_root.add_child(birds)
@@ -347,8 +354,12 @@ func _ready() -> void:
 	board_root.add_child(wildlife)
 	visible_board_changed.connect(wildlife.sync)
 	overlays.prepare_building_previews()
-	value_heatmap.changed.connect(refresh_static_batches)
+	value_heatmap.changed.connect(refresh_value_batches)
 	value_heatmap.changed.connect(lighting.update_camera)
+
+func refresh_value_batches() -> void:
+	if value_heatmap.switching or value_heatmap.preparing: return
+	refresh_static_batches()
 
 func refresh_static_batches() -> void:
 	if bulk_rebuilding: return
@@ -362,8 +373,13 @@ func refresh_static_batches() -> void:
 		return
 	if static_batches != null:
 		static_refresh_pending = false
+		static_batches.begin_presentation(value_heatmap.active)
+		static_batches.invalidate_other_presentations()
+		value_heatmap.invalidate_prepared()
 		static_batches.source_cache.clear()
 		static_batches.sync_tiles(tile_nodes)
+		static_batches.presentation_dirty.clear()
+		static_batches.presentation_full_dirty = false
 		batch_dirty_ids.clear()
 		batch_update_pending = false
 
@@ -434,11 +450,18 @@ func _process(delta: float) -> void:
 		pan(input, delta)
 
 func _apply_video_settings() -> void:
-	if set_internal_border_visibility(Video.internal_borders):
+	var style_changed := plastic_tiles != Video.plastic_tiles
+	var heatmap_active: bool = value_heatmap != null and value_heatmap.active
+	if style_changed and heatmap_active: value_heatmap.set_active(false)
+	set_plastic_tiles(Video.plastic_tiles)
+	var borders_changed := set_internal_border_visibility(Video.internal_borders)
+	if style_changed or borders_changed:
 		var terrain = preload("res://src/rendering/terrain_tile.gd")
 		for coord in tile_nodes:
+			if style_changed: terrain.apply_appearance(self, tile_nodes[coord], coord, cells[coord])
 			terrain.update_join(self, tile_nodes[coord], cells[coord], terrain.joined_mask(cells, coord))
 		refresh_static_batches()
+	if style_changed and heatmap_active: value_heatmap.set_active(true)
 	sun.shadow_enabled = Video.shadows
 	if lighting != null: lighting.apply_style("atmospheric" if Video.atmospheric_lighting else "simple")
 	_apply_background()
@@ -641,7 +664,7 @@ func scenery_state(cell: Dictionary) -> Array:
 	# Store the drawn state because playback updates cells before settling actors.
 	var result: Array = [cell["owner"], cell.get("land", true)]
 	for field in PROP_FIELDS: result.append(cell.get(field))
-	result.append(cell["capital"] >= 0 and cell["unit"] > 0)
+	result.append((cell["capital"] >= 0 or cell["building"] in ["monument","house","tower"]) and cell["unit"] > 0)
 	return result
 
 func populate_tile_decorations(tile: Node3D, cell: Dictionary) -> void:

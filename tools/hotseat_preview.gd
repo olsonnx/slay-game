@@ -7,7 +7,9 @@ func capture() -> void:
 	root.get_node("Video").set_preference(&"level_transitions", false, false)
 	root.size = Vector2i(960, 620)
 	var app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	app.menus.show_screen(app.menus.Screen.MAIN)
 	await create_timer(0.5).timeout
 	await RenderingServer.frame_post_draw

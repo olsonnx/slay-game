@@ -38,7 +38,7 @@ func test_mana_scaling() -> void:
 	expect(rules.mana_income(0) == 1, "Forecast caps regeneration at remaining storage")
 
 func test_knight_duels() -> void:
-	for mode in ["modern", "classic"]:
+	for mode in ["modern"]:
 		for tier in range(1, 4):
 			var rules = Rules.new()
 			rules.rule_mode = mode
@@ -135,7 +135,7 @@ func run() -> void:
 	rules.set_mana(0, 4)
 	expect(rules.cast_spell("summon", Vector2i(0, 1), 0) and rules.get_mana(0) == 2, "Summon spends two from the shared faction pool")
 	expect(rules.cast_spell("summon", Vector2i(4, 1), 0) and rules.get_mana(0) == 0, "A distant kingdom spends the same pool")
-	expect(rules.cells[Vector2i(4, 1)]["unit"] == 1 and not rules.cells[Vector2i(4, 1)]["moved"] and rules.upkeep(rules.kingdom_at(Vector2i(4, 1))) == rules.Catalog.unit_upkeep(1, true), "Summoned Scouts are ready and have normal upkeep")
+	expect(rules.cells[Vector2i(4, 1)]["unit"] == 1 and not rules.cells[Vector2i(4, 1)]["moved"] and rules.upkeep(rules.kingdom_at(Vector2i(4, 1))) == rules.Catalog.unit_upkeep(1), "Summoned Scouts are ready and have normal upkeep")
 	expect(not rules.cast_spell("summon", Vector2i(0, 1), 0), "Summon cannot stack units on an occupied province")
 	expect(not Spells.SPELLS.has("renewal") and not rules.can_cast("renewal", Vector2i(0, 0), 0), "Renewal is removed from the catalog and command API")
 	rules.begin_turn(0)
@@ -163,10 +163,6 @@ func run() -> void:
 	for value in range(1, 6):
 		rules.cells[Vector2i(0, 0)]["value"] = value
 		expect(rules.development_cost(Vector2i(0, 0)) == [2, 8, 18, 32, 50][value - 1], "Development uses much lower quadratic prices")
-	var classic = Rules.new()
-	classic.generate(42)
-	for cell in classic.cells.values():
-		expect(not cell["mountain"], "Classic map generation excludes Modern mountains")
 	var game = load("res://scenes/main.tscn").instantiate()
 	game.initial_rule_mode = "modern"
 	game.initial_seed = 42

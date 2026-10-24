@@ -19,7 +19,7 @@ static func capital_relocation_cost(state, faction: int) -> int:
 static func can_relocate_capital(state, coord: Vector2i, faction: int) -> bool:
 	var cells: Dictionary = state.cells
 	var bank: Dictionary = state.kingdom_at(coord)
-	if not state.is_modern() or bank.is_empty() or bank["owner"] != faction:
+	if bank.is_empty() or bank["owner"] != faction:
 		return false
 	var cell: Dictionary = cells[coord]
 	return cell["owner"] == faction and cell["capital"] < 0 and not state.has_wildlife(coord) and not state.is_mountain(coord) and not state.is_bridge(coord) and not state.is_barrier(coord) and cell["building"] == "" and not cell["tree"] and not cell["grave"] and bank["gold"] >= capital_relocation_cost(state, faction)
@@ -51,7 +51,7 @@ static func relocate_capital(state, coord: Vector2i, faction: int) -> bool:
 static func can_develop(state, coord: Vector2i, faction: int) -> bool:
 	var cells: Dictionary = state.cells
 	var kingdom: Dictionary = state.kingdom_at(coord)
-	return state.is_modern() and not state.has_wildlife(coord) and not state.is_mountain(coord) and not kingdom.is_empty() and kingdom["owner"] == faction and cells[coord].get("value", 1) < state.MAX_VALUE and kingdom["gold"] >= development_cost(state, coord)
+	return not state.has_wildlife(coord) and not state.is_mountain(coord) and not kingdom.is_empty() and kingdom["owner"] == faction and cells[coord].get("value", 1) < state.MAX_VALUE and kingdom["gold"] >= development_cost(state, coord)
 
 static func develop(state, coord: Vector2i, faction: int) -> bool:
 	var cells: Dictionary = state.cells
@@ -79,8 +79,6 @@ static func bridge_targets(state, faction: int, capital := NONE) -> Dictionary:
 	var targets: Dictionary = {}
 	var bounds: Vector2 = state.bridge_bounds()
 	var candidates: Array = [state.kingdoms[capital]] if state.kingdoms.has(capital) else state.kingdoms.values() if capital == NONE else []
-	if not state.is_modern():
-		return targets
 	for kingdom in candidates:
 		if kingdom["owner"] != faction or kingdom["gold"] < state.BRIDGE_COST:
 			continue
@@ -101,10 +99,12 @@ static func recruit(state, coord: Vector2i, faction: int, requested_tier := 0, c
 		return false
 	var kingdom: Dictionary = state.kingdom_at(coord)
 	var cell: Dictionary = cells[coord]
+	var action_spent: bool = cell["unit"] > 0 and cell["moved"]
 	kingdom["gold"] -= cost
 	cell["unit"] = cell["unit"] + 1 if requested_tier == 0 else requested_tier
 	state.clear_terrain(coord, kingdom)
-	cell["moved"] = false
+	# Reinforcing a spent army changes its rank without granting another action.
+	cell["moved"] = action_spent
 	state.record_replay("recruit", faction, {"coord":coord, "tier":cell["unit"], "cost":cost, "capital":kingdom["capital"]})
 	return true
 
@@ -119,7 +119,7 @@ static func recruitment_cost(state, coord: Vector2i, faction: int, requested_tie
 	if kingdom.is_empty() or kingdom["owner"] != faction or (capital != NONE and kingdom["capital"] != capital):
 		return -1
 	var cell: Dictionary = cells[coord]
-	if cell["building"] != "" or cell["unit"] >= 3 or (cell["unit"] > 0 and cell["moved"]):
+	if cell["building"] != "" or cell["unit"] >= 3 or state.is_entrenched(coord):
 		return -1
 	var target_tier: int = cell["unit"] + 1 if requested_tier == 0 else requested_tier
 	if target_tier <= cell["unit"] or target_tier > 3:
@@ -134,7 +134,7 @@ static func can_build(state, coord: Vector2i, faction: int, kind: String, capita
 	if kind == "bridge":
 		var position := Grid.to_world(coord)
 		var bounds: Vector2 = state.bridge_bounds()
-		if not state.is_modern() or cells.has(coord) or absf(position.x) > bounds.x or absf(position.z) > bounds.y:
+		if cells.has(coord) or absf(position.x) > bounds.x or absf(position.z) > bounds.y:
 			return false
 		var payer := construction_kingdom(state, coord, faction, capital)
 		return not payer.is_empty() and payer["gold"] >= state.BRIDGE_COST

@@ -100,7 +100,6 @@ func reset_case() -> void:
 	game.view.board_root.show()
 	game.view.animation_root.show()
 	game.view.overlay_root.show()
-	game.view.get_node("ScreenEdgeSoftening").show()
 	for node in meshes:
 		node.visible = mesh_state[node][0]
 		node.cast_shadow = mesh_state[node][1]
@@ -140,7 +139,9 @@ func configure(name_value: String) -> Dictionary:
 			game.view.set_process(false)
 		"no_shadows": game.view.sun.shadow_enabled = false
 		"one_shadow_pass": game.view.sun.directional_shadow_mode = DirectionalLight3D.SHADOW_ORTHOGONAL
-		"no_edge_blur": game.view.get_node("ScreenEdgeSoftening").hide()
+		"no_depth_of_field":
+			game.view.camera.attributes.dof_blur_near_enabled = false
+			game.view.camera.attributes.dof_blur_far_enabled = false
 		"no_msaa": root.msaa_3d = Viewport.MSAA_DISABLED
 		"sky": root.get_node("Video").set_preference(&"background", "sky", false)
 		"no_water": game.view.water.hide()
@@ -250,7 +251,9 @@ func run() -> void:
 	root.get_node("Sound").set_muted(true, false)
 	Engine.max_fps = 0
 	app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	await app.start_new_game(seed_value, "large", "normal", 6)
 	game = app.game
 	game.view.cancel_level_transition()
@@ -262,7 +265,7 @@ func run() -> void:
 	configuration["native_shadow_mode"] = game.view.sun.directional_shadow_mode
 	RenderingServer.viewport_set_measure_render_time(root.get_viewport_rid(), true)
 	print(JSON.stringify(configuration))
-	var cases := ["wide", "close", "no_scripts", "no_shadows", "one_shadow_pass", "no_edge_blur", "no_msaa", "sky", "no_water", "no_props", "no_grass", "no_tiny_shadows", "terrain_batches", "opaque_batches", "selected", "no_world", "half_resolution", "full_hd"]
+	var cases := ["wide", "close", "no_scripts", "no_shadows", "one_shadow_pass", "no_depth_of_field", "no_msaa", "sky", "no_water", "no_props", "no_grass", "no_tiny_shadows", "terrain_batches", "opaque_batches", "selected", "no_world", "half_resolution", "full_hd"]
 	if focused:
 		cases = ["wide", "close", "hover_tile", "grass_batches", "color_batches", "batches_one_shadow", "one_shadow_pass", "close_color_batches", "wide"]
 		root.warp_mouse(Vector2(15, 150))

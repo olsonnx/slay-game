@@ -11,7 +11,7 @@ const SPELLS := {
 }
 
 static func tooltip_description(spell: String, scout_upkeep := -1) -> String:
-	if scout_upkeep < 0: scout_upkeep = Catalog.unit_upkeep(1, true)
+	if scout_upkeep < 0: scout_upkeep = Catalog.unit_upkeep(1)
 	var description: String = {
 		"trailblaze": Loc.text("Next move: act again after a neutral capture\nAny move spends it · no stacking"),
 		"summon": Loc.text("Ready Scout on empty friendly land\nClears trees / graves · tree reward +1 G\nUpkeep −%d G / turn"),

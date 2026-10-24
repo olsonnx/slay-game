@@ -26,10 +26,11 @@ func run() -> void:
 	sound.set_volume(&"Master", 1.0, false)
 	sound.set_volume(&"UI", 1.0, false)
 	sound.set_volume(&"SFX", 1.0, false)
-	expect(sound.bank.cues.size() == 4 and sound.voices.size() == sound.VOICE_COUNT, "Registry loads all four assets and a fixed voice pool")
+	expect(sound.bank.cues.size() == 6 and sound.voices.size() == sound.VOICE_COUNT, "Registry loads all six assets and a fixed voice pool")
+	expect(sound.bank.cues[&"gold_develop"].streams[0].resource_path == "res://assets/sfx/gold_develop.ogg" and sound.bank.cues[&"event_popup"].streams[0].resource_path == "res://assets/sfx/event_popup.ogg", "New cues use the supplied development and event recordings")
 	for id in sound.bank.cues:
 		var cue: Resource = sound.bank.cues[id]
-		expect(cue.streams.size() == 1 and cue.streams[0].get_length() > 0, "Registered MP3 is playable")
+		expect(cue.streams.size() == 1 and cue.streams[0].get_length() > 0, "Registered sound is playable")
 		expect(AudioServer.get_bus_index(cue.bus) >= 0, "Cue routes to an existing mix bus")
 		expect(sound.play(id), "Registered cue starts playback")
 		sound.stop_all()
@@ -268,6 +269,50 @@ func run() -> void:
 		if child is Button and child.text == "×":
 			child.pressed.emit()
 	expect(events == [&"ui_close"] and not game.shop_panel.visible, "Purchase menu X closes with one close cue")
+	game.rules.rule_mode = "modern"
+	game.view.cancel_level_transition()
+	var development_site: Vector2i = game.NONE
+	for coord in game.cells:
+		if game.cells[coord].owner != game.session.player_faction or game.rules.kingdom_at(coord).is_empty(): continue
+		game.cells[coord].value = 1
+		game.cells[coord].tree = false
+		game.cells[coord].grave = false
+		game.rules.kingdom_at(coord).gold = 1000
+		if game.rules.can_develop(coord,game.session.player_faction):
+			development_site = coord
+			break
+	expect(development_site != game.NONE,"Development sound fixture has an eligible province")
+	game.session.selection.inspected_hex = development_site
+	global_sound.stop_all()
+	events.clear()
+	game.develop_province()
+	expect(events == [&"gold_develop"],"Successful province development plays its dedicated sound once")
+	game.cells[development_site].value = game.rules.MAX_VALUE
+	global_sound.stop_all()
+	events.clear()
+	game.develop_province()
+	expect(events.is_empty(),"Rejected development stays silent")
+	game._on_visual_action_started({"kind":"develop","faction":game.session.player_faction})
+	expect(events == [&"gold_develop"],"Player development playback uses the dedicated sound")
+	global_sound.stop_all()
+	events.clear()
+	game._on_visual_action_started({"kind":"develop","faction":game.session.player_faction+1})
+	expect(events.is_empty(),"Another kingdom's development playback stays silent even during the player's turn")
+	game._on_visual_action_started({"kind":"develop"})
+	expect(events.is_empty(),"Development without an identified player owner stays silent")
+	game._on_visual_action_started({"kind":"build","faction":game.session.player_faction+1})
+	expect(events == [&"action_place"],"Other kingdoms retain their normal construction sounds")
+	global_sound.stop_all()
+	events.clear()
+	game.rules.pending_events.append({"id":"pit","coord":development_site,"faction":game.session.player_faction})
+	game.show_next_event()
+	expect(events == [&"event_popup"] and game.event_shade.visible,"Revealing an event plays its popup recording once")
+	game.close_event_ui()
+	game.rules.pending_events.clear()
+	global_sound.stop_all()
+	events.clear()
+	game.show_next_event()
+	expect(events.is_empty(),"An empty encounter queue does not play a popup")
 	var menus = load("res://src/ui/session_menus.gd").new()
 	root.add_child(menus)
 	menus.open_options(menus.Screen.MAIN)

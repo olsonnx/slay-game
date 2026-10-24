@@ -1,8 +1,7 @@
 extends RefCounted
 ## Shared terrain, props and adjustable kingdom rims for gameplay and menu islands.
 const Grid = preload("res://src/game/hex_grid.gd")
-# The coloured layer ends at the soil top. Extending flush joined walls
-# below this plane creates coplanar coloured/earth faces and depth flicker.
+# Keep the gameplay surface height while the molded bevel drops into the base.
 const CAP_HEIGHT := 0.0105
 const CAP_CENTER := CAP_HEIGHT / 2.0
 
@@ -10,7 +9,7 @@ static func color_at(assets, coord: Vector2i, cell: Dictionary) -> Color:
 	var color: Color = assets.COLORS[cell["owner"]] if cell["owner"] >= 0 else assets.NEUTRAL
 	if cell.get("mountain", false):
 		color = Color("858779")
-	return color.lightened(0.045 * sin(float(coord.x * 7 + coord.y * 13)))
+	return color.lightened((0.012 if assets.plastic_tiles else 0.045) * sin(float(coord.x * 7 + coord.y * 13)))
 
 static func joined_mask(cells: Dictionary, coord: Vector2i) -> int:
 	var cell: Dictionary = cells[coord]
@@ -25,50 +24,55 @@ static func joined_mask(cells: Dictionary, coord: Vector2i) -> int:
 	return mask
 
 static func cap_mesh(assets, mask: int) -> Mesh:
-	if mask == 0 or assets.internal_border_visibility >= 1.0:
-		return assets.cylinder_mesh(0.968, 0.968, CAP_HEIGHT, 6)
 	var key := "kingdom_cap:%d" % mask
 	if assets.mesh_cache.has(key):
 		return assets.mesh_cache[key]
-	# Blend shared edges between flush and the original inset. Exterior edges
-	# retain their full earth rim around the kingdom/coastline.
-	var normals: Array[Vector2] = []
-	var offsets: Array[float] = []
-	for edge in range(6):
-		var world := Grid.to_world(Grid.DIRECTIONS[edge])
-		normals.append(Vector2(world.x, world.z).normalized())
-		var radius: float = lerpf(1.0, 0.968, assets.internal_border_visibility) if mask & (1 << edge) else 0.968
-		offsets.append(sqrt(3.0) * 0.5 * radius)
-	var corners: Array[Vector3] = []
-	for edge in range(6):
-		var next := (edge + 1) % 6
-		var a: Vector2 = normals[edge]
-		var b: Vector2 = normals[next]
-		var determinant := a.x * b.y - a.y * b.x
-		corners.append(Vector3((offsets[edge] * b.y - offsets[next] * a.y) / determinant, CAP_CENTER,
-			(a.x * offsets[next] - b.x * offsets[edge]) / determinant))
-	var builder := SurfaceTool.new()
-	builder.begin(Mesh.PRIMITIVE_TRIANGLES)
-	builder.set_smooth_group(-1)
-	for edge in range(6):
-		var a: Vector3 = corners[edge]
-		var b: Vector3 = corners[(edge + 1) % 6]
-		var bottom_a := a - Vector3(0, CAP_HEIGHT, 0)
-		var bottom_b := b - Vector3(0, CAP_HEIGHT, 0)
-		for vertex in [Vector3(0, CAP_CENTER, 0), b, a, Vector3(0, -CAP_CENTER, 0), bottom_a, bottom_b,
-			a, bottom_b, bottom_a, a, b, bottom_b]:
-			builder.add_vertex(vertex)
-	builder.generate_normals()
-	var mesh := builder.commit()
+	# Share the exact molded top geometry with the settled chunk renderer.
+	var parts := preload("res://src/rendering/terrain_chunks.gd").template(mask, assets.internal_border_visibility, 0, assets.plastic_tiles)
+	var arrays: Array = []
+	arrays.resize(Mesh.ARRAY_MAX)
+	var vertices: PackedVector3Array = parts[0].duplicate()
+	for index in range(vertices.size()):
+		vertices[index].y -= CAP_CENTER
+	arrays[Mesh.ARRAY_VERTEX] = vertices
+	arrays[Mesh.ARRAY_NORMAL] = parts[1]
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 	assets.mesh_cache[key] = mesh
 	return mesh
 
 static func update_join(assets, tile: Node3D, cell: Dictionary, mask: int) -> void:
-	if cell["building"] == "bridge" or (tile.get_meta("joined_mask", 0) == mask and is_equal_approx(tile.get_meta("border_visibility", -1.0), assets.internal_border_visibility)):
+	if cell["building"] == "bridge" or (tile.get_meta("joined_mask", 0) == mask and is_equal_approx(tile.get_meta("border_visibility", -1.0), assets.internal_border_visibility) and tile.get_meta("plastic_tiles", not assets.plastic_tiles) == assets.plastic_tiles):
 		return
 	tile.get_meta("surface").mesh = cap_mesh(assets, mask)
 	tile.set_meta("joined_mask", mask)
 	tile.set_meta("border_visibility", assets.internal_border_visibility)
+	tile.set_meta("plastic_tiles", assets.plastic_tiles)
+
+static func base_color(assets) -> Color:
+	return preload("res://src/rendering/terrain_chunks.gd").BASE_COLOR if assets.plastic_tiles else Color("776a51")
+
+static func apply_appearance(assets, tile: Node3D, coord: Vector2i, cell: Dictionary) -> void:
+	if cell["building"] == "bridge": return
+	tile.get_meta("surface").material_override = assets.tile_material(color_at(assets, coord, cell))
+	var earth: MeshInstance3D = tile.get_meta("earth")
+	earth.mesh = base_mesh(assets)
+	earth.material_override = assets.tile_material(base_color(assets), true)
+
+static func base_mesh(assets) -> ArrayMesh:
+	var key := "tile_base:%s" % assets.plastic_tiles
+	if assets.mesh_cache.has(key):
+		return assets.mesh_cache[key]
+	# Flat side normals match the settled mesh, including during tile motion.
+	var parts := preload("res://src/rendering/terrain_chunks.gd").template(0, 1.0, 63, assets.plastic_tiles)
+	var arrays: Array = []
+	arrays.resize(Mesh.ARRAY_MAX)
+	arrays[Mesh.ARRAY_VERTEX] = parts[2]
+	arrays[Mesh.ARRAY_NORMAL] = parts[3]
+	var mesh := ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	assets.mesh_cache[key] = mesh
+	return mesh
 
 static func build(assets, parent: Node3D, coord: Vector2i, cell: Dictionary, mask := 0) -> Node3D:
 	var tile := Node3D.new()
@@ -83,13 +87,16 @@ static func build(assets, parent: Node3D, coord: Vector2i, cell: Dictionary, mas
 		tile.add_child(deck)
 		surface = assets.add_bridge(deck)
 	else:
-		var earth: MeshInstance3D = assets.piece(tile, assets.cylinder_mesh(1.0, 1.0, 0.56, 6), Vector3(0, -0.28, 0), Color("776a51"))
+		var earth: MeshInstance3D = assets.piece(tile, base_mesh(assets), Vector3.ZERO, base_color(assets))
+		earth.material_override = assets.tile_material(base_color(assets), true)
 		earth.set_meta("terrain_role", "earth")
 		tile.set_meta("earth", earth)
 		surface = assets.piece(tile, cap_mesh(assets, mask), Vector3(0, CAP_CENTER, 0), color)
+		surface.material_override = assets.tile_material(color)
 		surface.set_meta("terrain_role", "cap")
 	tile.set_meta("joined_mask", mask)
 	tile.set_meta("border_visibility", assets.internal_border_visibility)
+	tile.set_meta("plastic_tiles", assets.plastic_tiles)
 	tile.set_meta("surface", surface)
 	populate(assets, tile, coord, cell, color)
 	return tile
@@ -107,9 +114,11 @@ static func populate(assets, tile: Node3D, coord: Vector2i, cell: Dictionary, co
 	if cell["grave"]:
 		assets.add_grave(features, Vector3(0.15, 0, 0))
 	if cell["building"] == "tower":
-		assets.add_tower(features, Vector3.ZERO, color)
+		assets.add_tower(features, preload("res://src/rendering/tile_layout.gd").landmark_offset(cell), color)
 	elif cell["building"] == "house":
-		assets.add_house(features, Vector3.ZERO)
+		assets.add_house(features, preload("res://src/rendering/tile_layout.gd").landmark_offset(cell))
+	if cell["building"] == "monument":
+		assets.add_monument(features, color, preload("res://src/rendering/tile_layout.gd").landmark_offset(cell))
 	if cell["capital"] >= 0:
 		assets.add_capital(features, Vector3(-0.20, 0, -0.12) if cell["unit"] > 0 or cell["grave"] or cell["tree"] else Vector3.ZERO, color)
 	if cell.get("treasure", 0) > 0:
@@ -127,6 +136,9 @@ static func refresh(assets, tile: Node3D, coord: Vector2i, cell: Dictionary, mas
 			tile.remove_child(old)
 			old.queue_free()
 	var color := color_at(assets, coord, cell)
-	tile.get_meta("surface").material_override = assets.material(color)
+	if cell["building"] == "bridge":
+		tile.get_meta("surface").material_override = assets.material(color)
+	else:
+		apply_appearance(assets, tile, coord, cell)
 	update_join(assets, tile, cell, mask)
 	populate(assets, tile, coord, cell, color)

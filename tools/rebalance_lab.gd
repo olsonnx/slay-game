@@ -133,7 +133,7 @@ func economy() -> Array:
 				if policy != "save":
 					for c in bank["hexes"]:
 						if s.cells[c]["unit"] > 0 and s.cells[c]["unit"] < 3:
-							if policy == "sustainable_knight" and s.income(bank) < s.Catalog.unit_upkeep(3, true): continue
+							if policy == "sustainable_knight" and s.income(bank) < s.Catalog.unit_upkeep(3): continue
 							if s.recruit(c, 0, 3) and first_knight == 0: first_knight = turn
 				if policy == "sustainable_knight":
 					for c in bank["hexes"]: s.build_structure(c, 0, "house")

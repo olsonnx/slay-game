@@ -1,6 +1,7 @@
 extends RefCounted
 ## Imported 32px action sheets with cached, region-aware kingdom recoloring.
 const SHEETS = [null,preload("res://assets/units/scout.png"),preload("res://assets/units/warrior.png"),preload("res://assets/units/knight.png")]
+const NORMAL_SHEETS = [null,preload("res://assets/units/scout_normal2.png"),preload("res://assets/units/warrior_n.png"),preload("res://assets/units/knight_n.png")]
 const CLOTH_LIGHT := 0x6098e8
 const CLOTH_DARK := 0x4058c0
 const SCOUT_SLEEVE := 0x5a7b94
@@ -95,8 +96,8 @@ func frame(tier: int, color: Color, animation := "idle", index := 0) -> Dictiona
 	var crop := Rect2i(index*32,int(sequence[0])*32+(0 if tier == 3 else 12),32,32 if tier == 3 else 20)
 	var image := sheet(tier,color).get_region(crop)
 	var result := {"image":image,"texture":ImageTexture.create_from_image(image)}
-	if tier == 1:
-		result.texture.set_meta("normal_region", Rect2(Vector2(crop.position) / Vector2(SHEETS[1].get_size()), Vector2(crop.size) / Vector2(SHEETS[1].get_size())))
+	result.texture.set_meta("normal_texture", NORMAL_SHEETS[tier])
+	result.texture.set_meta("normal_region", Rect2(Vector2(crop.position) / Vector2(SHEETS[tier].get_size()), Vector2(crop.size) / Vector2(SHEETS[tier].get_size())))
 	frames[key] = result
 	if profile_frames: frame_samples.append({"frame":Engine.get_process_frames(),"key":key,"ms":(Time.get_ticks_usec()-started)/1000.0})
 	return result

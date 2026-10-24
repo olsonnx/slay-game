@@ -11,6 +11,7 @@ var income_label: Label
 var gold_control: Control
 var round_label: Label
 var level_label: Label
+var country_flag
 var turn_spinner
 var notice_label: Label
 var toast_panel: Panel
@@ -23,6 +24,7 @@ var mana_control: Control
 var economy_dock: Panel
 var turn_controls: Control
 var end_button: Button
+var turn_color := Color.TRANSPARENT
 var stats_button: Button
 var view_button: Button
 var heatmap_button: Button
@@ -55,6 +57,17 @@ const COG_ICON = preload("res://assets/ui/cog.svg")
 const VIEW_3D_ICON = preload("res://assets/ui/view_3d.svg")
 const VIEW_TOP_ICON = preload("res://assets/ui/view_top.svg")
 const HEATMAP_ICON = preload("res://assets/ui/value_heatmap.svg")
+
+func update_turn_color(color: Color) -> void:
+	if color == turn_color: return
+	turn_color = color
+	for state in UiTheme.BUTTON_STATES:
+		var box: StyleBoxFlat = end_button.get_theme_stylebox(state).duplicate()
+		box.bg_color = color.lightened(0.10) if state == "hover" else color.lightened(0.04) if state == "hover_pressed" else color.darkened(0.16) if state == "disabled" else color.darkened(0.14) if state == "pressed" else color
+		end_button.add_theme_stylebox_override(state,box)
+	var foreground := Color("20332d") if color.get_luminance() > 0.45 else UiTheme.TEXT
+	UiTheme.button_foreground(end_button,foreground)
+	end_button.add_theme_color_override("font_disabled_color",foreground)
 
 static func style(color: Color, radius := 12, border := false) -> StyleBoxFlat:
 	return UiTheme.style(color, radius, border)
@@ -93,6 +106,13 @@ func pin_bottom(control: Control, left: float, top: float, width: float, height:
 signal shortcuts_changed
 var activation: Callable
 
+func layout_country_heading() -> void:
+	var width := minf(650.0, maxf(120.0, ui_root.size.x - 428.0))
+	level_label.size = Vector2(width, 34)
+	round_label.size = Vector2(width, 24)
+	round_label.clip_text = true
+	round_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+
 func build_ui(actions: Dictionary, cue: Callable) -> void:
 	activation = cue
 	ui = CanvasLayer.new()
@@ -103,8 +123,16 @@ func build_ui(actions: Dictionary, cue: Callable) -> void:
 	ui_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var theme := UiTheme.create_theme()
 	ui_root.theme = theme
-	level_label = label_at(ui_root, "Level 1", Vector2(28, 22), 27)
-	round_label = label_at(ui_root, Loc.text("FERN  /  TURN 01"), Vector2(30, 60), 12, Color("b5c6bd"))
+	country_flag = preload("res://src/ui/kingdom_flag.gd").new()
+	country_flag.position = Vector2(28, 24)
+	country_flag.size = Vector2(54, 36)
+	ui_root.add_child(country_flag)
+	level_label = label_at(ui_root, "", Vector2(96, 18), 26)
+	level_label.clip_text = true
+	level_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	round_label = label_at(ui_root, "", Vector2(96, 54), 13, Color("b5c6bd"))
+	ui_root.resized.connect(layout_country_heading)
+	layout_country_heading()
 	for heading in [level_label, round_label]:
 		heading.add_theme_constant_override("outline_size", 2)
 		heading.add_theme_color_override("font_outline_color", Color(0.035, 0.055, 0.065, 0.8))
@@ -150,7 +178,7 @@ func build_ui(actions: Dictionary, cue: Callable) -> void:
 	gold_delta_label.add_theme_constant_override("outline_size", 3)
 	gold_delta_label.add_theme_color_override("font_outline_color", Color("172c33"))
 	gold_delta_label.hide()
-	recruit_button = button_at(dock, "Recruit", Rect2(172, 16, 110, 50), actions["open_shop"].bind("recruit"), Loc.text("Choose a Scout, Soldier or Knight.\nPlace on your land or upgrade an unmoved unit.\nRecruitment uses that kingdom's gold."))
+	recruit_button = button_at(dock, "Recruit", Rect2(172, 16, 110, 50), actions["open_shop"].bind("recruit"), Loc.text("Choose a Scout, Soldier or Knight.\nPlace on your land or upgrade an army.\nUpgrading does not restore its action.\nRecruitment uses that kingdom's gold."))
 	build_button = button_at(dock, "Build", Rect2(292, 16, 110, 50), actions["open_shop"].bind("build"), Loc.text("Choose a defensive tower or an income house.\nBuild on a clear empty hex in your kingdom."))
 	mana_control = preload("res://src/ui/tooltip_control.gd").new()
 	mana_control.position = Vector2(223, 59)
@@ -274,7 +302,7 @@ func build_ui(actions: Dictionary, cue: Callable) -> void:
 func refresh_shortcuts() -> void:
 	shortcuts_changed.emit()
 	heatmap_button.tooltip_text = Loc.text("Province values\nShortcut: %s") % Keys.key_name("heatmap")
-	recruit_button.tooltip_text = Loc.text("Recruit on friendly land\nUpgrade unmoved units · uses local gold\nShortcut: %s") % Keys.key_name("recruit")
+	recruit_button.tooltip_text = Loc.text("Recruit or upgrade using local gold\nUpgrading does not restore a spent action\nShortcut: %s") % Keys.key_name("recruit")
 	build_button.tooltip_text = Loc.text("Build\nTower, house or bridge\nShortcut: %s") % Keys.key_name("build")
 	spell_button.tooltip_text = Loc.text("Spells\nUses faction mana\nShortcut: %s") % Keys.key_name("spells")
 	shop_panel.get_node("Close").tooltip_text = Loc.text("Cancel placement\nShortcut: %s") % Keys.key_name("cancel")
@@ -301,12 +329,12 @@ func refresh_shortcuts() -> void:
 func update_effects(model, faction := 0) -> void:
 	effect_row.refresh(model, faction)
 
-func configure_rules_ui(modern: bool) -> void:
-	spell_button.visible = modern
-	mana_control.visible = modern
-	mana_label.visible = modern
-	gold_control.size.x = 190 if modern else 256
-	pin_bottom(economy_dock, 24, -144, 418 if modern else 286, 120)
+func configure_rules_ui(_modern := true) -> void:
+	spell_button.visible = true
+	mana_control.visible = true
+	mana_label.visible = true
+	gold_control.size.x = 190
+	pin_bottom(economy_dock, 24, -144, 418, 120)
 	recruit_button.position = Vector2(15, 12)
 	recruit_button.size = Vector2(124, 38)
 	build_button.position = Vector2(147, 12)

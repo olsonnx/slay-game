@@ -121,7 +121,9 @@ func run() -> void:
 		"vsync": false, "renderer": RenderingServer.get_current_rendering_method(), "ablation": ablation, "speed": turn_speed, "fps_cap": 0, "seed": 71, "synthetic": true, "date": "2026-10-20", "mode": mode}
 	config["algorithm"] = turn_algorithm
 	app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	await app.start_new_game(71, "huge", "normal", 6)
 	game = app.game
 	RenderingServer.viewport_set_measure_render_time(root.get_viewport_rid(), true)

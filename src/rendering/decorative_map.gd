@@ -41,6 +41,7 @@ var slot_by_coord: Dictionary = {}
 
 func _ready() -> void:
 	set_internal_border_visibility(Video.internal_borders)
+	set_plastic_tiles(Video.plastic_tiles)
 	if initial_seed < 0:
 		rng.randomize()
 	else:
@@ -215,12 +216,16 @@ func update_cinematic_camera() -> void:
 	var direction := Vector3(sin(camera_yaw) * cos(camera_pitch), sin(camera_pitch), cos(camera_yaw) * cos(camera_pitch))
 	camera.position = focus + direction * 52.0
 	camera.look_at(focus, Vector3.UP)
+	preload("res://src/rendering/depth_of_field.gd").update(camera, focus)
 
 func apply_background() -> void:
 	preload("res://src/rendering/water_surface.gd").set_style(water.material_override, Video.stylized_water)
-	if set_internal_border_visibility(Video.internal_borders):
+	var style_changed := set_plastic_tiles(Video.plastic_tiles)
+	var borders_changed := set_internal_border_visibility(Video.internal_borders)
+	if style_changed or borders_changed:
 		static_batches.source_cache.clear()
 		for slot in slots.values():
+			if style_changed: Tile.apply_appearance(self, slot["node"], slot["style"], slot["cell"])
 			Tile.update_join(self, slot["node"], slot["cell"], slot["joined_mask"])
 		sync_menu_batches()
 	sun.shadow_enabled = Video.shadows

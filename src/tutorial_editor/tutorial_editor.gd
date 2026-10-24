@@ -155,7 +155,7 @@ func reset_history() -> void:
 func load_template() -> void:
 	var category: String = Lessons.IDS[template.selected]
 	document = Doc.new()
-	document.data = {"format":"slay-tutorial","version":1,"title":category.capitalize(),"description":"A guided practice match.","category":category,"opponent_mode":"scripted","require_victory":true,"map":Lessons.Scenarios.map_data(category),"steps":Doc.encode(Lessons.builtin_lessons(category))}
+	document.data = {"format":"slay-tutorial","version":1,"title":Lessons.category_title(category),"description":Lessons.categories()[template.selected].description,"category":category,"opponent_mode":"ai" if category == "practice" else "scripted","require_victory":category == "practice","map":Lessons.Scenarios.map_data(category),"steps":Doc.encode(Lessons.builtin_lessons(category))}
 	document.data.map.erase("tutorial")
 	document.data.map.erase("tutorial_category")
 	step_index = 0
@@ -323,9 +323,10 @@ func import_map(filename: String) -> void:
 	if error != "": message(error); return
 	commit()
 	document.data.map = value.duplicate(true)
+	for step in document.data.steps: step.erase("setup")
 	changed()
 	refresh(true)
-	message("Map imported. Existing step coordinates are preserved; check the script before playtesting.")
+	message("Map imported for all exercises. Separate practice positions were removed; check existing targets before playtesting.")
 
 func save() -> void:
 	commit()
@@ -387,13 +388,23 @@ func playtest(from_step: bool) -> void:
 	app.menus.quit_requested.disconnect(app.quit_game)
 	app.menus.quit_requested.connect(stop_playtest)
 	hide()
-	await app.start_new_game(document.data.map.seed,document.data.map.size,"easy",2,document.level_data())
+	var play_data: Dictionary = document.level_data()
+	play_data["tutorial_playtest"] = true
+	await app.start_new_game(document.data.map.seed,document.data.map.size,"easy",2,play_data)
 	if from_step:
+		# Retry must return to this exercise, even when playtesting a later goal.
+		var tutor = app.game.tutorial
+		var group: String = str(document.data.steps[step_index].get("exercise","step_"+str(step_index)))
+		for number in range(step_index+1):
+			if str(document.data.steps[number].get("exercise","step_"+str(number))) == group:
+				tutor.index = number
+				tutor.enter_step()
+				break
 		app.game.rules = result.rules
 		app.game.round_number = result.round
 		app.game.tutorial.index = step_index
 		app.game.tutorial.enter_step()
-	app.game.tutorial_exit_requested.disconnect(app.return_to_main_menu)
+	app.game.tutorial_exit_requested.disconnect(app.return_to_tutorials)
 	app.game.tutorial_exit_requested.connect(stop_playtest)
 	return_layer = CanvasLayer.new()
 	return_layer.layer = 100

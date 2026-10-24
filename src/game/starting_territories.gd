@@ -33,14 +33,14 @@ static func plan(state, centers: Array) -> Array:
 	var result := []
 	result.resize(centers.size())
 	var occupied := []
-	var minimum := MIN_TILES if state.is_modern() else 7
+	var minimum := MIN_TILES
 	var reserve := mini(10, state.cells.size() - centers.size() * minimum)
 	var remaining := centers.size()
 	# Randomize assignment so crowded starts do not consistently penalize a colour.
 	for index in state.shuffled(range(centers.size())):
 		remaining -= 1
 		var available: int = state.cells.size() - reserve - occupied.size() - remaining * minimum
-		var desired: int = mini(state.rng.randi_range(MIN_TILES, MAX_TILES), available) if state.is_modern() else 7
+		var desired: int = mini(state.rng.randi_range(MIN_TILES, MAX_TILES), available)
 		var selected := []
 		for count in range(desired, minimum - 1, -1):
 			for shape in state.shuffled(SHAPES):

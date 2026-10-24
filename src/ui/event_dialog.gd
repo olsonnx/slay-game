@@ -6,6 +6,7 @@ const EventText = preload("res://src/ui/event_text.gd")
 const ContextPanel = preload("res://src/ui/context_panel.gd")
 const EventPainting = preload("res://src/ui/event_painting.gd")
 const Events = preload("res://src/game/event_catalog.gd")
+signal painting_revealed(artwork: Dictionary)
 var make_button: Callable
 var panel
 var dim_tween: Tween
@@ -39,11 +40,9 @@ func present(definition: Dictionary, choose: Callable) -> void:
 	title.name = "EventTitle"
 	var story_top: float = title.position.y + title.size.y + 8
 	var painting: TextureRect
-	var artwork := definition
-	if String(artwork.get("painting", "")).is_empty():
-		artwork = {} if definition.get("focus_cancel", false) else Events.DEFAULT_PAINTING
+	var artwork := Events.artwork(definition)
 	if artwork.has("painting"):
-		var texture := load(String(artwork["painting"])) as Texture2D
+		var texture := Events.painting_texture(String(artwork["painting"]))
 		if texture != null:
 			var caption := Loc.text(artwork.get("painting_title", String(artwork["painting"]).get_file().get_basename().replace("_", " ")))
 			if artwork.has("painting_artist"): caption += "\n" + Loc.text(artwork["painting_artist"])
@@ -75,6 +74,19 @@ func present(definition: Dictionary, choose: Callable) -> void:
 			button.focus_mode = Control.FOCUS_ALL
 			if index == definition["choices"].size() - 1: cancel_focus = button
 	panel.panel_height = choice_y - 6 + 20
+	# Authored stories and four-choice events can be taller than a small window.
+	var available_height := maxf(240,get_viewport_rect().size.y-64)
+	if panel.panel_height > available_height:
+		var content := Control.new()
+		content.custom_minimum_size = Vector2(480,panel.panel_height)
+		var children: Array = panel.get_children()
+		var scroll := ScrollContainer.new()
+		scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		scroll.size = Vector2(480,available_height)
+		panel.add_child(scroll)
+		scroll.add_child(content)
+		for child in children: child.reparent(content,false)
+		panel.panel_height = available_height
 	panel.rest_top = -panel.panel_height / 2.0
 	panel.reveal = 0.0
 	panel.show()
@@ -84,9 +96,9 @@ func present(definition: Dictionary, choose: Callable) -> void:
 	if dim_tween != null and dim_tween.is_valid():
 		dim_tween.kill()
 	color.a = 0.0
-	begin_entrance(entrance_revision)
+	begin_entrance(entrance_revision, artwork if painting != null else {})
 
-func begin_entrance(revision: int) -> void:
+func begin_entrance(revision: int, artwork: Dictionary = {}) -> void:
 	# Loading a painting and laying out the larger dialog can take a whole frame.
 	# Let that frame finish before creating tweens, so its delta cannot skip the
 	# beginning of the entrance. Use the same timing for illustrated and plain events.
@@ -96,6 +108,8 @@ func begin_entrance(revision: int) -> void:
 	panel.open(true)
 	dim_tween = create_tween()
 	dim_tween.tween_property(self, "color:a", 0.78, ContextPanel.ENTRANCE_SECONDS).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	await get_tree().process_frame
+	if revision == entrance_revision and is_visible_in_tree() and not artwork.is_empty(): painting_revealed.emit(artwork)
 
 func wrapped_label(text_value: String, at: Vector2, font_size: int, font_color := Color("ede7d4")) -> RichTextLabel:
 	return EventText.label(panel, text_value, at, 424, font_size, font_color)

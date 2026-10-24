@@ -41,7 +41,7 @@ func run() -> void:
 	expect(game.view.overlays.area_edges(ring).size() == 18, "Filling the hole removes its six inner edges")
 	expect(game.view.overlays.area_edges({Vector2i.ZERO: true, Vector2i(1, 0): true}).size() == 10, "Two touching tiles omit their shared edge")
 	expect(game.view.overlays.area_edges({Vector2i.ZERO: true, Vector2i(5, 0): true}).size() == 12, "Disconnected reachable patches keep separate perimeters")
-	for mode in ["classic", "modern"]:
+	for mode in ["modern"]:
 		game.rules.rule_mode = mode
 		for seed_value in [42, 71, 123]:
 			game.new_game(seed_value)
@@ -178,7 +178,7 @@ func run() -> void:
 	expect(movement.unit_protection(fixture, origin) == {origin: true}, "A friendly neutral-bridge garrison protects only its own bridge")
 	fixture[origin]["unit"] = 0
 	expect(movement.unit_protection(fixture, origin).is_empty() and movement.unit_protection(fixture, game.NONE).is_empty(), "Empty and missing source tiles have no unit protection")
-	for mode in ["classic", "modern"]:
+	for mode in ["modern"]:
 		game.rules.rule_mode = mode
 		game.new_game(42)
 		var own := game.NONE as Vector2i

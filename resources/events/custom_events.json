@@ -1,0 +1,205 @@
+{
+	"events": [
+		{
+			"choices": [
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "Build a landmark: +1–2 gold per turn to its kingdom while controlled.\n50% chance of each.",
+					"label": "Clearly a tax loophole.",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"income_max": 2,
+									"income_min": 1,
+									"kind": "landmark",
+									"mana_max": 0,
+									"mana_min": 0,
+									"steel": false
+								}
+							],
+							"requires": [],
+							"text": "A landmark is built: +{amount} gold per turn.",
+							"weight": 100
+						}
+					],
+					"requires": []
+				},
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "Gain a ready Scout.\nNormal upkeep applies.",
+					"label": "Recruit the volunteers.",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"kind": "recruit",
+									"ready": true,
+									"tier": 1
+								}
+							],
+							"requires": [],
+							"text": "A ready Scout joins your kingdom.",
+							"weight": 100
+						}
+					],
+					"requires": [
+						{
+							"effect": "free_spell",
+							"kind": "recruit_space",
+							"not": false,
+							"value": 1
+						}
+					]
+				}
+			],
+			"enabled": true,
+			"gold_roll_max": 0,
+			"gold_roll_min": 0,
+			"id": "comet",
+			"modern_only": true,
+			"painting": "res://assets/paintings/events/William_Turner_of_Oxford_-_Donati's_Comet_1792598893_116.png",
+			"painting_artist": "William Turner of Oxford",
+			"painting_title": "Donati's Comet",
+			"requirements": "A connected kingdom. Recruiting volunteers also requires a clear, empty province.",
+			"requires": [
+				{
+					"effect": "free_spell",
+					"kind": "kingdom",
+					"not": false,
+					"value": 1
+				}
+			],
+			"text": "The priests predict disaster. The treasurer predicts revenue. The recruiting sergeant proposes recruiting volunteers inspired by the omen.",
+			"title": "Comet sighted!",
+			"variants": [],
+			"weight": 4
+		},
+		{
+			"choices": [
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "Rebels seize this province and neighbouring land.\nUnits there join the rebels.",
+					"label": "Recognise their independence. From a distance.",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"kind": "revolt",
+									"radius": 1
+								}
+							],
+							"requires": [],
+							"text": "A new kingdom declares independence.",
+							"weight": 100
+						}
+					],
+					"requires": []
+				},
+				{
+					"ai_score": 10,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "Pay 100% of this kingdom's gold.",
+					"label": "Surely this calls for a modest subsidy.",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"kind": "gold_percent",
+									"percent": -100
+								}
+							],
+							"requires": [],
+							"text": "The treasury is empty.",
+							"weight": 100
+						}
+					],
+					"requires": []
+				}
+			],
+			"enabled": true,
+			"gold_roll_max": 0,
+			"gold_roll_min": 0,
+			"id": "revolt",
+			"modern_only": true,
+			"painting": "",
+			"painting_artist": "",
+			"painting_title": "",
+			"requirements": "An unused kingdom identity is available, and this province has neighbouring passable land.",
+			"requires": [
+				{
+					"effect": "free_spell",
+					"kind": "kingdom",
+					"not": false,
+					"value": 1
+				},
+				{
+					"effect": "free_spell",
+					"kind": "rebel_slot",
+					"not": false,
+					"value": 1
+				}
+			],
+			"text": "The peasants have formed a representative assembly. Every representative carries a pitchfork, and their first motion is that we should leave immediately.",
+			"title": "The Pitchfork Parliament",
+			"variants": [],
+			"weight": 1
+		},
+		{
+			"choices": [
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "Gain {gold} gold.",
+					"label": "Great!",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"kind": "gold",
+									"max": 1,
+									"min": 1,
+									"use_reveal_roll": true
+								}
+							],
+							"requires": [],
+							"text": "Your kingdom gains {amount} gold.",
+							"weight": 100
+						}
+					],
+					"requires": []
+				}
+			],
+			"enabled": true,
+			"gold_roll_max": 25,
+			"gold_roll_min": 10,
+			"id": "gold",
+			"modern_only": false,
+			"painting": "",
+			"painting_artist": "",
+			"painting_title": "",
+			"requirements": "",
+			"requires": [
+				{
+					"effect": "free_spell",
+					"kind": "kingdom",
+					"not": false,
+					"value": 1
+				}
+			],
+			"text": "Beneath a crumbling milestone, your army discovers a chest of coins. Nobody remains to claim it.",
+			"title": "A forgotten fortune",
+			"variants": [],
+			"weight": 8
+		}
+	],
+	"version": 1
+}

@@ -18,5 +18,9 @@ static func apply(rules, order: Dictionary, faction: int) -> Dictionary:
 		"spell": ok = rules.cast_spell(order.get("spell","trailblaze"),target,faction)
 		"entrench": ok = rules.entrench(target,faction)
 		"develop": ok = rules.develop(target,faction)
-		"continue","select","inspect","view","heatmap","stats","any": ok = true
+		"relocate_capital": ok = rules.relocate_capital(target,faction)
+		"event":
+			if not rules.pending_events.is_empty(): ok = rules.resolve_event(rules.pending_events[0],int(order.get("choice",0))) != ""
+		"any": return {"ok":false,"moves":[]}
+		"continue","select","inspect","view","heatmap","stats","finance","status","kingdom","animal": ok = true
 	return {"ok":ok,"moves":moves}

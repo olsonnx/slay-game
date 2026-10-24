@@ -12,6 +12,7 @@ var vsync := true
 var antialiasing := 2
 var shadows := true
 var atmospheric_lighting := true
+var plastic_tiles := true
 var follow_turn_camera := true
 var level_transitions := true
 var background := "water"
@@ -41,6 +42,9 @@ func set_preference(key: StringName, value: Variant, persist := true) -> void:
 		&"atmospheric_lighting":
 			if not value is bool: return
 			atmospheric_lighting = value
+		&"plastic_tiles":
+			if not value is bool: return
+			plastic_tiles = value
 		&"shadows": shadows = bool(value)
 		&"follow_turn_camera": follow_turn_camera = bool(value)
 		&"level_transitions": level_transitions = bool(value)
@@ -84,7 +88,7 @@ func load_settings(path := DEFAULT_PATH) -> Error:
 	var saved_msaa = config.get_value("video", "antialiasing", antialiasing)
 	if saved_msaa is int:
 		antialiasing = clampi(saved_msaa, 0, 3)
-	for key in [&"fullscreen", &"vsync", &"shadows", &"follow_turn_camera", &"level_transitions", &"atmospheric_lighting"]:
+	for key in [&"fullscreen", &"vsync", &"shadows", &"follow_turn_camera", &"level_transitions", &"atmospheric_lighting", &"plastic_tiles"]:
 		var value = config.get_value("video", key, get(key))
 		if value is bool:
 			set(key, value)
@@ -102,7 +106,7 @@ func load_settings(path := DEFAULT_PATH) -> Error:
 func flush_settings() -> Error:
 	save_timer.stop()
 	var config := ConfigFile.new()
-	for key in [&"fullscreen", &"resolution", &"vsync", &"antialiasing", &"shadows", &"follow_turn_camera", &"level_transitions", &"background", &"stylized_water", &"internal_borders", &"atmospheric_lighting"]:
+	for key in [&"fullscreen", &"resolution", &"vsync", &"antialiasing", &"shadows", &"follow_turn_camera", &"level_transitions", &"background", &"stylized_water", &"internal_borders", &"atmospheric_lighting", &"plastic_tiles"]:
 		config.set_value("video", key, get(key))
 	var error := config.save(settings_path)
 	if error != OK:

@@ -158,7 +158,9 @@ func run() -> void:
 	Engine.max_fps = 0
 	root.get_node("Sound").set_muted(true, false)
 	app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	await app.start_new_game(42, "large", "normal", 6)
 	game = app.game
 	game.view.cancel_level_transition()

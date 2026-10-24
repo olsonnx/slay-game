@@ -51,6 +51,8 @@ func run() -> void:
 	other.queue_free()
 	editor.queue_free()
 	await process_frame
+	# Ogg playback is retired by the audio mixing thread after board cleanup.
+	await create_timer(1.2).timeout
 	DirAccess.remove_absolute(path)
 	print("Editor loading checks: %d passed, %d failed" % [checks - failures, failures])
 	quit(1 if failures else 0)

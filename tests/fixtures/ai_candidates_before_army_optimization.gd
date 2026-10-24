@@ -44,7 +44,7 @@ static func preparation(model, faction: int, queries = null) -> Array:
 				if border.is_empty() and not urgent:
 					continue
 				var cost: int = model.recruitment_cost(coord, faction, tier, capital)
-				var wages: int = Catalog.unit_upkeep(tier, model.is_modern()) - Catalog.unit_upkeep(cell["unit"], model.is_modern())
+				var wages: int = Catalog.unit_upkeep(tier) - Catalog.unit_upkeep(cell["unit"])
 				if cost < 0 or not Analysis.sustainable(model, kingdom, wages, cost, queries):
 					continue
 				var utility := 3.0 if not border.is_empty() else -5.0
@@ -83,7 +83,7 @@ static func preparation(model, faction: int, queries = null) -> Array:
 				match spell:
 					"summon":
 						var kingdom: Dictionary = model.kingdom_at(coord)
-						if Analysis.sustainable(model, kingdom, Catalog.unit_upkeep(1, model.is_modern()), 0, queries):
+						if Analysis.sustainable(model, kingdom, Catalog.unit_upkeep(1), 0, queries):
 							utility = 4.0 if not queries.frontier(kingdom["capital"]).is_empty() else 0.0
 							if Analysis.endangered(model, coord, danger) and danger[coord]["strength"] == 1:
 								utility += 15.0

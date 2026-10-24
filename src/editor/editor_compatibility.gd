@@ -75,9 +75,6 @@ var value_choice:
 var size_choice:
 	get: return ui.size_choice
 	set(value): ui.size_choice = value
-var mode_choice:
-	get: return ui.mode_choice
-	set(value): ui.mode_choice = value
 var gold_choice:
 	get: return ui.gold_choice
 	set(value): ui.gold_choice = value

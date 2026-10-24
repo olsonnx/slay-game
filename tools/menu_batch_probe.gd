@@ -14,7 +14,9 @@ func run() -> void:
 	root.get_node("Sound").set_muted(true, false)
 	Engine.max_fps = 0
 	var app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	var background = app.menus.menu_background
 	var viewport: RID = background.viewport.get_viewport_rid()
 	RenderingServer.viewport_set_measure_render_time(viewport, true)

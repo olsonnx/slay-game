@@ -22,7 +22,9 @@ func run() -> void:
 	var original_borders: float = video.internal_borders
 	video.set_preference(&"level_transitions", false, false)
 	var app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	await process_frame
 	var background = app.menus.menu_background
 	var map = background.map

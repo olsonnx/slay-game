@@ -58,7 +58,6 @@ var tool_choice: OptionButton
 var owner_choice: OptionButton
 var value_choice: SpinBox
 var size_choice: OptionButton
-var mode_choice: OptionButton
 var gold_choice: SpinBox
 var undo_button: Button
 var redo_button: Button
@@ -247,8 +246,6 @@ func build_settings() -> void:
 	for index in range(Document.Sizes.IDS.size()):
 		size_choice.get_popup().set_item_tooltip(index, Document.Sizes.tile_tooltip(Document.Sizes.IDS[index]))
 	form_row(form, Loc.text("Map size"), 114, size_choice)
-	mode_choice = choice(panel, ["Modern", "Classic"])
-	form_row(form, Loc.text("Rules"), 114, mode_choice)
 	var generation := HBoxContainer.new()
 	generation.add_theme_constant_override("separation", 10)
 	form.add_child(generation)
@@ -309,6 +306,19 @@ func build_event_browser() -> void:
 	event_search.placeholder_text = Loc.text("Search events, descriptions or outcomes…")
 	event_search.text_changed.connect(func(_query: String): filter_events())
 	event_count = Hud.label_at(event_browser, "", Vector2(0, 46), 12, Color("9eb2a7"))
+	var author := Button.new()
+	author.text = Loc.text("Create events…")
+	author.position = Vector2(256,41)
+	author.size = Vector2(136,28)
+	author.pressed.connect(command(&"open_event_editor"))
+	event_browser.add_child(author)
+	var reload := Button.new()
+	reload.text = Loc.text("Reload")
+	reload.position = Vector2(400,41)
+	reload.size = Vector2(88,28)
+	reload.tooltip_text = Loc.text("Load events saved by the Event Editor")
+	reload.pressed.connect(command(&"reload_events"))
+	event_browser.add_child(reload)
 	event_list = ItemList.new()
 	event_browser.add_child(event_list)
 	event_list.position = Vector2(0, 74)
@@ -436,6 +446,7 @@ func build_dialogs() -> void:
 	file_dialog.file_selected.connect(file_chosen.emit)
 	add_child(file_dialog)
 	confirm = preload("res://src/editor/discard_dialog.gd").new()
+	confirm.theme = ui_root.theme
 	ui_root.add_child(confirm)
 	confirm.confirmed.connect(discard_confirmed.emit)
 	confirm.cancelled.connect(discard_cancelled.emit)
@@ -500,7 +511,6 @@ func render_tools(group: String, rule_mode: String, active_tool: String, texture
 		button.toggle_mode = true
 		button.set_meta("tool", tool)
 		button.set_pressed_no_signal(active_tool == tool)
-		button.disabled = rule_mode == "classic" and tool in Document.MODERN_TOOLS
 		button.tooltip_text = Loc.text("%s · %d\nLeft: place · right: %s") % [Loc.text(tool), index + 1, Loc.text("delete tile" if tool in Document.TILE_TOOLS else "clear decorations")]
 		var label := Hud.label_at(button, tool, Vector2(0, 74), 14)
 		label.size = Vector2(124, 20)

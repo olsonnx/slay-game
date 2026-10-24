@@ -114,7 +114,7 @@ func run() -> void:
 	game.advance_view_press(1)
 	game.view_button.pressed.emit()
 	expect(not game.view.top_down, "Leaving the held view control cancels its gesture")
-	expect(game.level_label.text == "Level 1" and game.round_label.text.contains("Quick Play") and not game.round_label.text.contains("Classic"), "HUD identifies the current level and Quick Play mode")
+	expect(game.level_label.text == game.NAMES[game.active_faction] and game.round_label.text.contains("Quick Play") and not game.round_label.text.contains("Classic"), "HUD identifies the current country with turn and Quick Play mode below")
 	game.busy = true
 	game.active_faction = 1
 	game.refresh_ui()

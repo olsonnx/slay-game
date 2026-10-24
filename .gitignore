@@ -21,3 +21,10 @@ __pycache__/
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# Temporary native-library copies from Godot on Windows.
+/addons/godotsteam/win64/~*.TMP
+
+# Event editor recovery files; the actual event pack stays tracked.
+/resources/events/*.json.bak
+/resources/events/*.json.tmp

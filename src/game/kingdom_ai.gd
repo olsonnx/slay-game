@@ -313,7 +313,7 @@ func preparation_records(before: Dictionary, faction: int) -> Array[Dictionary]:
 		elif cell["tree"] and not old["tree"]:
 			kind = "tree"
 		elif old["tree"] and not cell["tree"] or old["grave"] and not cell["grave"]:
-			kind = "spell" if state.is_modern() else "clear"
+			kind = "spell"
 		elif cell.get("value", 1) > old.get("value", 1):
 			kind = "develop"
 		elif cell.get("entrenched_by", -1) != old.get("entrenched_by", -1):

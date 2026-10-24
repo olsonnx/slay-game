@@ -127,9 +127,6 @@ func chest_checks() -> void:
 	print("Chest totals across six maps per size: ", totals)
 	expect(totals["small"] == 0, "Tiny maps never generate treasure")
 	expect(totals["medium"] > 0 and totals["large"] > 0 and totals["very_large"] > 0 and totals["huge"] > totals["large"], "Treasure starts at Small and scales on larger maps")
-	model = Rules.new()
-	model.generate(42, "huge")
-	for cell in model.cells.values(): expect(cell.get("treasure", 0) == 0, "Classic does not gain Modern treasure")
 func ui_checks() -> void:
 	var game = load("res://scenes/main.tscn").instantiate()
 	game.initial_rule_mode = "modern"

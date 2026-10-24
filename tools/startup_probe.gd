@@ -58,7 +58,9 @@ func run() -> void:
 
 func probe_app() -> void:
 	var app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	await create_timer(1.0).timeout
 	app.start_new_game(42, "large")
 	await process_frame
@@ -67,6 +69,7 @@ func probe_app() -> void:
 	while app.transitioning:
 		await process_frame
 	var metrics: Dictionary = app.game.startup_timings.duplicate()
+	metrics["application_warmup_ms"] = app.startup_warmup_ms
 	metrics["arrival"] = await sample(1.0)
 	metrics["idle"] = await sample(1.0)
 	root.get_texture().get_image().save_png("res://artifacts/startup_settled.png")

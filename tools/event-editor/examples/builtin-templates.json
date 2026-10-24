@@ -1,0 +1,1025 @@
+{
+	"events": [
+		{
+			"choices": [
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "Gain {gold} gold.",
+					"label": "Great!",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"kind": "gold",
+									"max": 1,
+									"min": 1,
+									"use_reveal_roll": true
+								}
+							],
+							"requires": [],
+							"text": "Your kingdom gains {amount} gold.",
+							"weight": 100
+						}
+					],
+					"requires": []
+				}
+			],
+			"enabled": true,
+			"gold_roll_max": 25,
+			"gold_roll_min": 10,
+			"id": "gold_example",
+			"modern_only": false,
+			"painting": "",
+			"painting_artist": "",
+			"painting_title": "",
+			"requirements": "",
+			"requires": [
+				{
+					"effect": "free_spell",
+					"kind": "kingdom",
+					"not": false,
+					"value": 1
+				}
+			],
+			"text": "Beneath a crumbling milestone, your army discovers a chest of coins. Nobody remains to claim it.",
+			"title": "A forgotten fortune",
+			"variants": [],
+			"weight": 12
+		},
+		{
+			"choices": [
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "60%: gain a mana source.\n40%: this army dies.",
+					"label": "Awaken it",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"enabled": true,
+									"kind": "mana_source"
+								},
+								{
+									"income_max": 0,
+									"income_min": 0,
+									"kind": "landmark",
+									"mana_max": 0,
+									"mana_min": 0,
+									"steel": false
+								}
+							],
+							"requires": [],
+							"text": "The altar awakens: a new mana source.",
+							"weight": 60
+						},
+						{
+							"effects": [
+								{
+									"kind": "kill_unit"
+								}
+							],
+							"requires": [],
+							"text": "Your army was lost.",
+							"weight": 40
+						}
+					],
+					"requires": []
+				},
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "Nothing happens.",
+					"label": "Leave it alone",
+					"outcomes": [
+						{
+							"effects": [],
+							"requires": [],
+							"text": "The journey continues.",
+							"weight": 100
+						}
+					],
+					"requires": []
+				}
+			],
+			"enabled": true,
+			"gold_roll_max": 0,
+			"gold_roll_min": 0,
+			"id": "altar_example",
+			"modern_only": false,
+			"painting": "",
+			"painting_artist": "",
+			"painting_title": "",
+			"requirements": "",
+			"requires": [
+				{
+					"effect": "free_spell",
+					"kind": "mana_source",
+					"not": true,
+					"value": 1
+				}
+			],
+			"text": "An ancient altar hums beneath the moss. Its runes promise power, but the last inscription is a warning.",
+			"title": "The sleeping altar",
+			"variants": [],
+			"weight": 4
+		},
+		{
+			"choices": [
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "Your army is lost.",
+					"label": "A tragic loss",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"kind": "kill_unit"
+								}
+							],
+							"requires": [],
+							"text": "Your army was lost in the pit.",
+							"weight": 100
+						}
+					],
+					"requires": []
+				}
+			],
+			"enabled": true,
+			"gold_roll_max": 0,
+			"gold_roll_min": 0,
+			"id": "pit_example",
+			"modern_only": false,
+			"painting": "",
+			"painting_artist": "",
+			"painting_title": "",
+			"requirements": "",
+			"requires": [],
+			"text": "The ground gives way. A hidden pit swallows your army before anyone can throw down a rope.",
+			"title": "One step too far",
+			"variants": [],
+			"weight": 1
+		},
+		{
+			"choices": [
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "60%: gain 1 tier (Knights gain 20 gold).\n40%: this army dies.",
+					"label": "Accept the challenge",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"kind": "promote",
+									"max_rank_gold": 20,
+									"steps": 1
+								}
+							],
+							"requires": [],
+							"text": "Your champion wins the duel.",
+							"weight": 60
+						},
+						{
+							"effects": [
+								{
+									"kind": "kill_unit"
+								}
+							],
+							"requires": [],
+							"text": "Your army was lost.",
+							"weight": 40
+						}
+					],
+					"requires": []
+				},
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "Nothing happens.",
+					"label": "Decline politely",
+					"outcomes": [
+						{
+							"effects": [],
+							"requires": [],
+							"text": "The journey continues.",
+							"weight": 100
+						}
+					],
+					"requires": []
+				}
+			],
+			"enabled": true,
+			"gold_roll_max": 0,
+			"gold_roll_min": 0,
+			"id": "duel_example",
+			"modern_only": false,
+			"painting": "",
+			"painting_artist": "",
+			"painting_title": "",
+			"requirements": "",
+			"requires": [
+				{
+					"effect": "free_spell",
+					"kind": "duel_reward",
+					"not": false,
+					"value": 1
+				}
+			],
+			"text": "A local warlord bars the road and challenges your champion. Victory would make your soldiers legends.",
+			"title": "The warlord's challenge",
+			"variants": [],
+			"weight": 5
+		},
+		{
+			"choices": [
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "Your next successful spell costs 0 mana.",
+					"label": "Thank you, kind wizard",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"effect": "free_spell",
+									"enabled": true,
+									"kind": "temporary_effect"
+								}
+							],
+							"requires": [],
+							"text": "Your next spell is free.",
+							"weight": 100
+						}
+					],
+					"requires": []
+				}
+			],
+			"enabled": true,
+			"gold_roll_max": 0,
+			"gold_roll_min": 0,
+			"id": "wizard_example",
+			"modern_only": false,
+			"painting": "",
+			"painting_artist": "",
+			"painting_title": "",
+			"requirements": "",
+			"requires": [
+				{
+					"effect": "free_spell",
+					"kind": "no_effect",
+					"not": false,
+					"value": 1
+				}
+			],
+			"text": "A wandering wizard shares tea with your soldiers and offers a little magic for the journey ahead.",
+			"title": "A friend in a pointed hat",
+			"variants": [],
+			"weight": 5
+		},
+		{
+			"choices": [
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "Gain 2 gold.\nThe goose remains extremely pleased.",
+					"label": "Long live the goose",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"kind": "gold",
+									"max": 2,
+									"min": 2,
+									"use_reveal_roll": false
+								}
+							],
+							"requires": [],
+							"text": "Your kingdom gains 2 gold.",
+							"weight": 100
+						}
+					],
+					"requires": []
+				}
+			],
+			"enabled": true,
+			"gold_roll_max": 0,
+			"gold_roll_min": 0,
+			"id": "goose_example",
+			"modern_only": false,
+			"painting": "",
+			"painting_artist": "",
+			"painting_title": "",
+			"requirements": "",
+			"requires": [
+				{
+					"effect": "free_spell",
+					"kind": "kingdom",
+					"not": false,
+					"value": 1
+				}
+			],
+			"text": "A goose claims to be the rightful ruler of this island. After a lengthy honk, it waddles away. Your army collects 2 gold from spectators as the first royal tax.",
+			"title": "A very important goose",
+			"variants": [],
+			"weight": 3
+		},
+		{
+			"choices": [
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "Build a landmark: +1–2 gold per turn to its kingdom while controlled.\n50% chance of each.",
+					"label": "Clearly a tax loophole.",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"income_max": 2,
+									"income_min": 1,
+									"kind": "landmark",
+									"mana_max": 0,
+									"mana_min": 0,
+									"steel": false
+								}
+							],
+							"requires": [],
+							"text": "A landmark is built: +{amount} gold per turn.",
+							"weight": 100
+						}
+					],
+					"requires": []
+				},
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "Gain a ready Scout.\nNormal upkeep applies.",
+					"label": "Recruit the volunteers.",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"kind": "recruit",
+									"ready": true,
+									"tier": 1
+								}
+							],
+							"requires": [],
+							"text": "A ready Scout joins your kingdom.",
+							"weight": 100
+						}
+					],
+					"requires": [
+						{
+							"effect": "free_spell",
+							"kind": "recruit_space",
+							"not": false,
+							"value": 1
+						}
+					]
+				}
+			],
+			"enabled": true,
+			"gold_roll_max": 0,
+			"gold_roll_min": 0,
+			"id": "comet_example",
+			"modern_only": true,
+			"painting": "",
+			"painting_artist": "",
+			"painting_title": "",
+			"requirements": "A connected kingdom. Recruiting volunteers also requires a clear, empty province.",
+			"requires": [
+				{
+					"effect": "free_spell",
+					"kind": "kingdom",
+					"not": false,
+					"value": 1
+				}
+			],
+			"text": "The priests predict disaster. The treasurer predicts revenue. The recruiting sergeant proposes recruiting volunteers inspired by the omen.",
+			"title": "Comet sighted!",
+			"variants": [],
+			"weight": 4
+		},
+		{
+			"choices": [
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "50%: gain 4 gold.\n50%: this army dies.",
+					"label": "Try Headman's Last Breath.",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"kind": "gold",
+									"max": 4,
+									"min": 4,
+									"use_reveal_roll": false
+								}
+							],
+							"requires": [],
+							"text": "Your army wins 4 gold on a wager.",
+							"weight": 50
+						},
+						{
+							"effects": [
+								{
+									"kind": "kill_unit"
+								}
+							],
+							"requires": [],
+							"text": "The drink lives up to its name. Your army does not.",
+							"weight": 50
+						}
+					],
+					"requires": []
+				},
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "50%: gain 4 gold.\n50%: this army dies.",
+					"label": "Try Father's Final Request.",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"kind": "gold",
+									"max": 4,
+									"min": 4,
+									"use_reveal_roll": false
+								}
+							],
+							"requires": [],
+							"text": "Your army wins 4 gold on a wager.",
+							"weight": 50
+						},
+						{
+							"effects": [
+								{
+									"kind": "kill_unit"
+								}
+							],
+							"requires": [],
+							"text": "The drink lives up to its name. Your army does not.",
+							"weight": 50
+						}
+					],
+					"requires": []
+				}
+			],
+			"enabled": true,
+			"gold_roll_max": 0,
+			"gold_roll_min": 0,
+			"id": "innkeeper_example",
+			"modern_only": true,
+			"painting": "",
+			"painting_artist": "",
+			"painting_title": "",
+			"requirements": "Any army entering this province.",
+			"requires": [
+				{
+					"effect": "free_spell",
+					"kind": "kingdom",
+					"not": false,
+					"value": 1
+				}
+			],
+			"text": "The innkeeper insists your army try the local spirits. Declining would insult his hospitality, his ancestors, and the large man blocking the door.",
+			"title": "Innkeeper's Offer",
+			"variants": [],
+			"weight": 6
+		},
+		{
+			"choices": [
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "Clear {trees} trees; gain 1 gold per tree.",
+					"label": "A promising branch of government.",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"adaptive": true,
+									"gold_per_tree": 1,
+									"kind": "clear_trees"
+								}
+							],
+							"requires": [],
+							"text": "{cleared} trees removed; {amount} gold earned.",
+							"weight": 100
+						}
+					],
+					"requires": []
+				}
+			],
+			"enabled": true,
+			"gold_roll_max": 0,
+			"gold_roll_min": 0,
+			"id": "lumberjack_example",
+			"modern_only": true,
+			"painting": "res://assets/paintings/Franz_Steinfeld_-_Landscape_with_Group_of_Trees_and_Woodcutters.png",
+			"painting_artist": "Franz Steinfeld",
+			"painting_title": "Landscape with Group of Trees and Woodcutters",
+			"requirements": "This connected kingdom has trees. Rewards depend on how much potential income they block.",
+			"requires": [
+				{
+					"effect": "free_spell",
+					"kind": "kingdom",
+					"not": false,
+					"value": 1
+				},
+				{
+					"effect": "free_spell",
+					"kind": "forest",
+					"not": false,
+					"value": 1
+				}
+			],
+			"text": "The royal forester has spent three months counting trees. A man with an axe offers to conclude the investigation before lunch.",
+			"title": "Lumberjack's Offer",
+			"variants": [
+				{
+					"choices": [
+						{
+							"ai_score": 0,
+							"cost_gold": 0,
+							"cost_mana": 0,
+							"hint": "Clear {trees} trees. No gold reward.",
+							"label": "At least we will have a kingdom again.",
+							"outcomes": [
+								{
+									"effects": [
+										{
+											"adaptive": true,
+											"gold_per_tree": 1,
+											"kind": "clear_trees"
+										}
+									],
+									"requires": [],
+									"text": "{cleared} trees removed; {amount} gold earned.",
+									"weight": 100
+								}
+							],
+							"requires": []
+						}
+					],
+					"requires": [
+						{
+							"effect": "free_spell",
+							"kind": "forest_overgrown",
+							"not": false,
+							"value": 1
+						}
+					],
+					"text": "Our kingdom is mostly forest, with a small administrative inconvenience attached. A lumberjack offers to find the roads. Payment, he says, would be optimistic."
+				}
+			],
+			"weight": 8
+		},
+		{
+			"choices": [
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "Disband all your armies.\nRefund 100% of their recruitment cost.",
+					"label": "Return everyone to the recruitment office.",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"kind": "disband",
+									"refund_percent": 100
+								}
+							],
+							"requires": [],
+							"text": "Your armies stand down. {refund} gold returned.",
+							"weight": 100
+						}
+					],
+					"requires": []
+				},
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "Tradition wins another decisive victory.",
+					"label": "The imbalance is traditional.",
+					"outcomes": [
+						{
+							"effects": [],
+							"requires": [],
+							"text": "The army remains reassuringly imbalanced.",
+							"weight": 100
+						}
+					],
+					"requires": []
+				}
+			],
+			"enabled": true,
+			"gold_roll_max": 0,
+			"gold_roll_min": 0,
+			"id": "regroup_example",
+			"modern_only": true,
+			"painting": "",
+			"painting_artist": "",
+			"painting_title": "",
+			"requirements": "Your faction has at least two units on the board.",
+			"requires": [
+				{
+					"effect": "free_spell",
+					"kind": "kingdom",
+					"not": false,
+					"value": 1
+				},
+				{
+					"effect": "free_spell",
+					"kind": "multiple_units",
+					"not": false,
+					"value": 1
+				}
+			],
+			"text": "The marshal reports that our army is perfectly balanced, provided one ignores its composition, deployment, and continued existence. He proposes a fresh start.",
+			"title": "Regroup!",
+			"variants": [],
+			"weight": 3
+		},
+		{
+			"choices": [
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "This province and your neighbouring land become neutral.\nUnits and buildings there are lost.",
+					"label": "Revise the map. Quietly.",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"kind": "neutralize",
+									"radius": 1
+								}
+							],
+							"requires": [],
+							"text": "The border is corrected.",
+							"weight": 100
+						}
+					],
+					"requires": []
+				}
+			],
+			"enabled": true,
+			"gold_roll_max": 0,
+			"gold_roll_min": 0,
+			"id": "cartographer_example",
+			"modern_only": true,
+			"painting": "",
+			"painting_artist": "",
+			"painting_title": "",
+			"requirements": "The army belongs to a connected kingdom.",
+			"requires": [
+				{
+					"effect": "free_spell",
+					"kind": "kingdom",
+					"not": false,
+					"value": 1
+				}
+			],
+			"text": "Our court cartographer admits the border was drawn with a wine stain as reference. The neighbouring villages have accepted his correction with suspicious enthusiasm.",
+			"title": "Cartographer's blunder",
+			"variants": [],
+			"weight": 1
+		},
+		{
+			"choices": [
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "Gain 20 gold.",
+					"label": "Royalty is a liquid asset.",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"kind": "gold",
+									"max": 20,
+									"min": 20,
+									"use_reveal_roll": false
+								}
+							],
+							"requires": [],
+							"text": "The family pays 20 gold.",
+							"weight": 100
+						}
+					],
+					"requires": []
+				},
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "Gain 1 mana.",
+					"label": "Let his death demonstrate our power.",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"kind": "mana",
+									"max": 1,
+									"min": 1,
+									"use_reveal_roll": false
+								}
+							],
+							"requires": [],
+							"text": "A grim demonstration of power: +1 mana.",
+							"weight": 100
+						}
+					],
+					"requires": [
+						{
+							"effect": "free_spell",
+							"kind": "mana_space",
+							"not": false,
+							"value": 1
+						}
+					]
+				}
+			],
+			"enabled": true,
+			"gold_roll_max": 0,
+			"gold_roll_min": 0,
+			"id": "ransom_example",
+			"modern_only": true,
+			"painting": "",
+			"painting_artist": "",
+			"painting_title": "",
+			"requirements": "At least one other living faction remains.",
+			"requires": [
+				{
+					"effect": "free_spell",
+					"kind": "kingdom",
+					"not": false,
+					"value": 1
+				},
+				{
+					"effect": "free_spell",
+					"kind": "other_faction",
+					"not": false,
+					"value": 1
+				}
+			],
+			"text": "Your army finds a foreign royal travelling incognito, accompanied by twelve servants carrying his portrait. His family may pay handsomely for his continued discretion.",
+			"title": "A noble ransom",
+			"variants": [],
+			"weight": 6
+		},
+		{
+			"choices": [
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "Gain 10 gold.\nBuild a landmark: -1 gold per turn to its kingdom while controlled.",
+					"label": "Tomorrow is an accounting problem.",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"kind": "gold",
+									"max": 10,
+									"min": 10,
+									"use_reveal_roll": false
+								},
+								{
+									"income_max": -1,
+									"income_min": -1,
+									"kind": "landmark",
+									"mana_max": 0,
+									"mana_min": 0,
+									"steel": false
+								}
+							],
+							"requires": [],
+							"text": "Gain 10 gold; this landmark costs its kingdom 1 gold per turn.",
+							"weight": 100
+						}
+					],
+					"requires": [
+						{
+							"effect": "free_spell",
+							"kind": "income_at_least",
+							"not": false,
+							"value": 1
+						}
+					]
+				},
+				{
+					"ai_score": 10,
+					"cost_gold": 10,
+					"cost_mana": 0,
+					"hint": "Pay 10 gold.\nBuild a landmark: +1 gold per turn to its kingdom while controlled.",
+					"label": "Perhaps tomorrow should have an income.",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"income_max": 1,
+									"income_min": 1,
+									"kind": "landmark",
+									"mana_max": 0,
+									"mana_min": 0,
+									"steel": false
+								}
+							],
+							"requires": [],
+							"text": "This landmark grants its kingdom 1 gold per turn.",
+							"weight": 100
+						}
+					],
+					"requires": []
+				}
+			],
+			"enabled": true,
+			"gold_roll_max": 0,
+			"gold_roll_min": 0,
+			"id": "economist_example",
+			"modern_only": true,
+			"painting": "",
+			"painting_artist": "",
+			"painting_title": "",
+			"requirements": "A connected kingdom with income to sell or at least 10 gold to invest. A deficit is not required.",
+			"requires": [
+				{
+					"effect": "free_spell",
+					"kind": "kingdom",
+					"not": false,
+					"value": 1
+				},
+				{
+					"effect": "free_spell",
+					"kind": "income_trade",
+					"not": false,
+					"value": 1
+				}
+			],
+			"text": "Our court economist has lost confidence in the accounts. He proposes selling future revenue for cash, or investing cash in future revenue. The treasurer insists we choose before he changes his forecast again.",
+			"title": "A crisis of confidence",
+			"variants": [],
+			"weight": 6
+		},
+		{
+			"choices": [
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "Rebels seize this province and neighbouring land.\nUnits there join the rebels.",
+					"label": "Recognise their independence. From a distance.",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"kind": "revolt",
+									"radius": 1
+								}
+							],
+							"requires": [],
+							"text": "A new kingdom declares independence.",
+							"weight": 100
+						}
+					],
+					"requires": []
+				},
+				{
+					"ai_score": 10,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "Pay 100% of this kingdom's gold.",
+					"label": "Surely this calls for a modest subsidy.",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"kind": "gold_percent",
+									"percent": -100
+								}
+							],
+							"requires": [],
+							"text": "The treasury is empty.",
+							"weight": 100
+						}
+					],
+					"requires": []
+				}
+			],
+			"enabled": true,
+			"gold_roll_max": 0,
+			"gold_roll_min": 0,
+			"id": "revolt_example",
+			"modern_only": true,
+			"painting": "",
+			"painting_artist": "",
+			"painting_title": "",
+			"requirements": "An unused kingdom identity is available, and this province has neighbouring passable land.",
+			"requires": [
+				{
+					"effect": "free_spell",
+					"kind": "kingdom",
+					"not": false,
+					"value": 1
+				},
+				{
+					"effect": "free_spell",
+					"kind": "rebel_slot",
+					"not": false,
+					"value": 1
+				}
+			],
+			"text": "The peasants have formed a representative assembly. Every representative carries a pitchfork, and their first motion is that we should leave immediately.",
+			"title": "The Pitchfork Parliament",
+			"variants": [],
+			"weight": 2
+		},
+		{
+			"choices": [
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "Build a landmark: its owner pays 2 gold less upkeep per Knight.",
+					"label": "A triumph of military economy.",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"income_max": 0,
+									"income_min": 0,
+									"kind": "landmark",
+									"mana_max": 0,
+									"mana_min": 0,
+									"steel": true
+								}
+							],
+							"requires": [],
+							"text": "The landmark's owner pays 2 gold less per Knight.",
+							"weight": 100
+						}
+					],
+					"requires": []
+				}
+			],
+			"enabled": true,
+			"gold_roll_max": 0,
+			"gold_roll_min": 0,
+			"id": "stainless_steel_example",
+			"modern_only": true,
+			"painting": "",
+			"painting_artist": "",
+			"painting_title": "",
+			"requirements": "Your faction has a Knight and does not control a stainless steel landmark.",
+			"requires": [
+				{
+					"effect": "free_spell",
+					"kind": "kingdom",
+					"not": false,
+					"value": 1
+				},
+				{
+					"effect": "free_spell",
+					"kind": "knights",
+					"not": false,
+					"value": 1
+				},
+				{
+					"effect": "free_spell",
+					"kind": "no_stainless_steel",
+					"not": false,
+					"value": 1
+				}
+			],
+			"text": "A smith has invented armour that refuses to rust. Our knights demand the savings be passed on to them. The treasurer has understood this request rather differently.",
+			"title": "Invention of stainless steel",
+			"variants": [],
+			"weight": 2
+		}
+	],
+	"version": 1
+}

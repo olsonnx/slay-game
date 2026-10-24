@@ -23,8 +23,6 @@ func _init(state, view_hud, board_view, commands: Dictionary) -> void:
 func open_shop(kind: String) -> void:
 	if actions["commands_locked"].call():
 		return
-	if kind == "spells" and not session.rules.is_modern():
-		return
 	actions["close_province"].call()
 	hud.help_panel.hide()
 	if hud.shop_panel.visible and hud.shop_kind == kind:
@@ -41,7 +39,7 @@ func open_shop(kind: String) -> void:
 		child.queue_free()
 	if kind == "recruit":
 		for tier in range(1, 4):
-			var button: Button = hud.button_at(hud.shop_items, "", Rect2((tier - 1) * 132, 0, 124, 111), actions["choose_unit"].bind(tier), Catalog.unit_tooltip(tier, session.rules.is_modern(), session.rules.unit_upkeep(tier, session.player_faction)))
+			var button: Button = hud.button_at(hud.shop_items, "", Rect2((tier - 1) * 132, 0, 124, 111), actions["choose_unit"].bind(tier), Catalog.unit_tooltip(tier,  session.rules.unit_upkeep(tier, session.player_faction)))
 			var name_label: Label = hud.label_at(button, Catalog.UNIT_NAMES[tier], Vector2(0, 66), 16)
 			name_label.size.x = 124
 			name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -64,7 +62,7 @@ func open_shop(kind: String) -> void:
 		for spell in Spells.SPELLS:
 			var definition: Dictionary = Spells.SPELLS[spell]
 			var mana_cost: int = 0 if session.rules.has_effect(session.player_faction, "free_spell") else definition["cost"]
-			var description: String = Spells.tooltip_description(spell, Catalog.unit_upkeep(1, session.rules.is_modern()))
+			var description: String = Spells.tooltip_description(spell, Catalog.unit_upkeep(1))
 			var button: Button = hud.button_at(hud.shop_items, "", Rect2((index % 3) * 132, floori(index / 3.0) * 119, 124, 111), actions["choose_spell"].bind(spell), Loc.text("%s · %d mana\n%s") % [Loc.text(definition["name"]), mana_cost, description])
 			var glyph: Label = hud.label_at(button, definition["glyph"], Vector2(0, 8), 36, Color("bda2fa"))
 			glyph.size.x = 124
@@ -78,9 +76,9 @@ func open_shop(kind: String) -> void:
 			bind_card_shortcut(button, "choice_%d" % (index + 1))
 			index += 1
 	else:
-		var kinds := ["tower", "house", "bridge"] if session.rules.is_modern() else ["tower", "house"]
-		var width := 124 if session.rules.is_modern() else 190
-		var stride := 132 if session.rules.is_modern() else 198
+		var kinds := ["tower", "house", "bridge"]
+		var width := 124
+		var stride := 132
 		for index in range(kinds.size()):
 			var kind_name: String = kinds[index]
 			var tip := Catalog.building_tooltip(kind_name)
@@ -260,14 +258,11 @@ func show_world_tip() -> void:
 		if not filtered and cell["unit"] > 0:
 			rows.append(Loc.text("%s · upkeep −%d G / turn") % [Loc.text("Ready" if board.unit_presentation.is_ready(cell) else "Moved"), session.rules.unit_upkeep(cell["unit"], session.rules.unit_faction(session.selection.hovered))])
 			rows.append("")
-		var income: int = 0 if bridge or cell["tree"] or cell["grave"] else cell.get("value", 1) if session.rules.is_modern() else 1
+		var income: int = 0 if bridge or cell["tree"] or cell["grave"] else cell.get("value", 1)
 		if cell["building"] == "house":
 			income += Rules.HOUSE_INCOME
 		var earnings := Loc.text("Income %+d G / turn") % income if income > 0 else Loc.text("Income 0 G")
-		if session.rules.is_modern() or filtered:
-			rows.append(Loc.text("Province · Value %d") % board.value_heatmap.tile_value(cell))
-		elif cell["unit"] > 0:
-			rows.append(Loc.text("Province"))
+		rows.append(Loc.text("Province · Value %d") % board.value_heatmap.tile_value(cell))
 		rows.append(earnings)
 		if cell["tree"] or cell["grave"]:
 			rows.append(Loc.text("%s blocks income") % Loc.text("Tree" if cell["tree"] else "Grave"))
@@ -329,9 +324,12 @@ func refresh_hud(economy = null) -> void:
 		hud.money_label.text = "—"
 		hud.income_label.text = ""
 		hud.gold_control.tooltip_text = Loc.text("Isolated land · no treasury\nSelect a connected friendly kingdom")
-	hud.level_label.text = "Tutorial" if session.tutorial != null else Loc.text("Level %d") % session.level_number
-	hud.round_label.text = Loc.text("%s  /  TURN %02d  /  %s") % [Loc.text("World").to_upper() if board.wildlife != null and board.wildlife.is_playing else session.names[session.active_faction].to_upper(), session.round_number, Loc.text("Tutorial" if session.tutorial != null else "Hotseat" if session.is_hotseat() else "Playtest" if not session.initial_level_data.is_empty() else "Quick Play")]
-	hud.round_label.add_theme_color_override("font_color", session.colors[session.active_faction])
+	hud.level_label.text = session.names[session.active_faction]
+	var flag: Dictionary = session.flags.get(session.active_faction, {"field":session.colors[session.active_faction].to_html(false), "pattern":"solid", "symbol":"none"})
+	if hud.country_flag.design != flag: hud.country_flag.set_design(flag)
+	hud.round_label.text = Loc.text("Turn %02d · %s") % [session.round_number, Loc.text("Tutorial" if session.tutorial != null else "Online" if session.online else "Hotseat" if session.is_hotseat() else "Playtest" if not session.initial_level_data.is_empty() else "Quick Play")]
+	if board.wildlife != null and board.wildlife.is_playing: hud.round_label.text += " · " + Loc.text("World")
+	hud.update_turn_color(session.colors[session.active_faction])
 	hud.recruit_button.text = Loc.text(Catalog.UNIT_NAMES[session.selection.recruit_tier]) + " ×" if session.selection.action_mode == "recruit" and session.selection.recruit_tier > 0 else "Recruit"
 	hud.build_button.text = Loc.text(session.selection.action_mode.capitalize()) + " ×" if session.selection.action_mode in ["tower", "house", "bridge"] else "Build"
 	hud.spell_button.text = Loc.text(Spells.SPELLS[session.selection.chosen_spell]["name"]) + " ×" if session.selection.action_mode == "spell" and Spells.SPELLS.has(session.selection.chosen_spell) else "Spells"

@@ -67,15 +67,20 @@ func run() -> void:
 	game.close_province()
 	game.refresh_overlays()
 	expect(not game.view.overlay_root.has_node("InspectionRange"),"Closing inspection removes ranges")
-	s.rule_mode = "classic"
+	s.rule_mode = "modern"
 	await game.click_hex(Vector2i(-3,0),"terrain")
-	expect(game.view.overlay_root.has_node("InspectionRange"),"Classic towers also show their defensive coverage")
+	expect(game.view.overlay_root.has_node("InspectionRange"),"Towers show their defensive coverage")
 	await game.click_hex(Vector2i(-3,1),"terrain")
-	expect(not game.view.overlay_root.has_node("InspectionRange"),"Inspecting ordinary Classic land clears tower coverage")
+	expect(not game.view.overlay_root.has_node("InspectionRange"),"Inspecting ordinary land clears tower coverage")
 	s.rule_mode = "modern"
 	var bank: Dictionary = s.kingdom_at(Vector2i(-4,0))
 	Encounters.change_income(s,0,bank,2,"comet")
 	Encounters.change_income(s,0,bank,1,"economist")
+	# Lair rewards belong to their captured provinces and contribute to the
+	# kingdom that connects them, rather than to a permanent faction effect.
+	for q in range(-2,3): s.cells[Vector2i(q,0)].owner = 0
+	s.rebuild_kingdoms()
+	bank = s.kingdom_at(Vector2i(-4,0))
 	for coord in [Vector2i(-1,0),Vector2i(1,0)]:
 		s.cells[coord]["lair"] = "bear"
 		Wildlife.destroy_lair(s,coord,0,bank)
@@ -111,7 +116,8 @@ func run() -> void:
 	saved = Snapshots.capture(s)
 	s.effects_by_faction.clear()
 	Snapshots.restore(s,saved)
-	expect(s.effects_by_faction[0].income_sources.bear == 2 and s.effects_by_faction[0].mana_sources.wolf == 1 and s.effects_by_faction[0].income_source_amounts.economist == -1 and s.effects_by_faction[0].mana_source_amounts.wolf == 1,"Snapshots preserve reward provenance")
+	var restored: Dictionary = preload("res://src/game/event_sites.gd").faction_effects(s,0)
+	expect(restored.income_sources.bear == 2 and restored.mana_sources.wolf == 1 and restored.income_source_amounts.economist == -1 and restored.mana_source_amounts.wolf == 1,"Snapshots preserve reward provenance")
 	effects.queue_free()
 	game.queue_free()
 	await process_frame

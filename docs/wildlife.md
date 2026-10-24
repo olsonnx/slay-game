@@ -10,7 +10,7 @@ Modern generated maps contain bear caves, wolf dens and boar burrows on neutral 
 | Large | 3 |
 | Huge | 4 |
 
-Maps with insufficient safe space receive fewer. The retired Very Small profile and Classic maps have no wildlife. Across twelve six-kingdom seeds per size, Huge maps fell from 12 lairs to 4, Large from 6–7 to 3, and Standard from 3 to 2. Smaller maps often have too little remote land to place every budgeted lair.
+Maps with insufficient safe space receive fewer. The retired Very Small profile has no wildlife. Across twelve six-kingdom seeds per size, Huge maps fell from 12 lairs to 4, Large from 6–7 to 3, and Standard from 3 to 2. Smaller maps often have too little remote land to place every budgeted lair.
 
 Caves remain fully visible. Animals use the same centered sprite placement, pixel scale and frame crop as infantry, and occupy separate provinces from their lairs.
 
@@ -24,13 +24,13 @@ Acquiring a target plays the bear's standing display or the wolf's roar before m
 
 | Animal | Targets | Required hunter | Lair reward |
 | --- | --- | --- | --- |
-| Bear | Units, buildings, provinces | Knight | Permanent +5 gold each faction turn |
-| Wolf | Units, provinces | Soldier or Knight | Permanent +1 mana regeneration |
+| Bear | Units, buildings, provinces | Knight | Landmark: +5 gold per turn to its kingdom |
+| Wolf | Units, provinces | Soldier or Knight | Landmark: +1 mana regeneration for its owner |
 | Boar | Buildings, provinces | Soldier or Knight | 20 gold and 2 mana |
 
-Lairs require the same hunter rank as their animals. Rewards are granted once, on destruction of the lair, rather than killing the animal. Gold rewards enter the hunter's supporting treasury. Permanent income is faction-wide and paid through the existing income-bonus system without multiplying across split kingdoms. Mana rewards and regeneration respect normal storage capacity.
+Lairs require the same hunter rank as their animals. Rewards are granted once, on destruction of the lair, rather than killing the animal. Gold rewards enter the hunter's supporting treasury. Every cleared lair leaves the shared landmark model. Bear income belongs to the kingdom containing its landmark; wolf regeneration follows its landmark's current owner. Conquest transfers these rewards, including after kingdom splits. Boar gold and mana are immediate, one-time rewards. Mana rewards and regeneration respect normal storage capacity.
 
-Successful raids turn the attacked province neutral, destroy its building and kill any vulnerable unit. Wolves leave building sites alone, including their occupants. Boars leave occupied unit tiles alone. Normal province defense protects against raids: wolves cannot beat Soldiers, and bears and boars cannot beat Knights. Towers and neighboring defenders therefore help contain wildlife. Entrenchment or fortification absorbs one otherwise successful raid.
+Successful raids turn the attacked province neutral, destroy its ordinary building and kill any vulnerable unit. Landmarks survive raids even when neutralized. Wolves leave building sites alone, including their occupants. Boars leave occupied unit tiles alone. Normal province defense protects against raids: wolves cannot beat Soldiers, and bears and boars cannot beat Knights. Towers and neighboring defenders therefore help contain wildlife. Entrenchment or fortification absorbs one otherwise successful raid.
 
 Wildlife participates in AI planning, visible turn playback, map snapshots, restart and replay seeking. Animals and lairs block construction and recruitment until cleared. Saved editor maps preserve generated lairs.
 
@@ -42,7 +42,7 @@ The forest audit corrected tree clearing during neutral wandering, pursuit, owne
 
 Verification covers the species/rank/target matrix; kingdom splits and treasury preservation; one-time rewards; blocked exits and three-turn respawns; pursuit acquisition, persistence and loss; snapshots and AI copies; replay reconstruction; every animation frame's bounds; actual tree geometry removal; warning visibility; and cancellation during both alerts and movement. Six Standard/Huge maps also ran forty World turns each, including forced replacement cycles and faction settlement, checking terrain, ownership, forest, population and home-tether invariants throughout. Native bear/wolf/boar alert and pursuit previews were inspected.
 
-Clicking a tower shows its actual friendly defensive coverage in gold. Clicking a lair shows the two-hex home range in purple. Clicking an animal shows its three-hex vision in cyan and its current prey in red. Recurring reward status tooltips use Gold per turn / Mana per turn headings and list source names with their signed contributions, grouping repeated sources. Event and lair provenance and amounts are preserved with faction effects in snapshots and replays.
+Clicking a tower shows its actual friendly defensive coverage in gold. Clicking a lair shows the two-hex home range in purple. Clicking an animal shows its three-hex vision in cyan and its current prey in red. Recurring reward status tooltips use Gold per turn / Mana per turn headings and list source names with their signed contributions, grouping repeated sources. Event and lair provenance and amounts are preserved on their landmark cells in snapshots and replays.
 
 ## Editor placement
 

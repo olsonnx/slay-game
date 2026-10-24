@@ -16,11 +16,11 @@ func _ready() -> void:
 	var course_page := page("Course")
 	line(course_page,"Course title","course_title")
 	line(course_page,"Category menu description","description")
-	choice(course_page,"Category","category",["basics","intermediate","advanced"])
+	choice(course_page,"Topic","category",Doc.CATEGORIES)
 	choice(course_page,"Opponent turns","opponent_mode",["scripted","ai","idle"])
 	fields.require_victory = check(course_page,"Require opponent defeat to finish")
 	fields.require_victory.toggled.connect(func(_v): collect())
-	label(course_page,"Starting gold (each kingdom)")
+	label(course_page,"Opening gold (each kingdom)")
 	var gold := SpinBox.new()
 	gold.min_value = 0
 	gold.max_value = 9999
@@ -28,6 +28,7 @@ func _ready() -> void:
 	fields.gold = gold
 	gold.value_changed.connect(func(_v): collect())
 	line(text_page,"Step ID","id")
+	line(text_page,"Exercise group (blank = individual objective)","exercise")
 	line(text_page,"Heading","title")
 	label(text_page,"Explanation")
 	var text := TextEdit.new()
@@ -38,6 +39,7 @@ func _ready() -> void:
 	text.text_changed.connect(collect)
 	line(text_page,"Short objective","task")
 	coord_field(text_page,"Highlight tile (optional)","highlight")
+	coord_field(text_page,"Camera focus tile (optional)","focus")
 	var goal_page := page("Goal")
 	choice(goal_page,"Advance after","kind",Doc.ACTIONS)
 	coord_field(goal_page,"Target tile (blank = any)","target")
@@ -49,6 +51,23 @@ func _ready() -> void:
 	choice(goal_page,"View/Stats state","state",["any","on / open","off / closed"])
 	fields.restrict_actions = check(goal_page,"Allow only the requested action")
 	fields.restrict_actions.toggled.connect(func(_v): collect())
+	fields.confirm = check(goal_page,"Keep details open until Continue")
+	fields.confirm.toggled.connect(func(_v): collect())
+	label(goal_page,"Required actions (different capture tiles count once each)")
+	fields.count = SpinBox.new()
+	fields.count.min_value = 1
+	fields.count.max_value = 20
+	goal_page.add_child(fields.count)
+	fields.count.value_changed.connect(func(_v): collect())
+	fields.allow_turns = check(goal_page,"Allow End turn during this objective")
+	fields.allow_turns.toggled.connect(func(_v): collect())
+	fields.wildlife_turn = check(goal_page,"Run wildlife during this End turn")
+	fields.wildlife_turn.toggled.connect(func(_v): collect())
+	line(goal_page,"Status icon (effect ID)","effect")
+	fields.matching = Label.new()
+	fields.matching.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	goal_page.add_child(fields.matching)
+	button(goal_page,"Clear extra matching restrictions",func(): step["criteria"] = {}; fields.matching.text = "No extra matching restrictions."; changed.emit())
 	var conditions_page := page("Conditions")
 	label(conditions_page,"Conditions must pass as well as the selected action. Use any to watch the board during free play.")
 	choice(conditions_page,"Combine conditions","condition_mode",["all","any"])
@@ -66,7 +85,7 @@ func _ready() -> void:
 	button(row,"Add",func(): save_condition(false))
 	button(row,"Update",func(): save_condition(true))
 	button(row,"Remove",remove_condition)
-	label(conditions_page,"Board conditions: unit/value/gold/mana/round/territory use at least. Owner and building use equality. Continue waits for a click; any watches conditions while allowing free play.")
+	label(conditions_page,"Board conditions: unit/value/gold/mana/round/territory/income use at least. Owner and building use equality. Continue waits for a click; any watches conditions while allowing free play.")
 	var enemy_page := page("Opponent")
 	label(enemy_page,"Orders run in sequence on this End turn step. Select scripted opponent turns to use them. Factions: 1 Ember, 2 Tide, 3 Ochre, 4 Aster, 5 Cove.")
 	orders = ItemList.new()
@@ -194,15 +213,23 @@ func bind(document: Dictionary, value: Dictionary) -> void:
 	fields.require_victory.set_pressed_no_signal(course.get("require_victory",true))
 	fields.gold.value = course.map.gold
 	for key in ["id","title","text","task"]: fields[key].text = step.get(key,"")
+	fields.exercise.text = step.get("exercise","")
+	fields.count.value = step.get("count",1)
+	fields.allow_turns.set_pressed_no_signal(step.get("allow_turns",false))
+	fields.wildlife_turn.set_pressed_no_signal(step.get("wildlife_turn",false))
+	fields.effect.text = step.get("details",{}).get("effect","")
+	fields.matching.text = matching_summary(step.get("criteria",{}))
 	select_value("kind",step.kind)
 	fields.target.text = coord_text(step.get("target"))
 	fields.highlight.text = coord_text(step.get("highlight"))
+	fields.focus.text = coord_text(step.get("focus"))
 	var details: Dictionary = step.get("details",{})
 	fields.source.text = coord_text(details.get("source"))
 	fields.tier.select(int(details.get("tier",0)))
 	for key in ["building","spell","outcome"]: select_value(key,details.get(key,"any"))
 	fields.state.select(1 if details.get("open",details.get("active",null)) == true else 2 if details.get("open",details.get("active",null)) == false else 0)
 	fields.restrict_actions.set_pressed_no_signal(step.get("restrict_actions",true))
+	fields.confirm.set_pressed_no_signal(step.get("confirm",false))
 	select_value("condition_mode",step.get("condition_mode","all"))
 	fields.cond_value.text = "0"
 	fields.cond_faction.text = "0"
@@ -220,15 +247,26 @@ func collect() -> void:
 	course.opponent_mode = selected("opponent_mode")
 	course.require_victory = fields.require_victory.button_pressed
 	course.map.gold = int(fields.gold.value)
+	if course.steps[0].has("setup"): course.steps[0].setup.gold = course.map.gold
 	for key in ["id","title","text","task"]: step[key] = fields[key].text
+	if fields.exercise.text.strip_edges() == "": step.erase("exercise")
+	else: step.exercise = fields.exercise.text.strip_edges()
+	step.count = int(fields.count.value)
+	step.allow_turns = fields.allow_turns.button_pressed
+	step.wildlife_turn = fields.wildlife_turn.button_pressed
 	step.kind = selected("kind")
-	step.target = parse_coord(fields.target.text) if step.kind in ["recruit","move","build","spell","select","inspect","develop","entrench"] else null
+	step.target = parse_coord(fields.target.text) if step.kind in ["recruit","move","build","spell","select","inspect","develop","entrench","relocate_capital","kingdom","animal"] else null
+	var focus = parse_coord(fields.focus.text)
+	if focus == null: step.erase("focus")
+	else: step.focus = focus
 	var highlight = parse_coord(fields.highlight.text)
 	if highlight == null: step.erase("highlight")
 	else: step.highlight = highlight
 	step.condition_mode = selected("condition_mode")
 	step.restrict_actions = fields.restrict_actions.button_pressed
+	step.confirm = fields.confirm.button_pressed if step.kind in ["inspect","stats"] else false
 	var details := {}
+	if step.kind == "status" and fields.effect.text != "": details.effect = fields.effect.text
 	if step.kind == "move":
 		var source = parse_coord(fields.source.text)
 		if source != null: details.source = source
@@ -243,8 +281,11 @@ func collect() -> void:
 
 func update_visibility() -> void:
 	var kind: String = step.get("kind","continue")
-	groups.target.visible = kind in ["recruit","move","build","spell","select","inspect","develop","entrench"]
+	groups.target.visible = kind in ["recruit","move","build","spell","select","inspect","develop","entrench","relocate_capital","kingdom","animal"]
 	groups.source.visible = kind == "move"
+	fields.wildlife_turn.visible = kind == "end_turn"
+	groups.effect.visible = kind == "status"
+	fields.confirm.visible = kind in ["inspect","stats"]
 	groups.tier.visible = kind == "recruit"
 	groups.building.visible = kind == "build"
 	groups.spell.visible = kind == "spell"
@@ -262,7 +303,7 @@ func condition_defaults() -> void:
 	var kind := selected("cond_type")
 	fields.cond_faction.text = "-1" if kind == "victory" else "0"
 	fields.cond_value.text = {"unit":"1","building":"house","gold":"10","mana":"1","round":"2","territory":"1","value":"2"}.get(kind,"0")
-	if kind in ["mana","round","victory","territory"]: fields.cond_target.text = ""
+	if kind in ["mana","round","victory","territory","income"]: fields.cond_target.text = ""
 
 func select_condition(index: int) -> void:
 	var value: Dictionary = step.conditions[index]
@@ -324,3 +365,21 @@ func move_order(direction: int) -> void:
 	refresh_lists()
 	orders.select(next)
 	changed.emit()
+
+func matching_summary(criteria: Dictionary) -> String:
+	if criteria.is_empty(): return "No extra matching restrictions."
+	var lines: PackedStringArray = []
+	for key in criteria:
+		var value = criteria[key]
+		match key:
+			"animal_before": lines.append("Predator before capture: %s" % str(value).capitalize())
+			"owner_before": lines.append("Previously neutral land" if int(value) == -1 else "Previously owned by faction %d" % int(value))
+			"plain":
+				if value: lines.append("Empty ordinary land: no objects or rewards")
+			"unit_before","unit","source_tier":
+				var rank: String = ["No army","Scout","Soldier","Knight"][int(value)]
+				lines.append({"unit_before":"Before action: %s","unit":"Current army: %s","source_tier":"Moving army: %s"}[key] % rank)
+			"value_before": lines.append("Previous province value: %d" % int(value))
+			"min_value": lines.append("Minimum province value: %d" % int(value))
+			"building": lines.append("Current building: %s" % str(value).capitalize())
+	return "Matching restrictions:\n" + "\n".join(lines)

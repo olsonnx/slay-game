@@ -26,7 +26,9 @@ var cells: Dictionary = {}
 var kingdoms: Dictionary = {}
 var rng := RandomNumberGenerator.new()
 var level_seed := -1
-var rule_mode := "classic"
+var rule_mode: String:
+	get: return "modern"
+	set(_value): pass
 var mana_by_faction: Dictionary = {}
 var map_size := "small"
 var faction_count := 4
@@ -52,7 +54,7 @@ func bridge_bounds() -> Vector2:
 	return MapSizes.generation_bounds(map_size) + Vector2(5.7, 6.0)
 
 func is_modern() -> bool:
-	return rule_mode == "modern"
+	return true
 
 func has_wildlife(coord: Vector2i) -> bool:
 	return cells.has(coord) and Wildlife.present(cells[coord])
@@ -79,7 +81,7 @@ func is_entrenched(coord: Vector2i) -> bool:
 	return cells.has(coord) and cells[coord]["unit"] > 0 and cells[coord].get("entrenched_by", -1) == unit_faction(coord) and unit_faction(coord) >= 0
 
 func can_entrench(coord: Vector2i, faction: int) -> bool:
-	return is_modern() and cells.has(coord) and cells[coord]["unit"] > 0 and unit_faction(coord) == faction and not cells[coord]["moved"] and not is_entrenched(coord) and not is_mountain(coord) and not is_barrier(coord)
+	return cells.has(coord) and cells[coord]["unit"] > 0 and unit_faction(coord) == faction and not cells[coord]["moved"] and not is_entrenched(coord) and not is_mountain(coord) and not is_barrier(coord)
 
 func entrench(coord: Vector2i, faction: int) -> bool:
 	if not can_entrench(coord, faction): return false
@@ -99,7 +101,7 @@ func unit_faction(coord: Vector2i) -> int:
 
 func unit_kingdom(coord: Vector2i) -> Dictionary:
 	var local := kingdom_at(coord)
-	if not local.is_empty() or not is_modern():
+	if not local.is_empty():
 		return local
 	if cells[coord]["unit"] == 0:
 		return {}
@@ -115,7 +117,7 @@ func unit_kingdom(coord: Vector2i) -> Dictionary:
 	return {}
 
 func clear_terrain(coord: Vector2i, kingdom: Dictionary) -> int:
-	var reward := 1 if is_modern() and cells[coord]["tree"] else 0
+	var reward := 1 if cells[coord]["tree"] else 0
 	cells[coord]["tree"] = false
 	cells[coord]["grave"] = false
 	clamp_mana()
@@ -201,6 +203,12 @@ func kingdom_at(coord: Vector2i) -> Dictionary:
 		return {}
 	return kingdoms.get(cells[coord]["kingdom"], {})
 
+func has_capital(faction: int) -> bool:
+	for cell in cells.values():
+		if cell["owner"] == faction and cell["capital"] == faction:
+			return true
+	return false
+
 func territory(faction: int) -> int:
 	var total := 0
 	for cell in cells.values():
@@ -219,21 +227,19 @@ func mana_source_capacity(cell: Dictionary) -> int:
 
 func mana_source_count(faction: int) -> int:
 	var total := 0
-	if is_modern():
-		for cell in cells.values():
-			if cell["owner"] == faction and cell.get("mana_source", false):
-				total += 1
+	for cell in cells.values():
+		if cell["owner"] == faction and cell.get("mana_source", false):
+			total += 1
 	return total
 
 func mana_regeneration(faction: int) -> int:
-	return 1 + floori(mana_source_count(faction) / 4.0) + int(effects_by_faction.get(faction, {}).get("wildlife_mana_regen", 0)) if is_modern() else 0
+	return 1 + floori(mana_source_count(faction) / 4.0) + preload("res://src/game/event_sites.gd").mana_bonus(self,faction)
 
 func mana_capacity(faction: int) -> int:
 	var total := 0
-	if is_modern():
-		for cell in cells.values():
-			if cell["owner"] == faction and cell.get("mana_source", false):
-				total += mana_source_capacity(cell)
+	for cell in cells.values():
+		if cell["owner"] == faction and cell.get("mana_source", false):
+			total += mana_source_capacity(cell)
 	return total
 
 func get_mana(faction: int) -> int:
@@ -248,23 +254,21 @@ func mana_income(faction: int) -> int:
 func mana_summary(faction: int) -> Dictionary:
 	var sources := 0
 	var capacity := 0
-	if is_modern():
-		for cell in cells.values():
-			if cell["owner"] == faction and cell.get("mana_source", false):
-				sources += 1
-				capacity += mana_source_capacity(cell)
-	var regeneration := 1 + floori(sources / 4.0) + int(effects_by_faction.get(faction, {}).get("wildlife_mana_regen", 0)) if is_modern() else 0
+	for cell in cells.values():
+		if cell["owner"] == faction and cell.get("mana_source", false):
+			sources += 1
+			capacity += mana_source_capacity(cell)
+	var regeneration := 1 + floori(sources / 4.0) + preload("res://src/game/event_sites.gd").mana_bonus(self,faction)
 	var amount := clampi(int(mana_by_faction.get(faction, 0)), 0, capacity)
 	return {"amount": amount, "capacity": capacity, "regeneration": regeneration,
 		"income": mini(regeneration, capacity - amount)}
 
 func clamp_mana() -> void:
 	var capacities: Dictionary = {}
-	if is_modern():
-		for cell in cells.values():
-			if cell["owner"] >= 0 and cell.get("mana_source", false):
-				var faction: int = cell["owner"]
-				capacities[faction] = capacities.get(faction, 0) + mana_source_capacity(cell)
+	for cell in cells.values():
+		if cell["owner"] >= 0 and cell.get("mana_source", false):
+			var faction: int = cell["owner"]
+			capacities[faction] = capacities.get(faction, 0) + mana_source_capacity(cell)
 	for faction in mana_by_faction:
 		mana_by_faction[faction] = clampi(int(mana_by_faction[faction]), 0, capacities.get(faction, 0))
 
@@ -314,24 +318,28 @@ func income(kingdom: Dictionary) -> int:
 	for coord in kingdom["hexes"]:
 		var cell: Dictionary = cells[coord]
 		if not cell["tree"] and not cell["grave"]:
-			total += cell.get("value", 1) if is_modern() else 1
+			total += cell.get("value", 1)
 		if cell["building"] == "house":
 			total += HOUSE_INCOME
 	return maxi(0, total + magic.Encounters.income_adjustment(self, kingdom))
 
 func unit_upkeep(tier: int, faction: int) -> int:
-	return maxi(0, Catalog.unit_upkeep(tier, is_modern()) - (2 if tier == 3 and has_effect(faction, "stainless_steel") else 0))
+	return maxi(0, Catalog.unit_upkeep(tier) - (2 if tier == 3 and has_effect(faction, "stainless_steel") else 0))
 
 func upkeep(kingdom: Dictionary) -> int:
 	var total := 0
+	var wages := {}
 	for coord in kingdom["hexes"]:
-		total += unit_upkeep(cells[coord]["unit"], kingdom["owner"])
-	if is_modern():
-		for coord in cells:
-			if cells[coord]["unit"] > 0 and kingdom_at(coord).is_empty():
-				var support := unit_kingdom(coord)
-				if not support.is_empty() and support["capital"] == kingdom["capital"]:
-					total += unit_upkeep(cells[coord]["unit"], kingdom["owner"])
+		var tier: int = cells[coord]["unit"]
+		if not wages.has(tier): wages[tier] = unit_upkeep(tier,kingdom["owner"])
+		total += wages[tier]
+	for coord in cells:
+		if cells[coord]["unit"] > 0 and kingdom_at(coord).is_empty():
+			var support := unit_kingdom(coord)
+			if not support.is_empty() and support["capital"] == kingdom["capital"]:
+				var tier: int = cells[coord]["unit"]
+				if not wages.has(tier): wages[tier] = unit_upkeep(tier,kingdom["owner"])
+				total += wages[tier]
 	return total
 
 func local_defense(coord: Vector2i) -> int:

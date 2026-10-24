@@ -9,28 +9,34 @@ const EVENT_TILES_PER_ENCOUNTER := 16.0
 const NONE = preload("res://src/game/hex_grid.gd").NONE
 
 func generate_events(state) -> void:
-	if state.is_modern():
-		var sites: Array = []
-		for coord in state.cells:
-			if state.cells[coord]["owner"] == -1 and not state.is_mountain(coord) and not state.is_bridge(coord) and not state.cells[coord]["mana_source"]:
-				sites.append(coord)
-		# Keep small-map encounter counts, then scale with explorable land rather
-		# than the number of factions. Mountains, homes and sources do not count.
-		var target: int = maxi(state.faction_count + 1, roundi(sites.size() / EVENT_TILES_PER_ENCOUNTER))
-		var placed: Array = []
-		for coord in state.shuffled(sites):
-			var nearby := false
-			for other in placed:
-				if state.distance(coord, other) < 3:
-					nearby = true
-			if nearby:
-				continue
-			state.cells[coord]["event"] = Encounters.weighted_event(state)
-			placed.append(coord)
-			if placed.size() >= target:
-				break
+	var sites: Array = []
+	for coord in state.cells:
+		if state.cells[coord]["owner"] == -1 and not state.is_mountain(coord) and not state.is_bridge(coord) and not state.cells[coord]["mana_source"]:
+			sites.append(coord)
+	# Keep small-map encounter counts, then scale with explorable land rather
+	# than the number of factions. Mountains, homes and sources do not count.
+	var target: int = maxi(state.faction_count + 1, roundi(sites.size() / EVENT_TILES_PER_ENCOUNTER))
+	var placed: Array = []
+	var used: Dictionary = {}
+	for coord in state.shuffled(sites):
+		var nearby := false
+		for other in placed:
+			if state.distance(coord, other) < 3:
+				nearby = true
+		if nearby:
+			continue
+		var id: String = Encounters.weighted_event(state, Vector2i.ZERO, -1, null, used)
+		if id.is_empty(): break
+		state.cells[coord]["event"] = id
+		used[id] = true
+		placed.append(coord)
+		if placed.size() >= target:
+			break
 
 func has_effect(state, faction: int, effect: String) -> bool:
+	if effect == "stainless_steel":
+		for cell in state.cells.values():
+			if cell["owner"] == faction and cell.get("site_steel",false) and cell["building"] == "monument": return true
 	return state.effects_by_faction.get(faction, {}).get(effect, false)
 
 func set_effect(state, faction: int, effect: String, enabled: bool) -> void:
@@ -48,6 +54,8 @@ func event_definition(state, event: Dictionary) -> Dictionary:
 	if not state.pending_events.has(event) or not Events.EVENTS.has(event.get("id", "")):
 		return {}
 	var definition: Dictionary = Events.EVENTS[event["id"]].duplicate(true)
+	if definition.has("authored"):
+		return Encounters.Authored.definition(state,definition.authored,event)
 	if event["id"] == "gold":
 		if not event.has("gold_reward"):
 			event["gold_reward"] = state.rng.randi_range(10, 25)
@@ -63,6 +71,8 @@ func trigger_event(state, coord: Vector2i, faction: int) -> bool:
 	var encounter: Dictionary = Encounters.prepare_event(state, id, coord, faction)
 	if encounter.is_empty(): return false
 	state.cells[coord]["event"] = ""
+	# Keep revealed types with the cell so snapshots and replay preserve history.
+	state.cells[coord]["event_seen"] = encounter.id
 	state.pending_events.append(encounter)
 	if faction not in state.human_factions:
 		var choice: int = state.KingdomAI.Analysis.event_choice(state, encounter)
@@ -80,6 +90,12 @@ func resolve_event(state, event: Dictionary, choice: int) -> String:
 	if not state.pending_events.has(event) or not Events.EVENTS.has(event.get("id", "")):
 		return ""
 	var definition: Dictionary = Events.EVENTS[event["id"]]
+	if definition.has("authored"):
+		if not Encounters.main_outcome_available(state,event.id,event.coord,event.faction): return ""
+		if not Encounters.Authored.choice_allowed(state,definition.authored,event,choice): return ""
+		var result: String = Encounters.Authored.resolve(state,definition.authored,event,choice)
+		if result != "": state.pending_events.erase(event)
+		return result
 	if choice < 0 or choice >= definition["choices"].size():
 		return ""
 	if not Encounters.main_outcome_available(state, event["id"], event["coord"], event["faction"]): return ""
@@ -109,6 +125,7 @@ func resolve_event(state, event: Dictionary, choice: int) -> String:
 				if state.rng.randf() < 0.60:
 					if event["id"] == "altar":
 						state.cells[coord]["mana_source"] = true
+						preload("res://src/game/event_sites.gd").create(state,coord,"altar")
 						result = Loc.text("The altar awakens: a new mana source.")
 					elif state.cells[coord]["unit"] < 3:
 						state.cells[coord]["unit"] += 1
@@ -128,14 +145,15 @@ func casting_kingdom(state, spell: String, coord: Vector2i, faction: int, capita
 		return {}
 	if state.cells[coord]["owner"] == faction:
 		return state.kingdom_at(coord)
-	if spell != "shatter" or state.cells[coord]["owner"] >= 0:
+	if spell != "shatter" or preload("res://src/game/event_sites.gd").protected(state.cells[coord]) or state.cells[coord]["owner"] >= 0:
 		return {}
 	return state.construction_kingdom(coord, faction, capital)
 
 func can_cast(state, spell: String, coord: Vector2i, faction: int, capital := NONE, available_mana := -1) -> bool:
-	if not state.is_modern() or not Spells.SPELLS.has(spell) or not state.cells.has(coord) or state.is_mountain(coord) or state.is_barrier(coord):
+	if not Spells.SPELLS.has(spell) or not state.cells.has(coord) or state.is_mountain(coord) or state.is_barrier(coord):
 		return false
 	var cell: Dictionary = state.cells[coord]
+	if spell == "shatter" and preload("res://src/game/event_sites.gd").protected(cell): return false
 	match Spells.SPELLS[spell]["target"]:
 		"friendly_land":
 			if cell["owner"] != faction or state.has_effect(faction, "trailblaze"):
@@ -183,7 +201,7 @@ func cast_spell(state, spell: String, coord: Vector2i, faction: int, capital := 
 
 func spell_targets(state, spell: String, faction: int, capital := NONE) -> Dictionary:
 	var targets: Dictionary = {}
-	if not state.is_modern() or not Spells.SPELLS.has(spell):
+	if not Spells.SPELLS.has(spell):
 		return targets
 	# Mana is read once for this query, never cached across mutable game commands.
 	var available_mana: int = state.get_mana(faction)

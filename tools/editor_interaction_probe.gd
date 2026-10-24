@@ -9,7 +9,9 @@ func run() -> void:
 	if "--app" in OS.get_cmdline_user_args():
 		Engine.max_fps = 0
 		app = load("res://scenes/app.tscn").instantiate()
+		app.onboarding_enabled = false
 		root.add_child(app)
+		await app.startup_finished
 		await process_frame
 		app.open_editor()
 		editor = app.editor

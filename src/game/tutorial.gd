@@ -1,40 +1,48 @@
 extends Node
-const Loc = preload("res://src/localization/text.gd")
-## Objective progression observes committed game commands, never elapsed time.
+## Exercise progression observes committed commands; checkboxes never grant progress.
 const Lessons = preload("res://src/game/tutorial_lessons.gd")
 const Conditions = preload("res://src/tutorial_editor/tutorial_conditions.gd")
 const Actions = preload("res://src/tutorial_editor/tutorial_actions.gd")
-const Ui = preload("res://src/ui/ui_theme.gd")
-var game
+const Snapshots = preload("res://src/game/state_snapshot.gd")
+const Level = preload("res://src/editor/level_document.gd")
+const Loc = preload("res://src/localization/text.gd")
 signal next_requested(category: String)
-var category := "basics"
+var game
+var category := "armies"
 var steps: Array = []
 var index := 0
 var completed := false
+var failed := false
+var exercise_done := false
+var awaiting_confirmation := false
+var goal_count := 0
+var counted_targets: Dictionary = {}
 var checkpoint: Dictionary = {}
-var panel: Panel
-var progress: Label
-var heading: Label
-var explanation: Label
-var explanation_scroll: ScrollContainer
-var objective: Label
-var retry: Button
-var finish: Button
-var next_button: Button
-var continue_button: Button
+var action_before: Dictionary = {}
+var feedback := ""
 var custom := false
-var require_victory := true
+var require_victory := false
 var opponent_mode := "scripted"
 var course_title := ""
 var marker_root: Node3D
 var marker_signature: Array = []
+var panel
+var progress
+var heading
+var explanation_scroll
+var explanation
+var retry
+var finish
+var next_button
+var continue_button
+var controls_button
 
 func _init(controller) -> void:
 	game = controller
-	category = game.initial_level_data.get("tutorial_category", "basics")
+	category = game.initial_level_data.get("tutorial_category","armies")
 	custom = game.initial_level_data.get("tutorial_custom",false)
 	steps = game.initial_level_data.get("tutorial_steps",Lessons.lessons(category)).duplicate(true)
-	require_victory = game.initial_level_data.get("tutorial_require_victory",true)
+	require_victory = game.initial_level_data.get("tutorial_require_victory",false)
 	opponent_mode = game.initial_level_data.get("tutorial_opponent_mode","scripted")
 	course_title = game.initial_level_data.get("tutorial_title",Lessons.category_title(category))
 
@@ -42,221 +50,281 @@ func _ready() -> void:
 	marker_root = Node3D.new()
 	marker_root.name = "TutorialTargets"
 	game.view.add_child(marker_root)
-	panel = Ui.panel(game.hud.ui_root,Rect2(0,0,300,220))
-	panel.anchor_left = 1
-	panel.anchor_right = 1
-	panel.offset_left = -324
-	panel.offset_right = -24
-	panel.offset_top = 88
-	progress = Ui.label_at(panel,"",Vector2(18,14),12,Ui.MUTED)
-	heading = Ui.label_at(panel,"",Vector2(18,39),20)
-	explanation_scroll = ScrollContainer.new()
-	explanation_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	panel.add_child(explanation_scroll)
-	explanation = Ui.label_at(explanation_scroll,"",Vector2.ZERO,14)
-	explanation.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	objective = Ui.label_at(panel,"",Vector2(18,200),15,Ui.ACCENT)
-	retry = game.hud.button_at(panel,"Retry step",Rect2(18,180,126,34),restart_lesson)
-	retry.add_theme_font_size_override("font_size",14)
-	finish = game.hud.button_at(panel,"Main menu",Rect2(18,180,126,34),func(): game.tutorial_exit_requested.emit(),"",true)
-	finish.hide()
-	var following := Lessons.IDS.find(category) + 1
-	next_button = game.hud.button_at(panel, "", Rect2(156,180,126,34), func():
-		if following < Lessons.IDS.size(): next_requested.emit(Lessons.IDS[following]), "", true)
-	next_button.add_theme_font_size_override("font_size",14)
-	next_button.text = Loc.text("Next match")
-	next_button.hide()
-	continue_button = game.hud.button_at(panel,"Continue",Rect2(156,180,126,34),func(): observe("continue",game.NONE),"",true)
-	continue_button.hide()
+	panel = preload("res://src/ui/tutorial_coach.gd").new(self)
+	game.hud.ui_root.add_child(panel)
+	for field in ["progress","heading","explanation_scroll","explanation","retry","finish","next_button","continue_button","controls_button"]: set(field,panel.get(field))
+	game.hud.gold_control.tooltip_shown.connect(func(): observe("finance",game.NONE))
+	game.hud.effect_row.effect_inspected.connect(func(effect): observe("status",game.NONE,{"effect":effect}))
 	enter_step()
 
 func current() -> Dictionary:
 	return steps[index]
 
+func exercise_key(number: int) -> String:
+	return str(steps[number].get("exercise","step_"+str(number)))
+
+func exercise_indices() -> Array:
+	var result := []
+	for number in range(steps.size()):
+		if exercise_key(number) == exercise_key(index): result.append(number)
+	return result
+
 func enter_step() -> void:
-	var step := current()
-	game.close_menus()
-	game.session.selection.selected = game.NONE
-	game.session.selection.action_mode = ""
-	game.session.selection.inspected_unit = game.NONE
-	game.session.selection.inspected_animal = game.NONE
-	game.message = ""
-	game.toast_time = 0
-	game.hud.toast_panel.hide()
-	game.session.selection.valid_targets.clear()
-	var target: Vector2i = step.get("highlight",step["target"])
-	var source: Vector2i = step["details"].get("source",target)
-	if game.cells.has(source) and game.cells[source]["owner"] == 0: game.session.selection.active_hex = source
-	checkpoint = {"cells":game.cells.duplicate(true),"kingdoms":game.rules.kingdoms.duplicate(true),"mana":game.rules.mana_by_faction.duplicate(true),"effects":game.rules.effects_by_faction.duplicate(true),"faction_count":game.rules.faction_count,"turn_order":game.turn_order.duplicate(),"events":game.rules.pending_events.duplicate(true),"rng":game.rules.rng.state,"round":game.round_number,"active_hex":game.session.selection.active_hex,"heatmap":game.view.value_heatmap.active,"top_down":game.view.top_down}
+	goal_count = 0
+	counted_targets.clear()
+	awaiting_confirmation = false
+	exercise_done = false
+	var first: bool = exercise_indices()[0] == index
+	if first:
+		feedback = ""
+		game.message = ""
+		game.toast_time = 0
+		game.hud.toast_panel.hide()
+		game.close_menus()
+		game.close_event_ui()
+		game.shown_event.clear()
+		game.session.selection.reset()
+		if current().has("setup"):
+			var document := Level.new()
+			var error := document.read_data(current().setup)
+			if error != "": push_error(error); return
+			game.rules = document.build_rules()
+			game.rules.ai_difficulty = "easy"
+			game.round_number = 1
+			game.active_faction = 0
+			game.turn_order = range(game.rules.faction_count)
+			game.view.value_heatmap.set_active(false)
+			game.view.configure_map(game.rules.map_size,game.rules.MapSizes.generation_bounds(game.rules.map_size),game.cells)
+		checkpoint = {"state":Snapshots.capture(game.rules),"index":index,"turn_order":game.turn_order.duplicate(),"round":game.round_number,"active_hex":game.session.selection.active_hex,"heatmap":game.view.value_heatmap.active,"top_down":game.view.top_down}
 	game.view.render_cells(game.cells)
+	# configure_map clears ambience even when this is the same opening board.
+	game.view.birds.sync()
 	game.refresh_ui()
 	show_lesson()
-	if target != game.NONE:
-		game.view.smooth_pan_to(game.view.coord_position(target)+game.view.camera.global_basis.x*3.0)
+	var target: Vector2i = current().get("focus",current().get("highlight",current().target))
+	if target == game.NONE and current().kind == "move":
+		for source in game.cells:
+			if game.rules.unit_faction(source) != 0 or game.cells[source].unit == 0 or game.cells[source].moved: continue
+			for destination in game.rules.reachable_targets(source):
+				if matches(current(),"move",destination,{"source":source},game.cells[destination],false):
+					target = destination
+					break
+			if target != game.NONE: break
+	if target == game.NONE:
+		for at in game.cells:
+			if game.cells[at].owner == 0 and game.cells[at].unit > 0: target = at; break
+	if target != game.NONE: focus_target(target)
+
+func focus_target(target: Vector2i) -> void:
+	var camera: Camera3D = game.view.camera
+	var screen: Vector2 = game.view.get_viewport().get_visible_rect().size * Vector2(0.48,0.35)
+	var point: Vector3 = game.view.coord_position(target)
+	var origin := camera.project_ray_origin(screen)
+	var direction := camera.project_ray_normal(screen)
+	if absf(direction.y) < 0.001: return
+	var projected := origin+direction*((point.y-origin.y)/direction.y)
+	var offset := point-projected
+	game.view.smooth_pan_to(game.view.focus+Vector3(offset.x,0,offset.z))
 
 func _process(_delta: float) -> void:
-	retry.disabled = game.busy or game.view.level_transitioning or game.closing
-	continue_button.disabled = retry.disabled or not Conditions.matches(game.rules,game.round_number,current().get("conditions",[]),current().get("condition_mode","all"))
-	if not completed and not retry.disabled and not game.get_tree().paused and current()["kind"] == "any": observe("state",game.NONE)
-	marker_root.visible = not completed and not game.busy and not game.view.level_transitioning and not game.hud.stats_shade.visible and not game.event_shade.visible
+	panel.visible = not game.hud.stats_shade.visible
+	var locked: bool = game.busy or game.closing or game.view.level_transitioning or game.get_tree().paused
+	retry.disabled = locked
+	continue_button.disabled = locked or not Conditions.matches(game.rules,game.round_number,current().get("conditions",[]),current().get("condition_mode","all"))
+	if not completed and not failed and not exercise_done and not locked:
+		if opponent_mode == "ai" and not game.rules.has_capital(0):
+			failed = true
+			game.game_over = true
+			show_lesson()
+		elif current().kind == "any": observe("state",game.NONE)
+	marker_root.visible = not completed and not failed and not exercise_done and not locked and not game.hud.stats_shade.visible and not game.event_shade.visible
+
+func matches(step: Dictionary, kind: String, target: Vector2i, details: Dictionary, before: Dictionary, committed: bool) -> bool:
+	if step.kind != "any" and (kind != step.kind or step.target != game.NONE and target != step.target): return false
+	for key in step.details:
+		if key == "outcome" and not committed: continue
+		if (details.get("kind") if key == "outcome" else details.get(key)) != step.details[key]: return false
+	var criteria: Dictionary = step.get("criteria",{})
+	var cell: Dictionary = game.cells.get(target,{})
+	if criteria.has("owner_before"):
+		if before.get("owner") != int(criteria.owner_before): return false
+		if committed and (not details.get("capture",false) or cell.get("owner") != 0): return false
+	if criteria.has("unit_before") and before.get("unit") != int(criteria.unit_before): return false
+	if criteria.has("animal_before") and before.get("animal","") != criteria.animal_before: return false
+	if criteria.has("value_before") and before.get("value") != int(criteria.value_before): return false
+	if criteria.has("min_value") and int(before.get("value",0)) < int(criteria.min_value): return false
+	if criteria.get("plain",false):
+		for key in ["tree","grave","event","treasure","lair","mana_source","mountain","building"]:
+			if before.get(key): return false
+	if criteria.has("unit") and cell.get("unit") != int(criteria.unit): return false
+	if criteria.has("building") and cell.get("building") != criteria.building: return false
+	if criteria.has("source_tier"):
+		var source: Dictionary = details.get("before_source",game.cells.get(details.get("source"),{}))
+		if source.get("unit") != int(criteria.source_tier): return false
+	return true
+
+func budget() -> Dictionary:
+	var bank: Dictionary = game.active_kingdom()
+	return {"gold":bank.get("gold",0),"income":0 if bank.is_empty() else game.rules.income(bank),"net":0 if bank.is_empty() else game.rules.income(bank)-game.rules.upkeep(bank)}
 
 func permits(kind: String, target: Vector2i, details: Dictionary = {}) -> bool:
-	if completed: return false
-	if not current().get("restrict_actions",true) or current()["kind"] in ["any","continue"]: return true
-	# Inspection, selection, camera and statistics remain available for learning.
-	if kind in ["inspect","select","view","heatmap","stats"]: return true
+	if completed or failed: return false
+	if kind in ["inspect","select","kingdom","animal","finance","status","view","heatmap","stats"]: return true
+	if exercise_done: return false
 	var step := current()
-	if kind != step["kind"] or (step["target"] != game.NONE and target != step["target"]):
-		game.announce(Loc.text("Follow the tutorial objective. Right-click / Escape cancels placement."))
+	var allowed: bool = not step.get("restrict_actions",true) or step.kind in ["any","continue"] or kind == "end_turn" and step.get("allow_turns",false) or matches(step,kind,target,details,game.cells.get(target,{}),false)
+	if not allowed:
+		game.announce(Loc.text("Follow the unchecked objective. Any valid highlighted tile counts when no particular location is requested."))
 		return false
-	for key in step["details"]:
-		if key != "outcome" and details.get(key) != step["details"][key]:
-			game.announce(Loc.text("Use the unit or purchase named in this lesson."))
-			return false
+	action_before = {"kind":kind,"target":target,"cell":game.cells.get(target,{}).duplicate(true),"budget":budget()}
 	return true
 
 func observe(kind: String, target: Vector2i, details: Dictionary = {}) -> void:
-	if completed or game.closing or game.busy or game.get_tree().paused: return
+	if kind == "stats": panel.visible = not game.hud.stats_shade.visible
+	if completed or failed or exercise_done or game.closing or game.busy or game.get_tree().paused: return
 	var step := current()
-	if step["kind"] != "any" and (kind != step["kind"] or (step["target"] != game.NONE and target != step["target"])): return
-	for key in step["details"]:
-		var value = details.get("kind") if key == "outcome" else details.get(key)
-		if value != step["details"][key]: return
+	var before: Dictionary = details.get("before_target",action_before.get("cell",{}) if action_before.get("kind") == kind and action_before.get("target") == target else game.cells.get(target,{}))
+	if not matches(step,kind,target,details,before,true): return
 	if not Conditions.matches(game.rules,game.round_number,step.get("conditions",[]),step.get("condition_mode","all")): return
-	if index == steps.size()-1:
-		if require_victory and not Conditions.victory(game.rules):
-			return
-		completed = true
-		game.winner_faction = 0
-		game.announce(Loc.text("Victory!") if Conditions.victory(game.rules) else "Lesson complete")
-		game.game_over = true
-		game.session.selection.selected = game.NONE
-		game.session.selection.action_mode = ""
-		game.close_menus()
-		game.refresh_ui()
+	if step.get("confirm",false) and not details.get("confirmed",false):
+		awaiting_confirmation = true
 		show_lesson()
 		return
-	index += 1
-	enter_step()
+	if step.get("count",1) > 1:
+		if counted_targets.has(target): return
+		counted_targets[target] = true
+	goal_count += 1
+	if goal_count < int(step.get("count",1)):
+		show_lesson()
+		return
+	if index == steps.size()-1:
+		if require_victory and not Conditions.victory(game.rules): return
+		completed = true
+		if category in Lessons.IDS and not game.initial_level_data.get("tutorial_playtest",false):
+			Gameplay.complete_tutorial(category)
+		exercise_done = true
+		game.game_over = true
+		game.winner_faction = 0 if Conditions.victory(game.rules) else -1
+	elif exercise_key(index+1) != exercise_key(index): exercise_done = true
+	else:
+		index += 1
+		enter_step()
+		return
+	show_lesson()
+
+func continue_lesson() -> void:
+	if game.busy or game.closing or game.get_tree().paused or game.view.level_transitioning: return
+	if exercise_done and not completed:
+		index += 1
+		enter_step()
+	elif awaiting_confirmation: observe(current().kind,current().target,current().details.merged({"confirmed":true}))
+	else: observe("continue",game.NONE)
+
+func next_topic() -> void:
+	var following := Lessons.IDS.find(category)+1
+	if following < Lessons.IDS.size(): next_requested.emit(Lessons.IDS[following])
 
 func show_lesson() -> void:
-	var step := current()
-	progress.text = ((Loc.text("%s - Match won") if Conditions.victory(game.rules) else "%s - Complete") % course_title) if completed else Loc.text("%s  ·  %d / %d") % [course_title,index+1,steps.size()]
-	heading.text = (Loc.text("Victory!") if Conditions.victory(game.rules) else "Lesson complete") if completed else step["title"]
-	Ui.fit_text(heading,heading.text,264)
-	explanation_scroll.position = Vector2(18,heading.position.y+heading.size.y+12)
-	var completion := "Tutorial finished. Return to the menu when you are ready." if custom else Loc.text("You defeated your opponent. Play the next match or return to the menu.") if category != "advanced" else Loc.text("You defeated your opponent. You are ready for Quick Play.")
-	Ui.fit_text(explanation,completion if completed else step["text"],246)
-	explanation_scroll.size = Vector2(264,minf(140,explanation.get_minimum_size().y))
-	objective.position.y = explanation_scroll.position.y+explanation_scroll.size.y+12
-	Ui.fit_text(objective,"" if completed else step["task"],264)
-	retry.position.y = objective.position.y+objective.size.y+14
-	finish.position.y = retry.position.y
-	next_button.position.y = retry.position.y
-	continue_button.position.y = retry.position.y
-	continue_button.visible = not completed and step["kind"] == "continue"
-	panel.size.y = retry.position.y+retry.size.y+16
-	retry.visible = not completed
-	finish.visible = completed
-	next_button.visible = completed and category != "advanced" and not custom
-	for button in [game.hud.recruit_button,game.hud.build_button,game.hud.spell_button,game.hud.end_button,game.hud.view_button,game.hud.heatmap_button,game.hud.stats_button]:
-		button.modulate = Color.WHITE
-		button.queue_redraw()
-	var button = {"recruit":game.hud.recruit_button,"build":game.hud.build_button,"spell":game.hud.spell_button,"end_turn":game.hud.end_button,"view":game.hud.view_button,"heatmap":game.hud.heatmap_button,"stats":game.hud.stats_button}.get(step["kind"])
-	if button != null and not completed: button.modulate = Color("fff0b8")
+	panel.render()
 	refresh_marker()
+	game.hud.gold_control.modulate = Color("fff0b8") if current().kind == "finance" and not exercise_done and not completed else Color.WHITE
+	for entry in [["recruit",game.hud.recruit_button],["build",game.hud.build_button],["spell",game.hud.spell_button],["end_turn",game.hud.end_button]]:
+		entry[1].modulate = Color("fff0b8") if current().kind == entry[0] and not completed and not exercise_done else Color.WHITE
 
 func refresh_marker() -> void:
-	var target: Vector2i = current().get("highlight",current()["target"])
-	var source: Vector2i = current()["details"].get("source",game.NONE)
-	var signature: Array = [target,source,completed]
+	if marker_root == null: return
+	var target: Vector2i = current().get("highlight",current().target)
+	var source: Vector2i = current().details.get("source",game.NONE)
+	var signature := [target,source,completed,exercise_done]
 	if signature == marker_signature: return
 	marker_signature = signature
-	for child in marker_root.get_children():
-		marker_root.remove_child(child)
-		child.queue_free()
-	if completed: return
+	for child in marker_root.get_children(): child.free()
+	if completed or exercise_done: return
 	for entry in [[target,Color("ffd66e")],[source,Color("79e1f2")]]:
 		if entry[0] == game.NONE: continue
-		for layer in range(2):
-			var marker := MeshInstance3D.new()
-			marker.mesh = game.view.overlays.marker_mesh(1.03 if layer == 0 else 0.995,0.79 if layer == 0 else 0.84)
-			marker.position = game.view.coord_position(entry[0])+Vector3(0,0.075+layer*0.03,0)
-			marker.material_override = game.view.material(Color("182d34") if layer == 0 else entry[1],true,true)
-			marker.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-			marker_root.add_child(marker)
+		var marker := MeshInstance3D.new()
+		marker.mesh = game.view.overlays.marker_mesh(1.03,0.79)
+		marker.position = game.view.coord_position(entry[0])+Vector3(0,0.08,0)
+		marker.material_override = game.view.material(entry[1],true,true)
+		marker.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		marker_root.add_child(marker)
 
 func restart_lesson() -> void:
 	if game.busy or game.closing or game.get_tree().paused or game.view.level_transitioning: return
 	completed = false
+	failed = false
 	game.game_over = false
+	index = checkpoint.index
+	goal_count = 0
+	counted_targets.clear()
+	awaiting_confirmation = false
+	exercise_done = false
+	action_before.clear()
+	feedback = ""
 	game.player_move_revision += 1
 	game.player_move_snapshot.clear()
-	game.rules.cells = checkpoint["cells"].duplicate(true)
-	game.rules.kingdoms = checkpoint["kingdoms"].duplicate(true)
-	game.rules.mana_by_faction = checkpoint["mana"].duplicate(true)
-	game.rules.effects_by_faction = checkpoint["effects"].duplicate(true)
-	game.rules.faction_count = checkpoint.get("faction_count", game.rules.faction_count)
-	game.turn_order = checkpoint.get("turn_order", game.turn_order).duplicate()
-	game.rules.pending_events = checkpoint["events"].duplicate(true)
-	game.rules.rng.state = checkpoint["rng"]
-	game.round_number = checkpoint["round"]
-	game.session.selection.active_hex = checkpoint["active_hex"]
-	game.view.value_heatmap.set_active(checkpoint["heatmap"])
-	if game.view.top_down != checkpoint["top_down"]: game.view.toggle_top_down()
+	Snapshots.restore(game.rules,checkpoint.state)
+	game.turn_order = checkpoint.turn_order.duplicate()
+	game.round_number = checkpoint.round
+	game.session.selection.reset()
+	game.session.selection.active_hex = checkpoint.active_hex
+	game.view.value_heatmap.set_active(checkpoint.heatmap)
+	if game.view.top_down != checkpoint.top_down: game.view.toggle_top_down()
 	game.shown_event.clear()
 	game.close_event_ui()
 	game.close_menus()
-	game.session.selection.selected = game.NONE
-	game.session.selection.action_mode = ""
 	game.view.render_cells(game.cells)
 	game.refresh_ui()
 	show_lesson()
+	if not game.rules.pending_events.is_empty(): game.show_next_event()
 
 func end_turn() -> void:
 	if game.commands_locked() or not permits("end_turn",game.NONE): return
-	game.view.unit_presentation.set_turn(-1)
+	if opponent_mode == "ai":
+		await preload("res://src/game/opponent_turns.gd").run(game)
+		observe("end_turn",game.NONE)
+		return
 	game.session.begin_work(true)
 	game.close_menus()
 	game.session.selection.selected = game.NONE
 	game.session.selection.action_mode = ""
 	for faction in range(1,game.rules.faction_count):
 		game.active_faction = faction
-		game.refresh_ui()
-		if opponent_mode == "ai":
-			await preload("res://src/game/opponent_turns.gd").play_ai(game,faction)
-		else:
-			game.rules.begin_turn(faction)
+		await settle(faction)
+		if game.closing: game.session.finish_work(); return
 		if opponent_mode == "scripted":
 			for order in current().get("opponent",[]):
 				if int(order.get("faction",1)) != faction: continue
-				var target: Vector2i = order["target"]
-				game.view.smooth_pan_to(game.view.coord_position(target)+game.view.camera.global_basis.x*3.0)
-				var result: Dictionary = Actions.apply(game.rules,order,faction)
+				var result := Actions.apply(game.rules,order,faction)
 				if not result.ok:
-					game.active_faction = 0
 					game.session.finish_work()
-					game.announce("Tutorial order failed. Retry this step or return to the editor.")
+					game.active_faction = 0
+					game.announce(Loc.text("An authored order failed. Retry the exercise."))
 					return
 				if not result.moves.is_empty(): await game.view.animate_moves(result.moves,game.cells)
-				if game.closing:
-					game.session.finish_work()
-					return
-				game.view.render_cells(game.cells)
-				await game.get_tree().create_timer(0.1 if game.playback_speed.speed_held else 0.65,false).timeout
-				if game.closing:
-					game.session.finish_work()
-					return
-		if game.closing:
-			game.session.finish_work()
-			return
-		game.view.unit_presentation.set_turn(-1)
+				if game.closing: game.session.finish_work(); return
 	game.round_number += 1
+	if current().get("wildlife_turn",false):
+		var actions: Array = game.rules.Wildlife.world_turn(game.rules)
+		await game.view.wildlife.play_world(actions,game.cells)
+		if game.closing: game.session.finish_work(); return
 	game.active_faction = 0
-	game.rules.begin_turn(0)
+	await settle(0)
+	if game.closing: game.session.finish_work(); return
 	game.playback_kingdoms.clear()
 	game.playback_mana.clear()
 	game.view.render_cells(game.cells)
 	game.session.finish_work()
 	game.refresh_ui()
 	observe("end_turn",game.NONE)
+
+func settle(faction: int) -> void:
+	var before: Dictionary = game.cells.duplicate(true)
+	var deaths: int = game.rules.begin_turn(faction)
+	var actions := []
+	for at in before:
+		if before[at].unit > 0 and game.cells[at].unit == 0:
+			actions.append({"kind":"death","coord":at})
+	if not actions.is_empty():
+		await game.view.play_preparation(actions,game.cells)
+		game.announce(Loc.text("%d soldiers starved in %s.") % [deaths,game.NAMES[faction]])

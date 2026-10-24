@@ -8,7 +8,9 @@ func run() -> void:
 	video.set_preference(&"vsync", false, false)
 	root.get_node("Sound").set_muted(true, false)
 	var app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	var background = app.menus.menu_background
 	var map = background.map
 	var records: Array = []

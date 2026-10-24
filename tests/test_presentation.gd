@@ -107,7 +107,9 @@ func run() -> void:
 	await process_frame
 	video.set_preference(&"level_transitions", true, false)
 	var app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	await app.start_new_game(42)
 	game = app.game
 	game.set_process(false)
@@ -235,8 +237,7 @@ func check_departure_depth() -> void:
 func check_kingdom_edges() -> void:
 	var video = root.get_node("Video")
 	var original_visibility: float = video.internal_borders
-	# A full-border user preference deliberately uses the original cylinder;
-	# exercise joined topology at a known midpoint before endpoint checks.
+	# Exercise joined topology at a known midpoint before endpoint checks.
 	video.set_preference(&"internal_borders", 0.5, false)
 	var terrain = preload("res://src/rendering/terrain_tile.gd")
 	var rules = preload("res://src/game/kingdom_rules.gd").new()
@@ -287,7 +288,8 @@ func check_kingdom_edges() -> void:
 		for vertex in vertices:
 			lowest = minf(lowest, vertex.y + terrain.CAP_CENTER)
 			highest = maxf(highest, vertex.y + terrain.CAP_CENTER)
-		expect(is_zero_approx(lowest) and is_equal_approx(highest, 0.0105), "Joined cap walls stop at soil level while preserving the original top height")
+		var expected_lowest: float = preload("res://src/rendering/terrain_chunks.gd").SHOULDER
+		expect(is_equal_approx(lowest, expected_lowest) and is_equal_approx(highest, 0.0105), "Molded cap bevels meet the base while preserving the original top height")
 	expect(terrain.cap_mesh(view, 9) == joined, "Neighbor-mask mesh cache is shared")
 	var retained_tile: Node3D = view.tile_nodes[a]
 	var retained_features: Node3D = retained_tile.get_node("Features")

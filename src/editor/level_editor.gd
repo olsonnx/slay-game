@@ -85,7 +85,6 @@ func active_tool() -> String:
 
 func select_tool(tool: String) -> void:
 	if tool not in Document.TOOLS: return
-	if document.rule_mode == "classic" and tool in Document.MODERN_TOOLS: return
 	end_stroke()
 	release_text_focus()
 	ui.tool_choice.select(Document.TOOLS.find(tool))
@@ -153,7 +152,7 @@ func set_event(id: String) -> void:
 	update_status()
 
 func select_event(id: String) -> void:
-	if document.rule_mode != "modern" or not Document.Events.EVENTS.has(id): return
+	if not Document.Events.EVENTS.has(id): return
 	ui.selected_event = id
 	ui.filter_events()
 	set_event(id)
@@ -171,7 +170,7 @@ func update_status(message := "") -> void:
 	# Recompute document state only after edits/settings/save/undo, never hover.
 	ui.undo_button.disabled = document.undo_stack.is_empty()
 	ui.redo_button.disabled = document.redo_stack.is_empty()
-	document_status = Loc.text("EDITOR%s  /  %s  /  %d TILES  /  %s: %s") % [" *" if painting or document.dirty() else "", Loc.text(document.rule_mode.capitalize()).to_upper(), document.cells.size(), Loc.text("Tiles" if active_tool() in Document.TILE_TOOLS else "Paint").to_upper(), Loc.text(active_tool()).to_upper()]
+	document_status = Loc.text("EDITOR%s  /  %s  /  %d TILES  /  %s: %s") % [" *" if painting or document.dirty() else "", Loc.text("MAP"), document.cells.size(), Loc.text("Tiles" if active_tool() in Document.TILE_TOOLS else "Paint").to_upper(), Loc.text(active_tool()).to_upper()]
 	show_pointer_status(message)
 	ui.brush_label.text = Loc.text(active_tool())
 	ui.brush_label.tooltip_text = Loc.text(Document.Events.EVENTS[event_id]["title"]) if active_tool() == "Event" and Document.Events.EVENTS.has(event_id) else Loc.text(active_tool())
@@ -197,12 +196,9 @@ func refresh(reset_view := false, render_board := true) -> void:
 	view.COLORS = document.faction_colors("terrain")
 	refresh_player_labels()
 	ui.size_choice.select(maxi(0, Document.Sizes.IDS.find(document.map_size)))
-	ui.mode_choice.select(0 if document.rule_mode == "modern" else 1)
-	ui.events_enabled = document.rule_mode == "modern"
+	ui.events_enabled = true
 	ui.filter_events()
 	ui.category_buttons["Events"].disabled = not ui.events_enabled
-	for index in range(ui.tool_choice.item_count):
-		ui.tool_choice.set_item_disabled(index, document.rule_mode == "classic" and Document.TOOLS[index] in Document.MODERN_TOOLS)
 	if ui.tool_choice.is_item_disabled(ui.tool_choice.selected): ui.tool_choice.select(0)
 	view.configure_map(document.map_size, Document.Sizes.generation_bounds(document.map_size) + Vector2(5.7, 6), document.cells)
 	if render_board: view.render_cells(document.cells)
@@ -272,7 +268,7 @@ func release_text_focus() -> void:
 	if is_instance_valid(view): view.controls_enabled = not modal_open()
 
 func modal_open() -> bool:
-	return loading_map or ui.file_dialog.visible or ui.confirm.visible or ui.settings_shade.visible or ui.variant_choice.get_popup().visible or ui.owner_choice.get_popup().visible or ui.size_choice.get_popup().visible or ui.mode_choice.get_popup().visible
+	return loading_map or ui.file_dialog.visible or ui.confirm.visible or ui.settings_shade.visible or ui.variant_choice.get_popup().visible or ui.owner_choice.get_popup().visible or ui.size_choice.get_popup().visible
 
 func pointer_over_ui(position: Vector2) -> bool:
 	if modal_open(): return true
@@ -364,7 +360,7 @@ func finish_map_load(preparation) -> void:
 func new_island(blank: bool) -> void:
 	if loading_map: return
 	var size_id: String = Document.Sizes.IDS[ui.size_choice.selected]
-	var mode := "modern" if ui.mode_choice.selected == 0 else "classic"
+	var mode := "modern"
 	ui.settings_shade.hide()
 	var preparation = await begin_map_load()
 	var replacement = Document.new()
@@ -628,6 +624,16 @@ func _notification(what: int) -> void:
 func _on_view_action(action: StringName, arguments: Array) -> void:
 	if loading_map: return
 	match action:
+		&"open_event_editor":
+			var process_id := OS.create_process(OS.get_executable_path(),PackedStringArray(["--path",ProjectSettings.globalize_path("res://"),"--script","res://tools/event_editor.gd"]))
+			update_status(Loc.text("Event Editor opened. Save your event, then press Reload here.") if process_id >= 0 else Loc.text("Could not open Event Editor. Use Event Editor.cmd in the project folder."))
+		&"reload_events":
+			var pack := preload("res://src/game/authored_event_schema.gd").load_pack()
+			if pack.error != "": update_status(pack.error)
+			else:
+				Document.Events.reload()
+				ui.filter_events()
+				update_status(Loc.text("Event library reloaded."))
 		&"toggle_view": toggle_view()
 		&"toggle_heatmap": toggle_heatmap()
 		&"undo": undo()

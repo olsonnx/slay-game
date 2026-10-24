@@ -53,7 +53,7 @@ func run() -> void:
 	expect(opening.recruit(placements[0], opening_owner) and opening.cast_spell("summon", placements[1], opening_owner), "A funded Summon and paid recruit create two ready Scouts")
 	expect(opening_kingdom["gold"] == 0 and opening.income(opening_kingdom) - opening.upkeep(opening_kingdom) == -1, "Three-Scout opening spends starting gold and exceeds initial income by one")
 	expect(opening.begin_turn(opening_owner) == 3 and opening_kingdom["gold"] == 0, "An unfunded three-Scout opening bankrupts at settlement")
-	for mode in ["modern", "classic"]:
+	for mode in ["modern"]:
 		var wages = Rules.new()
 		wages.rule_mode = mode
 		wages.generate(42)
@@ -62,8 +62,8 @@ func run() -> void:
 			wages.cells[coord]["unit"] = 0
 		for tier in range(1, 4):
 			wages.cells[bank["hexes"][tier - 1]]["unit"] = tier
-			expect(wages.Catalog.unit_tooltip(tier, mode == "modern").contains("upkeep −%d G / turn" % ([0, 4, 12, 36][tier] if mode == "modern" else [0, 1, 2, 4][tier])), "Recruitment descriptions show the active ruleset's wages")
-		expect(wages.upkeep(bank) == (52 if mode == "modern" else 7), "Army upkeep uses Modern rates while preserving Classic rates")
+			expect(wages.Catalog.unit_tooltip(tier).contains("upkeep −%d G / turn" % [0, 4, 12, 36][tier]), "Recruitment descriptions show the active ruleset's wages")
+		expect(wages.upkeep(bank) == 52, "Army upkeep uses the current rates")
 		if mode == "modern":
 			for coord in bank["hexes"]:
 				wages.cells[coord]["unit"] = 0
@@ -152,12 +152,6 @@ func run() -> void:
 	expect(rules.cells[Vector2i(1, -1)]["building"] == "house" and rules.cells[castle]["mana_source"], "Surrender preserves neighboring buildings and captured mana sources")
 	expect(rules.kingdom_at(Vector2i(2, 0))["gold"] == 0 and rules.get_mana(1) == 3, "Destroyed castle loses gold; lost double-capacity source reduces shared mana")
 	expect(rules.kingdom_at(castle)["gold"] == 50 and rules.get_mana(0) == 5, "Attacker's existing gold and shared mana are preserved")
-	rules.rule_mode = "classic"
-	castle_fixture(rules)
-	action = rules.perform_move(attacker, castle)
-	expect(action["annexed"].is_empty() and rules.cells[Vector2i(1, 0)]["owner"] == 1, "Classic castle capture does not annex neighboring land")
-	expect(not rules.develop(castle, 0) and not rules.cast_spell("summon", castle, 0), "Modern mechanics are unavailable in Classic")
-
 	var game = load("res://scenes/main.tscn").instantiate()
 	game.initial_rule_mode = "modern"
 	root.add_child(game)
@@ -217,22 +211,13 @@ func run() -> void:
 	settings.settings_path = "res://artifacts/gameplay_test.cfg"
 	settings.set_rules("modern", false)
 	var app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	await app.start_new_game(42)
 	expect(app.game.rules.is_modern(), "Application starts with the selected Modern rules")
 	app.pause_game()
 	app.menus.open_options(app.menus.Screen.PAUSE)
-	app.menus.options_view.rules_choice.item_selected.emit(1)
-	while app.transitioning:
-		await process_frame
-	expect(app.game.rules.rule_mode == "classic" and app.game.rules.level_seed != 42 and app.game.round_number == 1, "Switching to Classic discards progress and generates a different island")
-	expect(paused and app.menus.screen == app.menus.Screen.OPTIONS and not app.game.spell_button.visible, "Rules change returns to paused Options with Classic UI")
-	expect(settings.load_settings(settings.settings_path) == OK and settings.rule_mode == "classic", "Rules preference persists separately from game state")
-	var classic_seed: int = app.game.rules.level_seed
-	app.menus.options_view.rules_choice.item_selected.emit(0)
-	while app.transitioning:
-		await process_frame
-	expect(app.game.rules.is_modern() and app.game.rules.level_seed != classic_seed, "Switching back to Modern also generates a new island")
 	var modern_cells: Dictionary = app.game.cells.duplicate(true)
 	var modern_seed: int = app.game.rules.level_seed
 	app.restart_current_level()
@@ -243,8 +228,6 @@ func run() -> void:
 	while app.retiring_games > 0:
 		await process_frame
 	app.menus.open_options(app.menus.Screen.MAIN)
-	app.menus.options_view.rules_choice.item_selected.emit(1)
-	expect(app.game == null and settings.rule_mode == "classic" and app.menus.screen == app.menus.Screen.OPTIONS, "Main menu rules switch changes the preference without creating a game")
 	settings.set_rules(old_mode, false)
 	settings.settings_path = old_path
 	root.get_node("Sound").stop_all()

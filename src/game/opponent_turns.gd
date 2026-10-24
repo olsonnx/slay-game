@@ -24,7 +24,7 @@ static func run(game) -> void:
 	game.sync_event_factions()
 	for faction in game.turn_order.duplicate():
 		if faction == game.player_faction: continue
-		if game.rules.territory(faction) == 0 and not game.rules.has_units(faction):
+		if not game.rules.has_capital(faction) and not game.rules.has_units(faction):
 			continue
 		await play_ai(game, faction)
 		if game.closing:
@@ -164,10 +164,9 @@ static func run_hotseat(game) -> void:
 			if game.game_over: break
 		game.active_faction = faction
 		# A stranded army still receives settlement so it can starve normally.
-		if game.rules.territory(faction) == 0 and not game.rules.has_units(faction):
+		if not game.rules.has_capital(faction) and not game.rules.has_units(faction):
 			continue
 		if faction in game.rules.human_factions:
-			game.player_faction = faction
 			var settlement = game.rules.KingdomAI.new(game.rules)
 			settlement.threaded_simulation = game.ai_simulation_workers
 			game.settling_turn = true
@@ -184,6 +183,9 @@ static func run_hotseat(game) -> void:
 			game.view.unit_batches.budgeted_sync = false
 			game.settling_turn = false
 			if game.closing: break
+			# Settle stranded armies, then skip eliminated seats without a handoff.
+			if not game.rules.has_capital(faction): continue
+			game.player_faction = faction
 			game.session.finish_work()
 			game.playback_kingdoms.clear()
 			game.playback_mana.clear()

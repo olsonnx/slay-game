@@ -105,9 +105,6 @@ func check_player_and_events() -> void:
 	expect(copy.read_data(invalid) != "", "Unknown event rejected")
 	doc.paint(Vector2i(2, 0), "Mountain", -1, 1)
 	expect(not doc.paint(Vector2i(2, 0), "Event", -1, 1, "gold"), "Events cannot be painted on mountains")
-	doc.generate("small", "classic", true)
-	doc.paint(Vector2i.ZERO, "Land", -1, 1)
-	expect(not doc.paint(Vector2i.ZERO, "Event", -1, 1, "gold"), "Classic rejects event brushes")
 
 func check_tool_context(editor) -> void:
 	var saved: Dictionary = editor.document.state()
@@ -168,10 +165,31 @@ func check_tool_context(editor) -> void:
 	expect(editor.document.state() == saved, "Context event painting is undoable")
 	editor.select_tool("Land")
 
+func check_treasure() -> void:
+	var doc := Document.new()
+	doc.generate("small","modern",true)
+	doc.paint(Vector2i.ZERO,"Land",-1,1)
+	doc.cells[Vector2i.ZERO]["treasure"] = 15
+	var saved := doc.state()
+	var copy := Document.new()
+	expect(copy.read_data(JSON.parse_string(JSON.stringify(saved))) == "" and copy.build_rules().cells[Vector2i.ZERO].treasure == 15,"Authored tutorial treasure survives JSON and playtest construction")
+	for reward in [-1,0,10001,"15"]:
+		var invalid: Dictionary = saved.duplicate(true)
+		invalid.cells[0].treasure = reward
+		expect(copy.read_data(invalid) != "" and copy.state() == saved,"Invalid treasure cannot corrupt the current draft")
+	doc.checkpoint()
+	doc.paint(Vector2i.ZERO,"Tree",-1,1)
+	expect(not doc.cells[Vector2i.ZERO].has("treasure") and doc.cells[Vector2i.ZERO].tree,"Painting another object replaces an imported chest")
+	doc.undo()
+	expect(doc.cells[Vector2i.ZERO].treasure == 15,"Undo restores the original chest reward")
+	doc.paint(Vector2i.ZERO,"Owner",0,1)
+	expect(not doc.cells[Vector2i.ZERO].has("treasure") and copy.read_data(doc.state()) == "","Assigning an imported chest to an owner removes the neutral reward")
+
 func run() -> void:
+	check_treasure()
 	check_player_and_events()
 	var doc = Document.new()
-	for mode in ["modern", "classic"]:
+	for mode in ["modern"]:
 		for size_id in Document.Sizes.SPECS:
 			doc.generate(size_id, mode)
 			var copy = Document.new()
@@ -268,7 +286,9 @@ func run() -> void:
 	var animate: bool = video.level_transitions
 	video.set_preference(&"level_transitions", false, false)
 	var app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	app.menus.editor_requested.emit()
 	await process_frame
 	expect(is_instance_valid(app.editor) and app.menus.screen == app.menus.Screen.HIDDEN, "Main menu opens editor")
@@ -675,15 +695,14 @@ func run() -> void:
 		await RenderingServer.frame_post_draw
 		root.get_texture().get_image().save_png("res://artifacts/level_editor_player_start_small.png")
 	var preference: String = root.get_node("Gameplay").rule_mode
-	editor.document.generate("very_small", "classic")
+	editor.document.generate("very_small", "modern")
 	editor.refresh(true)
 	editor.name_edit.grab_focus()
 	editor.pointer_position = editor.name_edit.get_global_rect().get_center()
 	await press_key(KEY_F5)
 	while app.transitioning: await process_frame
 	expect(is_instance_valid(app.game) and editor.suspended, "F5 starts playtesting even from a focused text field")
-	expect(app.game.rules.rule_mode == "classic", "Classic authored level uses Classic mechanics")
-	expect(app.menus.options_view.rules_choice.selected == 1 and app.menus.options_view.rules_choice.disabled, "Options identifies the fixed authored rules")
+	expect(app.game.rules.rule_mode == "modern", "Authored level uses the current mechanics")
 	expect(root.get_node("Gameplay").rule_mode == preference, "Playtest does not rewrite the global rules preference")
 	app.pause_game()
 	await app.return_to_main_menu()

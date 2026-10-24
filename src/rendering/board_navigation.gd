@@ -88,6 +88,7 @@ func update_camera() -> void:
 	camera.far = distance_from_focus+depth_extent
 	camera.position = focus + Vector3(sin(yaw) * cos(pitch), sin(pitch), cos(yaw) * cos(pitch)) * distance_from_focus
 	camera.look_at(focus, Vector3.UP)
+	preload("res://src/rendering/depth_of_field.gd").update(camera, focus)
 	changed.emit()
 
 func configure_map(size_id: String, bounds: Vector2, layout: Dictionary = {}) -> void:

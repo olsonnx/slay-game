@@ -10,7 +10,9 @@ func tooltip_texts(node: Node) -> Array:
 func run() -> void:
 	root.size = Vector2i(960, 620)
 	var app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	await create_timer(0.5).timeout
 	app.open_replays()
 	var viewer = app.replay_viewer

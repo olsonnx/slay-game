@@ -1,150 +1,167 @@
 {
   "\nHome: centre · Alt + right drag: rotate": [
-    "src/editor/level_editor.gd:293"
+    "src/editor/level_editor.gd:289"
   ],
   "\nMenu: %d FPS": [
     "src/ui/fps_counter.gd:56"
+  ],
+  "  %d/%d": [
+    "src/ui/tutorial_coach.gd:102"
   ],
   " %d / %d": [
     "src/ui/replay_viewer.gd:383"
   ],
   " (Player)": [
-    "src/editor/level_editor.gd:141"
+    "src/editor/level_editor.gd:140"
   ],
   " ×%d": [
-    "src/ui/status_effects.gd:64"
+    "src/ui/status_effects.gd:67"
   ],
   "\"result\"": [
     "src/game/replay_summary.gd:63"
   ],
   "%+d": [
-    "src/ui/game_hud.gd:320",
-    "src/ui/game_presenter.gd:135"
+    "src/ui/game_hud.gd:348",
+    "src/ui/game_presenter.gd:133"
   ],
   "%+d G": [
-    "src/ui/game_hud.gd:336",
-    "src/ui/game_hud.gd:347"
+    "src/ui/game_hud.gd:364",
+    "src/ui/game_hud.gd:375"
+  ],
+  "%02d  ·  %s": [
+    "src/ui/painting_collection.gd:170"
   ],
   "%d / %d": [
-    "src/ui/game_hud.gd:319",
+    "src/ui/game_hud.gd:347",
     "src/ui/replay_viewer.gd:565"
   ],
+  "%d / %d XP": [
+    "src/ui/account_xp_bar.gd:34"
+  ],
   "%d / %d events": [
-    "src/editor/editor_view.gd:408"
+    "src/editor/editor_view.gd:418"
+  ],
+  "%d / %d paintings collected": [
+    "src/ui/painting_collection.gd:145"
   ],
   "%d FPS · %.1f ms": [
     "src/ui/fps_counter.gd:54"
   ],
   "%d G": [
-    "src/ui/game_hud.gd:335",
-    "src/ui/game_presenter.gd:48",
-    "src/ui/game_presenter.gd:92"
+    "src/ui/game_hud.gd:363",
+    "src/ui/game_presenter.gd:46",
+    "src/ui/game_presenter.gd:90"
   ],
   "%d G / turn": [
-    "src/ui/province_view.gd:76"
+    "src/ui/province_view.gd:76",
+    "src/ui/province_view.gd:81"
   ],
   "%d Scouts · %d Soldiers · %d Knights": [
-    "src/ui/game_presenter.gd:140"
+    "src/ui/game_presenter.gd:138"
+  ],
+  "%d XP total": [
+    "src/ui/account_xp_bar.gd:39"
   ],
   "%d kingdoms": [
-    "src/ui/session_menus.gd:283"
+    "src/ui/session_menus.gd:321"
   ],
   "%d mana": [
-    "src/ui/game_presenter.gd:75"
+    "src/ui/game_presenter.gd:73"
   ],
   "%d soldiers starved in %s.": [
-    "src/game/opponent_turns.gd:192"
+    "src/game/opponent_turns.gd:194",
+    "src/game/tutorial.gd:330"
   ],
   "%d soldiers starved. Reconnect their land or reduce upkeep.": [
     "src/game/opponent_turns.gd:62"
   ],
   "%d trees removed; %d gold earned. The forester requests a promotion.": [
-    "src/game/encounter_rules.gd:211"
+    "src/game/encounter_rules.gd:236"
   ],
   "%d × %d": [
-    "src/ui/options_view.gd:122"
+    "src/ui/options_view.gd:107"
   ],
   "%d%%": [
-    "src/ui/options_view.gd:160",
-    "src/ui/options_view.gd:218"
+    "src/ui/options_view.gd:151",
+    "src/ui/options_view.gd:209",
+    "src/ui/painting_collection.gd:249",
+    "src/ui/player_profile_panel.gd:295",
+    "src/ui/preparation_screen.gd:55"
   ],
-  "%s  /  TURN %02d  /  %s": [
-    "src/ui/game_presenter.gd:333"
+  "%d. %s": [
+    "src/ui/tutorial_selection.gd:47"
   ],
-  "%s  ·  %d / %d": [
-    "src/game/tutorial.gd:144"
+  "%s   ·   %s": [
+    "src/ui/steam_lobby.gd:82"
   ],
   "%s (%s)": [
-    "src/game/replay_summary.gd:116"
-  ],
-  "%s - Complete": [
-    "src/game/tutorial.gd:144"
-  ],
-  "%s - Match won": [
-    "src/game/tutorial.gd:144"
+    "src/game/replay_summary.gd:121"
   ],
   "%s blocks gold income": [
-    "src/ui/province_view.gd:81"
+    "src/ui/province_view.gd:85"
   ],
   "%s blocks income": [
-    "src/ui/game_presenter.gd:273"
+    "src/ui/game_presenter.gd:268"
   ],
   "%s built.": [
-    "src/game/player_actions.gd:75"
+    "src/game/player_actions.gd:76"
   ],
   "%s needs at least two connected provinces for multiplayer.": [
     "src/game/match_setup.gd:81"
   ],
   "%s needs at least two connected provinces.": [
-    "src/editor/level_document.gd:296"
+    "src/editor/level_document.gd:301"
   ],
   "%s ready to move.": [
     "src/game/player_actions.gd:68"
   ],
+  "%s upgraded. Ready next turn.": [
+    "src/game/player_actions.gd:68"
+  ],
   "%s won": [
-    "src/game/replay_summary.gd:132"
+    "src/game/replay_summary.gd:137"
   ],
   "%s · %d\nLeft: place · right: %s": [
-    "src/editor/editor_view.gd:504"
+    "src/editor/editor_view.gd:514"
   ],
   "%s · %d G": [
     "src/ui/income_graph.gd:39"
   ],
   "%s · %d mana\n%s": [
-    "src/ui/game_presenter.gd:68"
+    "src/ui/game_presenter.gd:66"
   ],
   "%s · %s": [
-    "src/ui/game_presenter.gd:242",
+    "src/ui/game_presenter.gd:240",
     "src/ui/province_view.gd:70"
   ],
   "%s · %s\nHold: centre / reset camera": [
-    "src/game/game.gd:593",
+    "src/game/game.gd:636",
     "src/ui/replay_viewer.gd:503"
   ],
   "%s · %s\nRight drag: %s": [
-    "src/editor/level_editor.gd:291"
+    "src/editor/level_editor.gd:287"
   ],
   "%s · %s · %s": [
     "src/ui/replay_viewer.gd:259"
   ],
   "%s · Province %d, %d · Value %d · %s": [
-    "src/editor/level_editor.gd:613"
+    "src/editor/level_editor.gd:609"
   ],
   "%s · strength %d\nCost %d G · upkeep −%d G / turn\n%s\nUpgrade: pay the difference": [
-    "src/game/game_catalog.gd:28"
+    "src/game/game_catalog.gd:26"
   ],
   "%s · upkeep −%d G / turn": [
-    "src/ui/game_presenter.gd:261"
+    "src/ui/game_presenter.gd:259"
   ],
   "%s · ~%s tiles": [
     "src/game/map_sizes.gd:22"
   ],
   "%s's turn": [
-    "src/game/game.gd:846"
+    "src/game/game.gd:895"
   ],
   "%s: %+d": [
-    "src/ui/status_effects.gd:71",
-    "src/ui/status_effects.gd:75"
+    "src/ui/status_effects.gd:74",
+    "src/ui/status_effects.gd:78"
   ],
   "%s×": [
     "src/ui/replay_interface.gd:184"
@@ -153,39 +170,51 @@
     "src/localization/native_messages.gd:6"
   ],
   "*.json ; Slay levels": [
-    "src/editor/editor_view.gd:435",
-    "src/ui/multiplayer_setup.gd:139"
+    "src/editor/editor_view.gd:445",
+    "src/ui/multiplayer_setup.gd:138"
   ],
   "*.jsonl ; Replay recordings": [
     "src/ui/replay_viewer.gd:115"
   ],
+  "+%d XP": [
+    "src/ui/account_xp_bar.gd:44"
+  ],
+  "+%d XP · Level up!": [
+    "src/ui/account_xp_bar.gd:44"
+  ],
   "+6 G": [
-    "src/ui/game_hud.gd:145"
+    "src/ui/game_hud.gd:173"
+  ],
+  "--path": [
+    "src/editor/level_editor.gd:628"
+  ],
+  "--script": [
+    "src/editor/level_editor.gd:628"
   ],
   ".%d.tmp": [
-    "src/editor/level_document.gd:52"
+    "src/editor/level_document.gd:55"
   ],
   "/%s.json": [
-    "src/game/tutorial_lessons.gd:24"
+    "src/game/tutorial_lessons.gd:29"
   ],
   "0: mountain / bridge     Land: 1–%d": [
-    "src/editor/level_editor.gd:255"
+    "src/editor/level_editor.gd:251"
   ],
   "20 G and 2 mana": [
     "src/game/wildlife.gd:16"
   ],
   "2× MSAA": [
-    "src/ui/options_view.gd:127"
+    "src/ui/options_view.gd:112"
   ],
   "3D view": [
-    "src/game/game.gd:593",
+    "src/game/game.gd:636",
     "src/ui/replay_viewer.gd:503"
   ],
   "40%: this army dies.": [
-    "src/game/kingdom_magic.gd:58"
+    "src/game/kingdom_magic.gd:66"
   ],
   "4× MSAA": [
-    "src/ui/options_view.gd:127"
+    "src/ui/options_view.gd:112"
   ],
   "50%: gain 4 gold.\n50%: this army dies.": [
     "src/game/event_catalog.gd:24",
@@ -195,43 +224,36 @@
     "src/game/event_catalog.gd:20"
   ],
   "60%: gain 1 tier.": [
-    "src/game/kingdom_magic.gd:57"
+    "src/game/kingdom_magic.gd:65"
   ],
   "60%: gain 20 gold.": [
-    "src/game/kingdom_magic.gd:57"
+    "src/game/kingdom_magic.gd:65"
   ],
   "60%: gain a mana source.\n40%: this army dies.": [
     "src/game/event_catalog.gd:18"
   ],
   "8× MSAA": [
-    "src/ui/options_view.gd:127"
+    "src/ui/options_view.gd:112"
   ],
   "? Unexplored encounter": [
-    "src/ui/game_presenter.gd:285"
-  ],
-  "A Knight beats a Tower's defense. Capturing it also destroys the building.": [
-    "src/game/tutorial_lessons.gd:79"
-  ],
-  "A Tower protects its tile and friendly neighbors. Their Soldier cannot beat it.": [
-    "src/game/tutorial_lessons.gd:72"
-  ],
-  "A border raid is coming. A House adds income without adding wages.": [
-    "src/game/tutorial_lessons.gd:70"
+    "src/ui/game_presenter.gd:280"
   ],
   "A connected kingdom with income to sell or at least 10 gold to invest. A deficit is not required.": [
     "src/game/event_catalog.gd:29"
   ],
   "A connected kingdom. Recruiting volunteers also requires a clear, empty province.": [
-    "src/game/event_catalog.gd:23"
+    "src/game/event_catalog.gd:23",
+    "resources/events/custom_events.json:comet:requirements"
   ],
   "A crisis of confidence": [
     "src/game/event_catalog.gd:29"
   ],
   "A forgotten fortune": [
-    "src/game/event_catalog.gd:17"
+    "src/game/event_catalog.gd:17",
+    "resources/events/custom_events.json:gold:title"
   ],
   "A free Scout joins your kingdom. Normal upkeep applies.": [
-    "src/game/encounter_rules.gd:199"
+    "src/game/encounter_rules.gd:224"
   ],
   "A friend in a pointed hat": [
     "src/game/event_catalog.gd:21"
@@ -240,7 +262,16 @@
     "src/game/event_catalog.gd:22"
   ],
   "A grim demonstration of power: +1 mana.": [
-    "src/game/encounter_rules.gd:242"
+    "src/game/encounter_rules.gd:267"
+  ],
+  "A landmark is built: +%d gold per turn to its kingdom while controlled.": [
+    "src/game/encounter_rules.gd:220"
+  ],
+  "A landmark is built: +{amount} gold per turn.": [
+    "resources/events/custom_events.json:comet:choices:0:outcomes:0:text"
+  ],
+  "A landmark is built: its owner pays 2 gold less upkeep per Knight.": [
+    "src/game/encounter_rules.gd:295"
   ],
   "A local warlord bars the road and challenges your champion. Victory would make your soldiers legends.": [
     "src/game/event_catalog.gd:20"
@@ -248,11 +279,23 @@
   "A multiplayer map needs at least two starting factions.": [
     "src/game/match_setup.gd:77"
   ],
+  "A new kingdom declares independence.": [
+    "resources/events/custom_events.json:revolt:choices:0:outcomes:0:text"
+  ],
   "A noble ransom": [
     "src/game/event_catalog.gd:28"
   ],
+  "A player disconnected. The online match has ended.": [
+    "src/network/steam_online.gd:116"
+  ],
+  "A player left the online game.": [
+    "src/network/steam_online.gd:215"
+  ],
   "A promising branch of government.": [
     "src/game/event_catalog.gd:25"
+  ],
+  "A ready Scout joins your kingdom.": [
+    "resources/events/custom_events.json:comet:choices:1:outcomes:0:text"
   ],
   "A smith has invented armour that refuses to rust. Our knights demand the savings be passed on to them. The treasurer has understood this request rather differently.": [
     "src/game/event_catalog.gd:31"
@@ -270,44 +313,50 @@
     "src/game/event_catalog.gd:21"
   ],
   "AI difficulty": [
-    "src/ui/multiplayer_setup.gd:53"
+    "src/ui/multiplayer_setup.gd:54"
   ],
   "AI preset": [
-    "src/ui/multiplayer_setup.gd:118"
+    "src/ui/multiplayer_setup.gd:117"
   ],
   "About %s land tiles, including mountains.\nThe island varies with the seed and kingdom count.": [
     "src/game/map_sizes.gd:29"
   ],
+  "Accent": [
+    "src/ui/player_profile_panel.gd:138"
+  ],
   "Accept the challenge": [
     "src/game/event_catalog.gd:20"
+  ],
+  "Accept the invention. It creates a landmark on this province. While your faction controls it, every Knight costs 2 less gold per turn. An opponent who captures it receives that benefit instead.": [
+    "src/game/tutorial_lessons.gd:181"
+  ],
+  "Accept the stainless steel invention": [
+    "src/game/tutorial_lessons.gd:181"
   ],
   "Actions": [
     "src/ui/controls_view.gd:22"
   ],
   "Add an opponent with at least two connected provinces.": [
-    "src/editor/level_document.gd:297"
+    "src/editor/level_document.gd:302"
   ],
   "Add mana sources to land without replacing its units, buildings or decorations.": [
-    "src/editor/editor_view.gd:371"
-  ],
-  "Advanced": [
-    "src/game/tutorial_lessons.gd:12"
+    "src/editor/editor_view.gd:381"
   ],
   "Advanced  ▸": [
-    "src/ui/multiplayer_setup.gd:95",
-    "src/ui/multiplayer_setup.gd:161"
+    "src/ui/multiplayer_setup.gd:94",
+    "src/ui/multiplayer_setup.gd:160"
   ],
   "Advanced  ▾": [
-    "src/ui/multiplayer_setup.gd:161"
+    "src/ui/multiplayer_setup.gd:160"
   ],
   "Alert · pursuing province (%d, %d)": [
-    "src/ui/game_presenter.gd:250"
+    "src/ui/game_presenter.gd:248"
   ],
   "All Files (*.*)": [
     "src/localization/native_messages.gd:10"
   ],
   "All unit tiers. Losses include starvation; merging units is not a loss.": [
-    "src/ui/session_menus.gd:203"
+    "src/ui/session_menus.gd:229"
   ],
   "Already used by %s. Choose another key.": [
     "src/settings/key_settings.gd:49"
@@ -316,28 +365,35 @@
     "src/localization/native_messages.gd:13"
   ],
   "Ambience": [
-    "src/ui/options_view.gd:97",
-    "src/ui/options_view.gd:98"
+    "src/ui/options_view.gd:82",
+    "src/ui/options_view.gd:83"
   ],
   "An ancient altar hums beneath the moss. Its runes promise power, but the last inscription is a warning.": [
     "src/game/event_catalog.gd:18"
   ],
+  "An authored order failed. Retry the exercise.": [
+    "src/game/tutorial.gd:302"
+  ],
   "An unmoved unit spends its action to absorb one valid attack.\nProtects only this tile; expires at your next turn.\nNo gold or mana cost; does not protect bridges from Shatter.": [
-    "src/ui/province_view.gd:98"
+    "src/ui/province_view.gd:102"
   ],
   "An unused kingdom identity is available, and this province has neighbouring passable land.": [
-    "src/game/event_catalog.gd:30"
+    "src/game/event_catalog.gd:30",
+    "resources/events/custom_events.json:revolt:requirements"
   ],
-  "Animate level transitions": [
-    "src/ui/options_view.gd:144"
+  "Animate transitions": [
+    "src/ui/options_view.gd:129"
   ],
   "Anti-aliasing": [
-    "src/ui/options_view.gd:126"
+    "src/ui/options_view.gd:111"
   ],
   "Any army entering this province.": [
-    "src/editor/editor_view.gd:424",
+    "src/editor/editor_view.gd:434",
     "src/game/event_catalog.gd:24",
-    "src/ui/game_presenter.gd:287"
+    "src/ui/game_presenter.gd:282"
+  ],
+  "Armies and expansion": [
+    "src/game/tutorial_lessons.gd:11"
   ],
   "At least one other living faction remains.": [
     "src/game/event_catalog.gd:28"
@@ -346,73 +402,87 @@
     "src/game/event_catalog.gd:25"
   ],
   "Atmospheric lighting": [
-    "src/ui/options_view.gd:166"
+    "src/ui/options_view.gd:157"
   ],
-  "Attack again. This time the garrison cannot absorb the hit.": [
-    "src/game/tutorial_lessons.gd:95"
+  "Attack the enemy Knight": [
+    "src/game/tutorial_lessons.gd:93"
   ],
-  "Attack the enemy Scout": [
-    "src/game/tutorial_lessons.gd:63"
+  "Attack the marked Tower with your Knight. Its strength-2 defense cannot stop strength 3. Directly capturing a Tower's province destroys the building; later you will learn how surrender can keep one intact.": [
+    "src/game/tutorial_lessons.gd:86"
   ],
-  "Attack the entrenched garrison": [
-    "src/game/tutorial_lessons.gd:91"
+  "Attack the unprotected Scout with your Soldier": [
+    "src/game/tutorial_lessons.gd:140"
   ],
   "Audio": [
-    "src/ui/options_view.gd:35"
+    "src/ui/options_view.gd:33"
   ],
   "Audio settings could not be saved.": [
-    "src/ui/options_view.gd:173"
+    "src/ui/options_view.gd:164"
+  ],
+  "Average match": [
+    "src/ui/player_profile_panel.gd:102"
   ],
   "Awaken it": [
     "src/game/event_catalog.gd:18"
   ],
   "Back": [
-    "src/ui/multiplayer_setup.gd:128",
+    "src/ui/multiplayer_setup.gd:127",
+    "src/ui/painting_collection.gd:87",
+    "src/ui/player_profile_panel.gd:79",
+    "src/ui/player_profile_panel.gd:270",
     "src/ui/replay_interface.gd:148",
-    "src/ui/session_menus.gd:144",
-    "src/ui/session_menus.gd:169",
-    "src/ui/session_menus.gd:174",
-    "src/ui/session_menus.gd:179",
-    "src/ui/session_menus.gd:325",
-    "src/ui/tutorial_selection.gd:43"
+    "src/ui/session_menus.gd:160",
+    "src/ui/session_menus.gd:195",
+    "src/ui/session_menus.gd:200",
+    "src/ui/session_menus.gd:205",
+    "src/ui/session_menus.gd:436",
+    "src/ui/steam_lobby.gd:53",
+    "src/ui/tutorial_selection.gd:51"
+  ],
+  "Back to album": [
+    "src/ui/painting_collection.gd:109"
   ],
   "Back to main menu": [
     "src/ui/replay_interface.gd:74"
   ],
   "Back to results": [
-    "src/ui/session_menus.gd:226"
+    "src/ui/session_menus.gd:257"
   ],
   "Background": [
-    "src/ui/options_view.gd:130"
+    "src/ui/options_view.gd:115"
   ],
   "Backspace": [
     "src/localization/native_messages.gd:14"
   ],
+  "Bankrupt an entire pocket": [
+    "src/game/tutorial_lessons.gd:148"
+  ],
   "Barrier already used": [
-    "src/ui/game_presenter.gd:283"
+    "src/ui/game_presenter.gd:278"
   ],
   "Barrier · blocks passage until next turn": [
-    "src/ui/game_presenter.gd:281"
-  ],
-  "Basics": [
-    "src/game/tutorial_lessons.gd:10"
+    "src/ui/game_presenter.gd:276"
   ],
   "Bear": [
     "src/game/wildlife.gd:14"
   ],
   "Bear cave": [
     "src/editor/editor_view.gd:9",
-    "src/editor/editor_view.gd:366",
+    "src/editor/editor_view.gd:376",
     "src/editor/level_document.gd:9",
     "src/editor/level_document.gd:10",
     "src/editor/level_document.gd:11",
     "src/game/wildlife.gd:14"
   ],
   "Beneath a crumbling milestone, your army discovers a chest of coins. Nobody remains to claim it.": [
-    "src/game/event_catalog.gd:17"
+    "src/game/event_catalog.gd:17",
+    "resources/events/custom_events.json:gold:text"
+  ],
+  "Best win streak": [
+    "src/ui/player_profile_panel.gd:102"
   ],
   "Blank island": [
-    "src/editor/editor_view.gd:255"
+    "src/editor/editor_view.gd:252"
   ],
   "Bless your faction: the next unit you move can move again if it captures neutral land. Any valid move consumes the blessing; it does not stack.": [
     "src/game/spell_catalog.gd:6"
@@ -422,170 +492,268 @@
   ],
   "Boar burrow": [
     "src/editor/editor_view.gd:9",
-    "src/editor/editor_view.gd:368",
+    "src/editor/editor_view.gd:378",
     "src/editor/level_document.gd:9",
     "src/editor/level_document.gd:10",
     "src/editor/level_document.gd:11",
     "src/game/wildlife.gd:16"
   ],
+  "Border": [
+    "src/ui/player_profile_panel.gd:135"
+  ],
   "Borders inside kingdoms\n0%: joined land · 100%: full borders": [
-    "src/ui/options_view.gd:154"
+    "src/ui/options_view.gd:145"
   ],
   "Borders show kingdoms": [
-    "src/ui/game_hud.gd:269"
+    "src/ui/game_hud.gd:297"
+  ],
+  "Both Knights died, but the province is still enemy land. Killing an equal Knight did not capture it. A follow-up army would need its own attack to claim the opening.": [
+    "src/game/tutorial_lessons.gd:94"
   ],
   "Both Knights fell. Territory remains unchanged.": [
-    "src/game/player_actions.gd:110"
+    "src/game/player_actions.gd:111"
   ],
-  "Break the strongpoint": [
-    "src/game/tutorial_lessons.gd:79"
-  ],
-  "Break their entrenchment": [
-    "src/game/tutorial_lessons.gd:91"
+  "Both Scouts have acted. Click End turn at the bottom right. Your kingdom collects income, pays wages, and your armies become ready again.": [
+    "src/game/tutorial_lessons.gd:77"
   ],
   "Bridge": [
     "src/editor/editor_view.gd:9",
-    "src/editor/editor_view.gd:357",
-    "src/editor/editor_view.gd:526",
+    "src/editor/editor_view.gd:367",
+    "src/editor/editor_view.gd:536",
     "src/editor/level_document.gd:9",
     "src/editor/level_document.gd:11",
     "src/editor/level_document.gd:12",
-    "src/editor/level_document.gd:124",
-    "src/editor/level_document.gd:129",
-    "src/editor/level_editor.gd:307",
-    "src/ui/game_presenter.gd:235",
+    "src/editor/level_document.gd:126",
+    "src/editor/level_document.gd:131",
+    "src/editor/level_editor.gd:303",
+    "src/ui/game_presenter.gd:233",
     "src/ui/province_view.gd:70"
   ],
   "Bridge · cost %d G\nSpans water beside your kingdom / bridges\nNeutral crossing · no income": [
-    "src/game/game_catalog.gd:32"
-  ],
-  "Bridges are neutral crossings. Move your Knight onto this one.": [
-    "src/game/tutorial_lessons.gd:87"
+    "src/game/game_catalog.gd:30"
   ],
   "Bridges must be empty, neutral and zero-value.": [
-    "src/editor/level_document.gd:273"
+    "src/editor/level_document.gd:279"
   ],
-  "Bring up reinforcements": [
-    "src/game/tutorial_lessons.gd:92"
+  "Bridges open public routes": [
+    "src/game/tutorial_lessons.gd:127"
   ],
   "Brush": [
-    "src/editor/editor_view.gd:276"
+    "src/editor/editor_view.gd:273"
   ],
   "Build": [
     "src/editor/editor_view.gd:9",
-    "src/editor/editor_view.gd:173",
-    "src/editor/level_editor.gd:290",
-    "src/editor/level_editor.gd:530",
+    "src/editor/editor_view.gd:172",
+    "src/editor/level_editor.gd:286",
+    "src/editor/level_editor.gd:526",
     "src/settings/key_settings.gd:8",
-    "src/ui/game_hud.gd:154",
-    "src/ui/game_presenter.gd:38",
-    "src/ui/game_presenter.gd:336"
+    "src/ui/game_hud.gd:182",
+    "src/ui/game_presenter.gd:36",
+    "src/ui/game_presenter.gd:334"
   ],
   "Build\nTower, house or bridge\nShortcut: %s": [
-    "src/ui/game_hud.gd:278"
+    "src/ui/game_hud.gd:306"
   ],
-  "Build a Bridge on the gold ring": [
-    "src/game/tutorial_lessons.gd:86"
+  "Build a Bridge across the channel": [
+    "src/game/tutorial_lessons.gd:128"
   ],
-  "Build a House on the gold ring": [
-    "src/game/tutorial_lessons.gd:70"
+  "Build a House for the cheaper +4 income": [
+    "src/game/tutorial_lessons.gd:133"
   ],
-  "Build a Tower at the border": [
-    "src/game/tutorial_lessons.gd:72"
+  "Build a House on clear friendly land": [
+    "src/game/tutorial_lessons.gd:120"
+  ],
+  "Build a Tower on the marked border tile for 15 gold and no wages. It gives defense 2 to itself and adjacent FRIENDLY land. It never protects nearby neutral or enemy provinces.": [
+    "src/game/tutorial_lessons.gd:123"
+  ],
+  "Build a landmark: +1–2 gold per turn to its kingdom while controlled.\n50% chance of each.": [
+    "src/game/event_catalog.gd:23",
+    "resources/events/custom_events.json:comet:choices:0:hint"
+  ],
+  "Build a landmark: its owner pays 2 gold less upkeep per Knight.": [
+    "src/game/event_catalog.gd:31"
+  ],
+  "Build the border Tower": [
+    "src/game/tutorial_lessons.gd:123"
+  ],
+  "Buildings and development": [
+    "src/game/tutorial_lessons.gd:13"
   ],
   "CAPITAL RELOCATION": [
-    "src/game/game.gd:379"
+    "src/game/game.gd:404"
   ],
   "Camera": [
     "src/ui/controls_view.gd:22",
     "src/ui/replay_interface.gd:206"
   ],
   "Camera controls and quick help.": [
-    "src/ui/game_hud.gd:132"
+    "src/ui/game_hud.gd:160"
+  ],
+  "Campaign": [
+    "src/ui/session_menus.gd:99"
+  ],
+  "Campaign is coming in a future update.": [
+    "src/ui/session_menus.gd:101"
   ],
   "Cancel": [
-    "src/game/game.gd:382",
-    "src/localization/native_messages.gd:10"
+    "src/game/game.gd:407",
+    "src/localization/native_messages.gd:10",
+    "src/ui/player_profile_panel.gd:270"
   ],
   "Cancel / pause": [
     "src/settings/key_settings.gd:8",
-    "src/ui/game_hud.gd:293"
+    "src/ui/game_hud.gd:321"
   ],
   "Cancel action": [
-    "src/ui/game_hud.gd:293"
+    "src/ui/game_hud.gd:321"
   ],
   "Cancel placement\nShortcut: %s": [
-    "src/ui/game_hud.gd:280"
+    "src/ui/game_hud.gd:308"
   ],
   "Cancel placement and close this menu. Shortcut: Escape.": [
-    "src/ui/game_hud.gd:180"
+    "src/ui/game_hud.gd:208"
   ],
   "Cannot be destroyed, developed or bridged": [
-    "src/ui/province_view.gd:79"
+    "src/ui/province_view.gd:83"
   ],
   "Capital": [
     "src/editor/editor_view.gd:9",
-    "src/editor/editor_view.gd:360",
-    "src/editor/editor_view.gd:526",
+    "src/editor/editor_view.gd:370",
+    "src/editor/editor_view.gd:536",
     "src/editor/level_document.gd:9",
-    "src/editor/level_document.gd:166",
-    "src/editor/level_document.gd:179",
-    "src/editor/level_editor.gd:315",
-    "src/ui/game_presenter.gd:237"
+    "src/editor/level_document.gd:168",
+    "src/editor/level_document.gd:180",
+    "src/editor/level_editor.gd:311",
+    "src/ui/game_presenter.gd:235"
   ],
   "Capital must belong to its province.": [
-    "src/editor/level_document.gd:267"
+    "src/editor/level_document.gd:271"
   ],
   "Capitals squashed": [
-    "src/ui/session_menus.gd:198"
+    "src/ui/session_menus.gd:224"
   ],
-  "Capture the enemy Tower": [
-    "src/game/tutorial_lessons.gd:79"
+  "Capture a capital, keep its Tower": [
+    "src/game/tutorial_lessons.gd:138"
   ],
-  "Capture the enemy foothold": [
-    "src/game/tutorial_lessons.gd:77"
+  "Capture a third neutral province": [
+    "src/game/tutorial_lessons.gd:78"
   ],
-  "Capture the neutral flank with your Scout": [
-    "src/game/tutorial_lessons.gd:93"
+  "Capture an empty neutral province": [
+    "src/game/tutorial_lessons.gd:73"
   ],
-  "Capture the neutral shore": [
-    "src/game/tutorial_lessons.gd:90"
+  "Capture another neutral province now": [
+    "src/game/tutorial_lessons.gd:161"
   ],
-  "Capture their capital. Its neighboring provinces will surrender.": [
-    "src/game/tutorial_lessons.gd:65"
+  "Capture neutral land with the new Scout": [
+    "src/game/tutorial_lessons.gd:165"
+  ],
+  "Capture one more neutral province": [
+    "src/game/tutorial_lessons.gd:76"
+  ],
+  "Capture the 15-gold chest": [
+    "src/game/tutorial_lessons.gd:174"
+  ],
+  "Capture the Bear's province with your Knight. Bears have defense 2, so a Knight is required. Killing the predator removes the immediate threat, but a surviving cave can eventually spawn a replacement.": [
+    "src/game/tutorial_lessons.gd:187"
+  ],
+  "Capture the capital and its neighboring Tower": [
+    "src/game/tutorial_lessons.gd:143"
+  ],
+  "Capture the cave with your Knight. This stops its respawns and leaves a permanent landmark worth +5 gold per turn to its connected kingdom. Wolf dens grant mana regeneration; boar burrows pay immediate gold and mana.": [
+    "src/game/tutorial_lessons.gd:189"
+  ],
+  "Capture the gap to join the kingdoms": [
+    "src/game/tutorial_lessons.gd:108"
+  ],
+  "Capture the narrow connection": [
+    "src/game/tutorial_lessons.gd:146"
+  ],
+  "Capture the neutral mana source": [
+    "src/game/tutorial_lessons.gd:160"
   ],
   "Capture this province to develop it": [
-    "src/ui/province_view.gd:103"
+    "src/ui/province_view.gd:107"
   ],
   "Captures neutral land; clears trees / graves": [
-    "src/game/game_catalog.gd:28"
+    "src/game/game_catalog.gd:26"
   ],
   "Cartographer's blunder": [
     "src/game/event_catalog.gd:27"
   ],
-  "Cast Trailblaze on your capital": [
-    "src/game/tutorial_lessons.gd:89"
+  "Cast Trailblaze on friendly land": [
+    "src/game/tutorial_lessons.gd:159"
+  ],
+  "Center": [
+    "src/ui/player_profile_panel.gd:154"
   ],
   "Center and reset": [
-    "src/ui/game_hud.gd:293"
+    "src/ui/game_hud.gd:321"
   ],
   "Center camera": [
-    "src/editor/editor_view.gd:259"
+    "src/editor/editor_view.gd:256"
   ],
   "Change province ownership. Capitals follow the new owner; neutral land cannot keep units or buildings.": [
-    "src/editor/editor_view.gd:358"
+    "src/editor/editor_view.gd:368"
   ],
   "Change view": [
     "src/settings/key_settings.gd:8"
   ],
-  "Choose a Scout, Soldier or Knight.\nPlace on your land or upgrade an unmoved unit.\nRecruitment uses that kingdom's gold.": [
-    "src/ui/game_hud.gd:153"
+  "Cheap development first": [
+    "src/game/tutorial_lessons.gd:118"
+  ],
+  "Check gold again: clearing paid 1 immediately and improved recurring income. A one-time payment and a higher forecast are different benefits.": [
+    "src/game/tutorial_lessons.gd:101"
+  ],
+  "Check that the forecast is no longer negative": [
+    "src/game/tutorial_lessons.gd:113"
+  ],
+  "Check that your kingdom still has a treasury": [
+    "src/game/tutorial_lessons.gd:154"
+  ],
+  "Check the House's added income": [
+    "src/game/tutorial_lessons.gd:134"
+  ],
+  "Check the combined kingdom's budget": [
+    "src/game/tutorial_lessons.gd:109"
+  ],
+  "Check the eastern treasury": [
+    "src/game/tutorial_lessons.gd:107"
+  ],
+  "Check the immediate treasury increase": [
+    "src/game/tutorial_lessons.gd:175"
+  ],
+  "Check the western kingdom's gold": [
+    "src/game/tutorial_lessons.gd:104"
+  ],
+  "Choose House in Build and place it on any valid friendly tile. With the cheapest development already used, the House now buys income more efficiently. Compare costs instead of following a fixed build order.": [
+    "src/game/tutorial_lessons.gd:133"
+  ],
+  "Choose Knight and click your Soldier. Upgrading costs 20 gold and raises wages to 36 per turn. You can upgrade after acting, but its action stays spent. Knights have strength 3 for Soldiers and Towers.": [
+    "src/game/tutorial_lessons.gd:82"
+  ],
+  "Choose Ready when you want to start.": [
+    "src/network/steam_online.gd:277"
+  ],
+  "Choose Shatter, then click the Bridge. This removes the crossing rather than capturing it. Income landmarks cannot be destroyed this way: their rewards change hands through conquest.": [
+    "src/game/tutorial_lessons.gd:169"
+  ],
+  "Choose Summon in Spells and click empty land in a friendly kingdom. It costs 2 mana instead of recruitment gold. The Scout is ready immediately, but its normal 4-gold wage still appears in that kingdom's forecast.": [
+    "src/game/tutorial_lessons.gd:164"
+  ],
+  "Choose a Scout, Soldier or Knight.\nPlace on your land or upgrade an army.\nUpgrading does not restore its action.\nRecruitment uses that kingdom's gold.": [
+    "src/ui/game_hud.gd:181"
   ],
   "Choose a clear empty hex with enough local gold.": [
-    "src/game/player_actions.gd:78"
+    "src/game/player_actions.gd:79"
+  ],
+  "Choose a color": [
+    "src/ui/simple_color_picker.gd:27"
+  ],
+  "Choose a color on the wheel or enter a hex code.": [
+    "src/ui/player_profile_panel.gd:130"
   ],
   "Choose a defensive tower or an income house.\nBuild on a clear empty hex in your kingdom.": [
-    "src/ui/game_hud.gd:154"
+    "src/ui/game_hud.gd:182"
   ],
   "Choose a highlighted target with enough faction mana.": [
     "src/game/player_actions.gd:60"
@@ -601,49 +769,59 @@
     "src/ui/replay_viewer.gd:203"
   ],
   "Choose a valid hex with enough gold in its kingdom.": [
-    "src/game/player_actions.gd:70"
+    "src/game/player_actions.gd:71"
   ],
   "Choose an editor map": [
-    "src/ui/multiplayer_setup.gd:138"
+    "src/ui/multiplayer_setup.gd:137"
+  ],
+  "Choose an encounter reward": [
+    "src/game/tutorial_lessons.gd:176"
   ],
   "Choose at least two local players.": [
-    "src/ui/multiplayer_setup.gd:267"
+    "src/ui/multiplayer_setup.gd:265"
+  ],
+  "Choose encounters, collect treasure and hunt lairs.": [
+    "src/game/tutorial_lessons.gd:16"
   ],
   "Choose recording · Escape": [
     "src/ui/replay_interface.gd:205"
   ],
-  "Choose your kingdom, or let each new match pick one at random.": [
-    "src/ui/session_menus.gd:132"
+  "Choose the right rank": [
+    "src/game/tutorial_lessons.gd:79"
   ],
-  "Claim the empty border province. More land earns more gold.": [
-    "src/game/tutorial_lessons.gd:60"
+  "Choose topic": [
+    "src/ui/tutorial_coach.gd:46"
+  ],
+  "Choose your country": [
+    "src/ui/country_picker.gd:43"
+  ],
+  "Choose your own country or a default country.": [
+    "src/ui/session_menus.gd:149"
+  ],
+  "Claim unowned land": [
+    "src/game/tutorial_lessons.gd:71"
   ],
   "Claims neutral land and clears trees or graves.": [
     "src/game/game_catalog.gd:8"
   ],
-  "Classic": [
-    "src/editor/editor_view.gd:250",
-    "src/ui/multiplayer_setup.gd:94",
-    "src/ui/options_view.gd:66"
-  ],
   "Clear %d trees.": [
-    "src/game/encounter_rules.gd:168"
+    "src/game/encounter_rules.gd:193"
   ],
   "Clear movement indicators": [
-    "src/ui/options_view.gd:74"
+    "src/ui/options_view.gd:59"
   ],
   "Clear objects": [
     "src/editor/editor_view.gd:9",
-    "src/editor/editor_view.gd:372",
-    "src/editor/editor_view.gd:526",
+    "src/editor/editor_view.gd:382",
+    "src/editor/editor_view.gd:536",
     "src/editor/level_document.gd:9",
-    "src/editor/level_document.gd:162"
+    "src/editor/level_document.gd:164"
   ],
-  "Clear the enemy foothold before marching on their capital.": [
-    "src/game/tutorial_lessons.gd:77"
+  "Clear the friendly forest": [
+    "src/game/tutorial_lessons.gd:100"
   ],
   "Clear units, buildings, capitals, events and decorations. Keeps terrain, owner and value.": [
-    "src/editor/editor_view.gd:372"
+    "src/editor/editor_view.gd:382"
   ],
   "Clear your kingdom's trees.\nGain 1 gold per tree.": [
     "src/game/event_catalog.gd:25"
@@ -652,54 +830,115 @@
     "src/game/event_catalog.gd:25"
   ],
   "Clearly a tax loophole.": [
-    "src/game/event_catalog.gd:23"
+    "src/game/event_catalog.gd:23",
+    "resources/events/custom_events.json:comet:choices:0:label"
+  ],
+  "Click End turn. Your treasury receives income minus wages, rather than the full gross income shown in the tooltip. Keep checking the forecast before adding more troops.": [
+    "src/game/tutorial_lessons.gd:102"
   ],
   "Click a binding, then press a key. Escape cancels.\nMenu choices take priority while a menu is open.": [
     "src/ui/controls_view.gd:4"
   ],
   "Click an owned province to mark the starting kingdom. Right click removes the marker.": [
-    "src/editor/level_editor.gd:116"
+    "src/editor/level_editor.gd:115"
   ],
-  "Click the Scout itself to see where it can move.": [
-    "src/game/tutorial_lessons.gd:59"
+  "Click any friendly value-1 province's ground and choose Develop. It costs 2 gold for +1 income per turn. No builder is required. The next development on that province will cost more.": [
+    "src/game/tutorial_lessons.gd:119"
+  ],
+  "Click the Bear itself to see its threat range. Bears attack armies and buildings; wolves hunt exposed troops, and boars raid unguarded land and buildings. This Bear threatens your border House. Its cave can replace it after it dies.": [
+    "src/game/tutorial_lessons.gd:185"
+  ],
+  "Click the Tower itself. Its coverage highlights show which friendly provinces are defended. The Soldier cannot capture these defense-2 provinces, but the neutral route below the Tower is outside its protection.": [
+    "src/game/tutorial_lessons.gd:124"
+  ],
+  "Click the Tower to see its coverage": [
+    "src/game/tutorial_lessons.gd:124"
+  ],
+  "Click the Tower: it is now yours and its coverage defends your new friendly land. Directly capturing a Tower destroys it; capturing its neighboring capital can win it intact. Victory depends on enemy capitals, not every isolated province.": [
+    "src/game/tutorial_lessons.gd:144"
+  ],
+  "Click the enemy Tower to see its defense": [
+    "src/game/tutorial_lessons.gd:139"
+  ],
+  "Click the marked eastern province to select that kingdom's budget. You can switch the dock between kingdoms by selecting their land; opening a capital's details is not required.": [
+    "src/game/tutorial_lessons.gd:106"
+  ],
+  "Click your surrendered Tower": [
+    "src/game/tutorial_lessons.gd:144"
   ],
   "Close ledger.": [
-    "src/ui/game_hud.gd:196"
+    "src/ui/game_hud.gd:224"
   ],
   "Close province details.": [
     "src/ui/province_view.gd:29"
   ],
-  "Collect your income. Watch the enemy Soldier move toward your border.": [
-    "src/game/tutorial_lessons.gd:71"
+  "Collected": [
+    "src/ui/painting_collection.gd:170"
+  ],
+  "Collection": [
+    "src/ui/painting_collection.gd:85",
+    "src/ui/session_menus.gd:104"
+  ],
+  "Color": [
+    "src/ui/player_profile_panel.gd:142"
   ],
   "Colour": [
-    "src/ui/multiplayer_setup.gd:51"
+    "src/ui/multiplayer_setup.gd:52"
   ],
   "Comet sighted!": [
-    "src/game/event_catalog.gd:23"
+    "src/game/event_catalog.gd:23",
+    "resources/events/custom_events.json:comet:title"
+  ],
+  "Compare income in the gold tooltip": [
+    "src/game/tutorial_lessons.gd:121"
   ],
   "Computer": [
-    "src/ui/multiplayer_setup.gd:63"
+    "src/ui/multiplayer_setup.gd:64"
+  ],
+  "Connection to a player was lost. The online match has ended.": [
+    "src/network/steam_online.gd:205"
   ],
   "Continue": [
-    "src/game/tutorial.gd:69",
-    "src/ui/session_menus.gd:156",
-    "src/ui/session_menus.gd:325"
+    "src/ui/session_menus.gd:183",
+    "src/ui/session_menus.gd:436",
+    "src/ui/tutorial_coach.gd:125"
+  ],
+  "Continue after the crossing": [
+    "src/game/tutorial_lessons.gd:130"
+  ],
+  "Continue after the defended attack": [
+    "src/game/tutorial_lessons.gd:91"
+  ],
+  "Continue after the exchange": [
+    "src/game/tutorial_lessons.gd:94"
   ],
   "Controls": [
-    "src/ui/options_view.gd:38"
+    "src/ui/options_view.gd:36",
+    "src/ui/tutorial_coach.gd:52"
   ],
   "Controls could not be saved.": [
-    "src/ui/options_view.gd:176"
+    "src/ui/options_view.gd:167"
+  ],
+  "Cost: %d gold.": [
+    "src/game/authored_event_runtime.gd:139"
+  ],
+  "Cost: %d mana.": [
+    "src/game/authored_event_runtime.gd:140"
   ],
   "Costs": [
-    "src/ui/game_presenter.gd:120"
+    "src/ui/game_presenter.gd:118"
+  ],
+  "Could not create a Steam lobby. Please try again.": [
+    "src/network/steam_online.gd:243"
   ],
   "Could not create folder.": [
     "src/localization/native_messages.gd:12"
   ],
   "Could not finish saving the level.": [
-    "src/editor/level_editor.gd:422"
+    "src/editor/level_editor.gd:418"
+  ],
+  "Could not join this lobby. It may be full or already playing.": [
+    "src/network/steam_online.gd:266"
   ],
   "Could not list saved replays. Try Refresh or open a replay file.": [
     "src/ui/replay_viewer.gd:164"
@@ -708,72 +947,136 @@
     "src/ui/replay_viewer.gd:307",
     "src/ui/replay_viewer.gd:335"
   ],
+  "Could not open Event Editor. Use Event Editor.cmd in the project folder.": [
+    "src/editor/level_editor.gd:629"
+  ],
   "Could not open the editor map. Choose the file again.": [
     "src/game/match_setup.gd:64"
   ],
   "Could not open this level.": [
-    "src/editor/level_editor.gd:429"
+    "src/editor/level_editor.gd:425"
+  ],
+  "Could not send your action to the host.": [
+    "src/network/network_match.gd:71"
+  ],
+  "Country": [
+    "src/ui/player_profile_panel.gd:112"
+  ],
+  "Country color": [
+    "src/ui/player_profile_panel.gd:128"
   ],
   "Create a new folder.": [
     "src/localization/native_messages.gd:6"
   ],
-  "Cross the channel": [
-    "src/game/tutorial_lessons.gd:87"
+  "Create a profile first": [
+    "src/ui/country_picker.gd:92"
   ],
-  "Cross the water and break a defense with magic.": [
-    "src/game/tutorial_lessons.gd:12"
+  "Create events…": [
+    "src/editor/editor_view.gd:310"
+  ],
+  "Create kingdom": [
+    "src/ui/player_profile_panel.gd:269",
+    "src/ui/session_menus.gd:395"
+  ],
+  "Create your kingdom": [
+    "src/ui/player_profile_panel.gd:271"
+  ],
+  "Creating lobby…": [
+    "src/network/steam_online.gd:84"
+  ],
+  "Creating map...": [
+    "src/ui/preparation_screen.gd:29"
+  ],
+  "Cross": [
+    "src/ui/player_profile_panel.gd:135"
+  ],
+  "Cross directly onto the opposite shore": [
+    "src/game/tutorial_lessons.gd:129"
+  ],
+  "Crown": [
+    "src/ui/player_profile_panel.gd:141"
   ],
   "Ctrl": [
     "src/localization/native_messages.gd:13"
   ],
   "Cumulative captures, including recaptured land and surrendered provinces.": [
-    "src/ui/session_menus.gd:203"
+    "src/ui/session_menus.gd:229"
   ],
   "Custom": [
-    "src/ui/multiplayer_setup.gd:119"
+    "src/ui/multiplayer_setup.gd:118"
+  ],
+  "Custom events were not loaded: ": [
+    "src/game/event_catalog.gd:58"
   ],
   "Custom map": [
-    "src/game/replay_summary.gd:139"
+    "src/game/replay_summary.gd:144"
+  ],
+  "Customize your kingdom": [
+    "src/ui/player_profile_panel.gd:61",
+    "src/ui/player_profile_panel.gd:271"
+  ],
+  "Cut off a single army": [
+    "src/game/tutorial_lessons.gd:145"
+  ],
+  "Cut off the three enemy Soldiers": [
+    "src/game/tutorial_lessons.gd:149"
   ],
   "Decline politely": [
     "src/game/event_catalog.gd:20"
   ],
+  "Default countries": [
+    "src/ui/country_picker.gd:52"
+  ],
   "Defeat": [
-    "src/game/replay_summary.gd:125",
-    "src/game/replay_summary.gd:131",
-    "src/ui/session_menus.gd:190",
-    "src/ui/session_menus.gd:237"
+    "src/game/replay_summary.gd:130",
+    "src/game/replay_summary.gd:136",
+    "src/ui/session_menus.gd:216",
+    "src/ui/session_menus.gd:268"
+  ],
+  "Defeat the enemy Scout": [
+    "src/game/tutorial_lessons.gd:81"
   ],
   "Defeat the enemy Soldier": [
-    "src/game/tutorial_lessons.gd:75"
+    "src/game/tutorial_lessons.gd:84"
   ],
-  "Defeat the enemy garrison": [
-    "src/game/tutorial_lessons.gd:95"
+  "Defeat the enemy kingdom": [
+    "src/game/tutorial_lessons.gd:67"
   ],
   "Defeat — all local kingdoms have fallen.": [
-    "src/game/game.gd:474"
+    "src/game/game.gd:508",
+    "src/network/network_match.gd:271"
+  ],
+  "Defeats": [
+    "src/ui/player_profile_panel.gd:102"
   ],
   "Defeats Scouts and capital defenses.": [
     "src/game/game_catalog.gd:8"
   ],
   "Defeats Scouts and capitals": [
-    "src/game/game_catalog.gd:28"
+    "src/game/game_catalog.gd:26"
   ],
   "Defeats Soldiers and defensive towers.": [
     "src/game/game_catalog.gd:8"
   ],
   "Defeats Soldiers and towers; protects adjacent friendly land at strength 2": [
-    "src/game/game_catalog.gd:28"
+    "src/game/game_catalog.gd:26"
   ],
   "Defined by the selected editor map.": [
-    "src/ui/multiplayer_setup.gd:336",
-    "src/ui/multiplayer_setup.gd:339"
+    "src/ui/multiplayer_setup.gd:333",
+    "src/ui/multiplayer_setup.gd:336"
   ],
   "Delete": [
     "src/localization/native_messages.gd:14"
   ],
+  "Delete profile": [
+    "src/ui/player_profile_panel.gd:81",
+    "src/ui/player_profile_panel.gd:183"
+  ],
   "Delete the selected file?\nDepending on your filesystem configuration, the files will either be moved to the system trash or deleted permanently.": [
     "src/localization/native_messages.gd:11"
+  ],
+  "Delete this profile?": [
+    "src/ui/player_profile_panel.gd:178"
   ],
   "Demanding": [
     "src/game/map_sizes.gd:23"
@@ -784,29 +1087,44 @@
   "Destroy an adjacent / connected neutral structure\nBridge garrison is lost": [
     "src/game/spell_catalog.gd:18"
   ],
+  "Destroy the cave before another Bear spawns": [
+    "src/game/tutorial_lessons.gd:189"
+  ],
+  "Destroy the enemy Tower": [
+    "src/game/tutorial_lessons.gd:86"
+  ],
   "Destroy to gain: %s": [
-    "src/ui/game_presenter.gd:255"
+    "src/ui/game_presenter.gd:253"
+  ],
+  "Develop a value-1 province": [
+    "src/game/tutorial_lessons.gd:119"
   ],
   "Develop inspected province": [
-    "src/ui/game_hud.gd:293"
+    "src/ui/game_hud.gd:321"
   ],
   "Develop province": [
     "src/settings/key_settings.gd:8"
   ],
   "Develop · %d G": [
-    "src/ui/province_view.gd:101"
+    "src/ui/province_view.gd:105"
   ],
   "Develop · +1 value (max %d)\nCost %d G · uses local treasury\nTrees / graves still block income": [
-    "src/ui/province_view.gd:126"
+    "src/ui/province_view.gd:130"
+  ],
+  "Diagonal": [
+    "src/ui/player_profile_panel.gd:135"
+  ],
+  "Diamond": [
+    "src/ui/player_profile_panel.gd:141"
   ],
   "Difficulty": [
-    "src/ui/session_menus.gd:108"
+    "src/ui/session_menus.gd:133"
   ],
   "Difficulty for this computer opponent.": [
-    "src/ui/multiplayer_setup.gd:72"
+    "src/ui/multiplayer_setup.gd:73"
   ],
   "Difficulty: %s": [
-    "src/game/replay_summary.gd:158"
+    "src/game/replay_summary.gd:163"
   ],
   "Directories & Files:": [
     "src/localization/native_messages.gd:7"
@@ -820,42 +1138,55 @@
   "Discard changes to this level?": [
     "src/editor/discard_dialog.gd:32"
   ],
+  "Discover paintings in events to fill your album. Open a collected painting to see its original colours.": [
+    "src/ui/painting_collection.gd:97"
+  ],
+  "Discover the smith's invention": [
+    "src/game/tutorial_lessons.gd:180"
+  ],
   "Display mode": [
-    "src/ui/options_view.gd:114"
+    "src/ui/options_view.gd:99"
+  ],
+  "Donati's Comet": [
+    "resources/events/custom_events.json:comet:painting_title"
   ],
   "Down": [
     "src/localization/native_messages.gd:14"
   ],
   "Draw": [
-    "src/game/replay_summary.gd:123"
+    "src/game/replay_summary.gd:128"
   ],
   "Draw — no kingdoms remain.": [
-    "src/game/game.gd:466"
+    "src/game/game.gd:500",
+    "src/network/network_match.gd:272"
   ],
   "Duplicate province or province outside the map.": [
-    "src/editor/level_document.gd:258"
+    "src/editor/level_document.gd:262"
   ],
   "Duration: %s": [
-    "src/game/replay_summary.gd:152"
+    "src/game/replay_summary.gd:157"
   ],
   "EDITOR%s  /  %s  /  %d TILES  /  %s: %s": [
-    "src/editor/level_editor.gd:174"
+    "src/editor/level_editor.gd:173"
   ],
   "Easy": [
-    "src/ui/multiplayer_setup.gd:71",
-    "src/ui/multiplayer_setup.gd:119"
+    "src/ui/multiplayer_setup.gd:72",
+    "src/ui/multiplayer_setup.gd:118"
   ],
-  "Easy: forgiving · Normal: coordinated\nHard: plans ahead · equal resources": [
-    "src/ui/session_menus.gd:116"
+  "Easy: forgiving Ă‚Â· Normal: coordinated\nHard: plans ahead Ă‚Â· equal resources": [
+    "src/ui/session_menus.gd:141"
   ],
   "Editor controls": [
-    "src/editor/editor_view.gd:208"
+    "src/editor/editor_view.gd:207"
   ],
   "Editor map unavailable": [
-    "src/ui/multiplayer_setup.gd:346"
+    "src/ui/multiplayer_setup.gd:343"
   ],
   "Editor · %s": [
-    "src/ui/multiplayer_setup.gd:305"
+    "src/ui/multiplayer_setup.gd:303"
+  ],
+  "Emblem": [
+    "src/ui/player_profile_panel.gd:140"
   ],
   "End": [
     "src/localization/native_messages.gd:14"
@@ -865,41 +1196,118 @@
   ],
   "End turn": [
     "src/settings/key_settings.gd:8",
-    "src/ui/game_hud.gd:293"
+    "src/ui/game_hud.gd:321"
   ],
   "End turn  →": [
-    "src/ui/game_hud.gd:170",
-    "src/ui/game_presenter.gd:347"
+    "src/ui/game_hud.gd:198",
+    "src/ui/game_presenter.gd:345"
+  ],
+  "End turn and collect the balance": [
+    "src/game/tutorial_lessons.gd:102"
+  ],
+  "End turn and starve the whole pocket": [
+    "src/game/tutorial_lessons.gd:150"
+  ],
+  "End turn and watch the Bear attack. It destroys the unprotected House and neutralizes the province. Predators can damage your economy even when you are not fighting another kingdom.": [
+    "src/game/tutorial_lessons.gd:186"
+  ],
+  "End turn and withstand the Knight": [
+    "src/game/tutorial_lessons.gd:90"
+  ],
+  "End turn before attacking again": [
+    "src/game/tutorial_lessons.gd:83"
+  ],
+  "End turn before the next attack. Your Knight will then be ready to break the capital's defense. Attack the capital itself rather than destroying the neighboring Tower.": [
+    "src/game/tutorial_lessons.gd:142"
+  ],
+  "End turn to ready both Scouts": [
+    "src/game/tutorial_lessons.gd:77"
+  ],
+  "End turn to ready the Knight": [
+    "src/game/tutorial_lessons.gd:85",
+    "src/game/tutorial_lessons.gd:142",
+    "src/game/tutorial_lessons.gd:188"
+  ],
+  "End turn to ready the Knight. The cave's respawn delay gives you time to destroy it before a new Bear emerges.": [
+    "src/game/tutorial_lessons.gd:188"
+  ],
+  "End turn to regenerate mana": [
+    "src/game/tutorial_lessons.gd:163"
+  ],
+  "End turn to see a Bear emerge": [
+    "src/game/tutorial_lessons.gd:184"
+  ],
+  "End turn to see the Bear raid the House": [
+    "src/game/tutorial_lessons.gd:186"
+  ],
+  "End turn to see the isolated Scout die": [
+    "src/game/tutorial_lessons.gd:147"
+  ],
+  "End turn with both armies paid": [
+    "src/game/tutorial_lessons.gd:114"
   ],
   "End turn · %s\nHold %s: faster movement": [
-    "src/ui/game_presenter.gd:342"
+    "src/ui/game_presenter.gd:340"
+  ],
+  "End turn. Both armies survive because this connected kingdom can pay them. Savings can cover temporary deficits, but an army whose local treasury falls below zero will starve.": [
+    "src/game/tutorial_lessons.gd:114"
   ],
   "End turn. Hold Ctrl to speed up movement. Shortcut: Space.": [
-    "src/ui/game_hud.gd:170"
+    "src/ui/game_hud.gd:198"
   ],
-  "End your turn": [
-    "src/game/tutorial_lessons.gd:41"
+  "End turn. The Knight will attack your entrenched Soldier. Watch the shield absorb the blow: your Soldier and province survive. One shield stops one attack; a second attacker could break through.": [
+    "src/game/tutorial_lessons.gd:90"
+  ],
+  "End turn. The Soldier will capture the former capital's province. Because you moved the capital, this loses one province rather than surrendering its neighbors and destroying the kingdom's treasury.": [
+    "src/game/tutorial_lessons.gd:153"
+  ],
+  "End turn. The enemy Scout is cut off from all support and dies when its faction settles wages. Watch its death and the grave it leaves. Protect your own narrow connections too.": [
+    "src/game/tutorial_lessons.gd:147"
+  ],
+  "End turn. The enemy Soldier cannot break the Tower, so it takes the neutral province below it. A neighboring Tower does not defend that neutral land.": [
+    "src/game/tutorial_lessons.gd:125"
+  ],
+  "End turn. The separated kingdom's savings cannot cover the shortfall, so all three supported Soldiers die together. You removed an expensive army with one capture rather than winning three direct fights.": [
+    "src/game/tutorial_lessons.gd:150"
+  ],
+  "End turn: the enemy reaches an uncovered border": [
+    "src/game/tutorial_lessons.gd:126"
+  ],
+  "End turn: the enemy takes the neutral route": [
+    "src/game/tutorial_lessons.gd:125"
+  ],
+  "End turn: the enemy takes the old capital tile": [
+    "src/game/tutorial_lessons.gd:153"
   ],
   "Enter": [
     "src/localization/native_messages.gd:13"
   ],
+  "Enter a six-digit hex color, such as #86B998.": [
+    "src/ui/player_profile_panel.gd:310"
+  ],
   "Entrench": [
-    "src/ui/province_view.gd:97"
+    "src/ui/province_view.gd:101"
+  ],
+  "Entrench the threatened Soldier": [
+    "src/game/tutorial_lessons.gd:89"
   ],
   "Entrenched": [
-    "src/ui/province_view.gd:97"
+    "src/ui/province_view.gd:101"
   ],
   "Entrenched units: %d\nAbsorbs one attack on each unit's tile\nExpires next turn": [
-    "src/ui/status_effects.gd:30"
+    "src/ui/status_effects.gd:32"
   ],
   "Entrenched · absorbs one attack until next turn": [
-    "src/ui/game_presenter.gd:277"
+    "src/ui/game_presenter.gd:272"
   ],
   "Entrenched · absorbs one attack until your next turn": [
-    "src/ui/province_view.gd:86"
+    "src/ui/province_view.gd:90"
   ],
   "Entrenchment absorbed the hit. The attacker has spent its move.": [
-    "src/game/player_actions.gd:108"
+    "src/game/player_actions.gd:109"
+  ],
+  "Equal Knights trade lives": [
+    "src/game/tutorial_lessons.gd:92"
   ],
   "Escape": [
     "src/localization/native_messages.gd:13"
@@ -911,50 +1319,68 @@
     "src/settings/key_settings.gd:44"
   ],
   "Event": [
-    "src/editor/editor_view.gd:177",
-    "src/editor/editor_view.gd:331",
-    "src/editor/editor_view.gd:351",
-    "src/editor/editor_view.gd:352",
-    "src/editor/editor_view.gd:381",
-    "src/editor/editor_view.gd:383",
-    "src/editor/editor_view.gd:388",
+    "src/editor/editor_view.gd:176",
+    "src/editor/editor_view.gd:341",
+    "src/editor/editor_view.gd:361",
+    "src/editor/editor_view.gd:362",
+    "src/editor/editor_view.gd:391",
+    "src/editor/editor_view.gd:393",
+    "src/editor/editor_view.gd:398",
     "src/editor/level_document.gd:9",
     "src/editor/level_document.gd:11",
-    "src/editor/level_document.gd:123",
-    "src/editor/level_document.gd:184",
-    "src/editor/level_editor.gd:160",
-    "src/editor/level_editor.gd:177",
-    "src/editor/level_editor.gd:313",
-    "src/editor/level_editor.gd:613"
+    "src/editor/level_document.gd:125",
+    "src/editor/level_document.gd:185",
+    "src/editor/level_editor.gd:159",
+    "src/editor/level_editor.gd:176",
+    "src/editor/level_editor.gd:309",
+    "src/editor/level_editor.gd:609"
+  ],
+  "Event Editor opened. Save your event, then press Reload here.": [
+    "src/editor/level_editor.gd:629"
+  ],
+  "Event library reloaded.": [
+    "src/editor/level_editor.gd:636"
   ],
   "Events": [
-    "src/editor/editor_view.gd:173",
-    "src/editor/editor_view.gd:177",
-    "src/editor/editor_view.gd:331",
-    "src/editor/level_editor.gd:203",
-    "src/editor/level_editor.gd:287",
-    "src/editor/level_editor.gd:288"
+    "src/editor/editor_view.gd:172",
+    "src/editor/editor_view.gd:176",
+    "src/editor/editor_view.gd:341",
+    "src/editor/level_editor.gd:201",
+    "src/editor/level_editor.gd:283",
+    "src/editor/level_editor.gd:284"
+  ],
+  "Every friendly province here is already value 2. Click the marked province and look at Develop: the next +1 income costs 8 gold. Four such upgrades cost 32, while a House adds 4 income for 20.": [
+    "src/game/tutorial_lessons.gd:132"
+  ],
+  "Expand with the Scout to cover wages": [
+    "src/game/tutorial_lessons.gd:112"
+  ],
+  "Exploration and rewards": [
+    "src/game/tutorial_lessons.gd:16"
   ],
   "Explore the island": [
-    "src/ui/game_hud.gd:287"
+    "src/ui/game_hud.gd:315"
+  ],
+  "Explore the question mark": [
+    "src/game/tutorial_lessons.gd:177"
   ],
   "F3 is reserved for the FPS display.": [
     "src/settings/key_settings.gd:46"
-  ],
-  "FERN  /  TURN 01": [
-    "src/ui/game_hud.gd:107"
   ],
   "FPS · measuring…": [
     "src/ui/fps_counter.gd:54"
   ],
   "Faction": [
-    "src/ui/game_presenter.gd:120"
+    "src/ui/game_presenter.gd:118"
   ],
   "Faction mana %d / %d\nNext turn +%d mana · regen %d\nMana capacity: source +1 · capital / tree +2": [
-    "src/ui/game_hud.gd:323"
+    "src/ui/game_hud.gd:351"
   ],
   "Favorites:": [
     "src/localization/native_messages.gd:7"
+  ],
+  "Field": [
+    "src/ui/player_profile_panel.gd:136"
   ],
   "File:": [
     "src/localization/native_messages.gd:9"
@@ -962,69 +1388,75 @@
   "Filter:": [
     "src/localization/native_messages.gd:9"
   ],
-  "Finish the match": [
-    "src/game/tutorial_lessons.gd:65"
+  "Find it during an event.": [
+    "src/ui/painting_collection.gd:185"
+  ],
+  "Find weak borders, cut connections and take capitals.": [
+    "src/game/tutorial_lessons.gd:14"
+  ],
+  "Fit": [
+    "src/ui/painting_collection.gd:129"
+  ],
+  "Flag": [
+    "src/ui/player_profile_panel.gd:113"
+  ],
+  "Flag preview": [
+    "src/ui/player_profile_panel.gd:155"
   ],
   "Follow active kingdom": [
-    "src/ui/options_view.gd:140"
+    "src/ui/options_view.gd:125"
   ],
   "Follow the active faction\nManual camera movement stops following this turn": [
-    "src/ui/options_view.gd:142"
+    "src/ui/options_view.gd:127"
   ],
-  "Follow the tutorial objective. Right-click / Escape cancels placement.": [
-    "src/game/tutorial.gd:110"
+  "Follow the unchecked objective. Any valid highlighted tile counts when no particular location is requested.": [
+    "src/game/tutorial.gd:177"
   ],
   "Fortification absorbed Shatter.": [
     "src/game/player_actions.gd:58"
   ],
   "Fortification absorbed the hit. The attacker has spent its move.": [
-    "src/game/player_actions.gd:108"
+    "src/game/player_actions.gd:109"
   ],
   "Fortified · absorbs one hit": [
-    "src/ui/game_presenter.gd:279"
+    "src/ui/game_presenter.gd:274"
   ],
   "Fortified · absorbs one hit until the caster's next turn": [
-    "src/ui/province_view.gd:83"
+    "src/ui/province_view.gd:87"
   ],
   "Franz Steinfeld": [
     "src/game/event_catalog.gd:25"
   ],
   "Free": [
-    "src/ui/game_presenter.gd:75"
+    "src/ui/game_presenter.gd:73"
   ],
   "Fullscreen": [
-    "src/ui/options_view.gd:115"
+    "src/ui/options_view.gd:100"
   ],
   "Fully developed": [
-    "src/ui/province_view.gd:101",
-    "src/ui/province_view.gd:112"
-  ],
-  "Fund an army, hold your border, and counterattack.": [
-    "src/game/tutorial_lessons.gd:11"
-  ],
-  "Fund the counterattack": [
-    "src/game/tutorial_lessons.gd:74"
+    "src/ui/province_view.gd:105",
+    "src/ui/province_view.gd:116"
   ],
   "G": [
     "src/ui/compact_tooltip.gd:21",
     "src/ui/event_text.gd:43",
     "src/ui/event_text.gd:47",
-    "src/ui/status_effects.gd:22"
+    "src/ui/status_effects.gd:24"
   ],
   "GOLD · NEXT TURN": [
-    "src/ui/game_hud.gd:143"
+    "src/ui/game_hud.gd:171"
   ],
   "Gain %d gold.": [
-    "src/game/encounter_rules.gd:168",
-    "src/game/kingdom_magic.gd:55"
+    "src/game/encounter_rules.gd:193",
+    "src/game/kingdom_magic.gd:63"
   ],
   "Gain 1 mana.": [
     "src/game/event_catalog.gd:28"
   ],
-  "Gain 10 gold here; permanently lose 1 gold per turn from your income treasury.": [
-    "src/game/encounter_rules.gd:246"
+  "Gain 10 gold here; build a landmark costing its kingdom 1 gold per turn while controlled.": [
+    "src/game/encounter_rules.gd:271"
   ],
-  "Gain 10 gold.\nPermanently lose 1 gold per turn.": [
+  "Gain 10 gold.\nBuild a landmark: -1 gold per turn to its kingdom while controlled.": [
     "src/game/event_catalog.gd:29"
   ],
   "Gain 10–25 gold.": [
@@ -1037,26 +1469,30 @@
     "src/game/event_catalog.gd:28"
   ],
   "Gain a ready Scout.\nNormal upkeep applies.": [
-    "src/game/event_catalog.gd:23"
+    "src/game/event_catalog.gd:23",
+    "resources/events/custom_events.json:comet:choices:1:hint"
   ],
   "Gain a ready Scout.\nUpkeep: %d gold per turn.": [
-    "src/game/encounter_rules.gd:170"
+    "src/game/encounter_rules.gd:195"
+  ],
+  "Gain {gold} gold.": [
+    "resources/events/custom_events.json:gold:choices:0:hint"
   ],
   "Game effects": [
-    "src/ui/options_view.gd:98"
+    "src/ui/options_view.gd:83"
   ],
   "Gameplay": [
-    "src/ui/options_view.gd:37"
+    "src/ui/options_view.gd:35"
   ],
   "Gameplay settings could not be saved.": [
-    "src/ui/options_view.gd:175"
+    "src/ui/options_view.gd:166"
   ],
   "Generate island": [
-    "src/editor/editor_view.gd:255"
+    "src/editor/editor_view.gd:252"
   ],
   "Generated island": [
-    "src/ui/multiplayer_setup.gd:78",
-    "src/ui/multiplayer_setup.gd:187"
+    "src/ui/multiplayer_setup.gd:79",
+    "src/ui/multiplayer_setup.gd:186"
   ],
   "Go to end · End": [
     "src/ui/replay_interface.gd:182"
@@ -1074,86 +1510,147 @@
     "src/ui/replay_interface.gd:178"
   ],
   "Gold": [
-    "src/ui/game_presenter.gd:120"
+    "src/ui/game_presenter.gd:118"
   ],
   "Gold per turn": [
-    "src/ui/status_effects.gd:22"
+    "src/ui/status_effects.gd:24"
   ],
   "Grave": [
     "src/editor/editor_view.gd:9",
-    "src/editor/editor_view.gd:370",
-    "src/editor/editor_view.gd:526",
+    "src/editor/editor_view.gd:380",
+    "src/editor/editor_view.gd:536",
     "src/editor/level_document.gd:9",
-    "src/editor/level_document.gd:183",
-    "src/editor/level_editor.gd:318",
-    "src/ui/game_presenter.gd:241",
-    "src/ui/game_presenter.gd:273",
-    "src/ui/province_view.gd:81"
+    "src/editor/level_document.gd:184",
+    "src/editor/level_editor.gd:314",
+    "src/ui/game_presenter.gd:239",
+    "src/ui/game_presenter.gd:268",
+    "src/ui/province_view.gd:85"
   ],
   "Great!": [
-    "src/game/event_catalog.gd:17"
+    "src/game/event_catalog.gd:17",
+    "resources/events/custom_events.json:gold:choices:0:label"
   ],
   "Hard": [
-    "src/ui/multiplayer_setup.gd:71",
-    "src/ui/multiplayer_setup.gd:119"
+    "src/ui/multiplayer_setup.gd:72",
+    "src/ui/multiplayer_setup.gd:118"
+  ],
+  "Hex color, for example #86B998": [
+    "src/ui/simple_color_picker.gd:42"
   ],
   "Hexes": [
-    "src/ui/game_presenter.gd:120"
+    "src/ui/game_presenter.gd:118"
   ],
   "Hide UI · F10\nPress F10 or Escape to show the controls again.": [
     "src/ui/replay_interface.gd:213"
   ],
   "Hold for faster moves": [
-    "src/ui/game_hud.gd:293"
-  ],
-  "Hold the line": [
-    "src/game/tutorial_lessons.gd:72"
+    "src/ui/game_hud.gd:321"
   ],
   "Hold to speed up": [
     "src/settings/key_settings.gd:8"
   ],
   "Hold turn": [
-    "src/ui/game_hud.gd:293"
+    "src/ui/game_hud.gd:321"
   ],
   "Hold view": [
-    "src/ui/game_hud.gd:293"
+    "src/ui/game_hud.gd:321"
   ],
   "Hold: opponents at 6× speed\nAlso: hold %s": [
-    "src/ui/game_presenter.gd:342"
+    "src/ui/game_presenter.gd:340"
   ],
   "Home": [
     "src/localization/native_messages.gd:14"
   ],
+  "Horizontal halves": [
+    "src/ui/player_profile_panel.gd:135"
+  ],
+  "Host": [
+    "src/ui/steam_lobby.gd:81"
+  ],
+  "Host a game or accept a friend's Steam invitation.": [
+    "src/network/steam_online.gd:67",
+    "src/network/steam_online.gd:176",
+    "src/ui/steam_lobby.gd:78"
+  ],
+  "Host friends-only game": [
+    "src/ui/steam_lobby.gd:48"
+  ],
   "Hotseat": [
-    "src/ui/game_presenter.gd:333"
+    "src/ui/game_presenter.gd:330"
   ],
   "House": [
     "src/editor/editor_view.gd:9",
-    "src/editor/editor_view.gd:364",
-    "src/editor/editor_view.gd:526",
+    "src/editor/editor_view.gd:374",
+    "src/editor/editor_view.gd:536",
     "src/editor/level_document.gd:9",
-    "src/editor/level_document.gd:166",
-    "src/editor/level_document.gd:181"
+    "src/editor/level_document.gd:168",
+    "src/editor/level_document.gd:182"
   ],
   "House · cost %d G\nIncome +%d G / turn · no upkeep\nNeeds clear land · lost on capture": [
-    "src/game/game_catalog.gd:35"
+    "src/game/game_catalog.gd:33"
+  ],
+  "Hover over gold again. Income now covers both armies' wages. There is still little room for another purchase. Expanding with existing cheap armies is often better than buying the strongest rank everywhere.": [
+    "src/game/tutorial_lessons.gd:113"
+  ],
+  "Hover over gold to compare the forecast": [
+    "src/game/tutorial_lessons.gd:101"
+  ],
+  "Hover over gold to see this kingdom's treasury, income, upkeep and net income. Income minus wages settles at the start of your turn. A negative forecast spends savings; it does not automatically mean immediate bankruptcy.": [
+    "src/game/tutorial_lessons.gd:99"
+  ],
+  "Hover over gold. Development added 1 income and the House added 4. Neither pays its recurring income immediately. Houses occupy building space and are destroyed if their province is directly captured.": [
+    "src/game/tutorial_lessons.gd:121"
+  ],
+  "Hover over gold. Gross income rose from 24 to 28 for a 20-gold investment. Future development, buildings and army purchases should be judged against what your position needs next.": [
+    "src/game/tutorial_lessons.gd:134"
+  ],
+  "Hover over gold. The eastern kingdom still has 10, even though you spent the western kingdom's gold. Each disconnected kingdom must fund its own armies.": [
+    "src/game/tutorial_lessons.gd:107"
+  ],
+  "Hover over gold. The treasury gained 15 immediately, and the chest disappeared. The captured land also contributes ordinary income, but crossing it again cannot pay the chest reward twice.": [
+    "src/game/tutorial_lessons.gd:175"
+  ],
+  "Hover over gold. Your rear capital and connected kingdom survived the attack. Relocation was useful because the capital was actually threatened; when the capital is safe, that gold might be better spent elsewhere.": [
+    "src/game/tutorial_lessons.gd:154"
+  ],
+  "Hover over gold: one connected kingdom now supports both regions. Its treasury contains the gold left from both banks, and the forecast includes their combined income and army wages.": [
+    "src/game/tutorial_lessons.gd:109"
+  ],
+  "Hover over the G landmark status icon": [
+    "src/game/tutorial_lessons.gd:190"
+  ],
+  "Hover over the G status icon beside the dock. Its breakdown names the Bear cave's +5 income bonus. Keep the landmark connected and controlled to receive that income; an enemy can capture and use it too.": [
+    "src/game/tutorial_lessons.gd:190"
+  ],
+  "Hover over the S icon beside the bottom dock to check the active stainless steel benefit. Status icons explain ongoing bonuses. The landmark persists on the map; losing its province also loses its benefit.": [
+    "src/game/tutorial_lessons.gd:182"
+  ],
+  "Hover over the S status icon below": [
+    "src/game/tutorial_lessons.gd:182"
+  ],
+  "Hover over your gold in the bottom-left dock. The tooltip separates treasury, income, army upkeep and net income. Your new province improved the forecast. This is where to check whether another army is affordable.": [
+    "src/game/tutorial_lessons.gd:74"
+  ],
+  "Hover over your gold, bottom left": [
+    "src/game/tutorial_lessons.gd:74",
+    "src/game/tutorial_lessons.gd:99"
   ],
   "Huge": [
     "src/game/map_sizes.gd:18"
   ],
   "Impassable": [
-    "src/ui/game_presenter.gd:258",
+    "src/ui/game_presenter.gd:256",
     "src/ui/province_view.gd:73"
   ],
   "Income": [
-    "src/ui/game_presenter.gd:120",
+    "src/ui/game_presenter.gd:118",
     "src/ui/income_graph.gd:49"
   ],
   "Income %+d G / turn": [
-    "src/ui/game_presenter.gd:266"
+    "src/ui/game_presenter.gd:264"
   ],
   "Income 0 G": [
-    "src/ui/game_presenter.gd:266"
+    "src/ui/game_presenter.gd:264"
   ],
   "Innkeeper's Offer": [
     "src/game/event_catalog.gd:24"
@@ -1161,157 +1658,195 @@
   "Insert": [
     "src/localization/native_messages.gd:14"
   ],
-  "Interface": [
-    "src/ui/options_view.gd:98"
+  "Inspect a value-2 province's development cost": [
+    "src/game/tutorial_lessons.gd:132"
   ],
-  "Intermediate": [
-    "src/game/tutorial_lessons.gd:11"
+  "Inspect the Bear and its threat range": [
+    "src/game/tutorial_lessons.gd:185"
+  ],
+  "Inspect the neutral Bridge": [
+    "src/game/tutorial_lessons.gd:168"
+  ],
+  "Interface": [
+    "src/ui/options_view.gd:83"
   ],
   "Internal borders": [
-    "src/ui/options_view.gd:148"
+    "src/ui/options_view.gd:139"
   ],
   "Invalid extension, or empty filename.": [
     "src/localization/native_messages.gd:12"
   ],
   "Invalid level contents.": [
-    "src/editor/level_document.gd:237"
+    "src/editor/level_document.gd:239"
   ],
   "Invalid level name.": [
-    "src/editor/level_document.gd:232"
+    "src/editor/level_document.gd:234"
   ],
   "Invalid map kingdoms.": [
-    "src/editor/level_document.gd:239",
     "src/editor/level_document.gd:241",
-    "src/editor/level_document.gd:243"
+    "src/editor/level_document.gd:243",
+    "src/editor/level_document.gd:245"
   ],
   "Invalid map size or rules.": [
-    "src/editor/level_document.gd:231"
+    "src/editor/level_document.gd:233"
   ],
   "Invalid player kingdom.": [
-    "src/editor/level_document.gd:244"
+    "src/editor/level_document.gd:246"
   ],
   "Invalid player start.": [
-    "src/editor/level_document.gd:247"
+    "src/editor/level_document.gd:249"
   ],
   "Invalid province numbers.": [
-    "src/editor/level_document.gd:254"
+    "src/editor/level_document.gd:258"
   ],
   "Invalid province values.": [
-    "src/editor/level_document.gd:260"
+    "src/editor/level_document.gd:264"
   ],
   "Invalid province.": [
-    "src/editor/level_document.gd:252"
+    "src/editor/level_document.gd:256"
   ],
   "Invalid replay": [
     "src/ui/replay_viewer.gd:278",
     "src/ui/replay_viewer.gd:328"
   ],
   "Invalid starting resources.": [
-    "src/editor/level_document.gd:234"
+    "src/editor/level_document.gd:236"
   ],
   "Invalid terrain attributes.": [
-    "src/editor/level_document.gd:262"
+    "src/editor/level_document.gd:266"
   ],
   "Invention of stainless steel": [
-    "src/game/event_catalog.gd:31",
-    "src/ui/status_effects.gd:19"
+    "src/game/event_catalog.gd:31"
   ],
-  "Invest before the war": [
-    "src/game/tutorial_lessons.gd:70"
+  "Invention of stainless steel\nEach Knight costs 2 less gold per turn\nActive while you control its landmark": [
+    "src/ui/status_effects.gd:21"
+  ],
+  "Invite friends, then start when everyone is ready.": [
+    "src/network/steam_online.gd:254"
+  ],
+  "Invite friends…": [
+    "src/ui/steam_lobby.gd:49"
   ],
   "Island backdrop\nAnimated water / softly lit sky": [
-    "src/ui/options_view.gd:132"
+    "src/ui/options_view.gd:117"
   ],
   "Island ledger": [
-    "src/ui/game_hud.gd:195"
+    "src/ui/game_hud.gd:223"
   ],
   "Island ledger · kingdom finances, armies and income history.": [
-    "src/ui/game_hud.gd:120"
+    "src/ui/game_hud.gd:148"
   ],
   "Island seed": [
-    "src/ui/multiplayer_setup.gd:98"
+    "src/ui/multiplayer_setup.gd:97"
   ],
   "Island settings": [
-    "src/editor/editor_view.gd:226"
+    "src/editor/editor_view.gd:225"
   ],
   "Island settings, new island and main menu.": [
-    "src/editor/editor_view.gd:167"
+    "src/editor/editor_view.gd:166"
   ],
   "Isolated land · no treasury\nSelect a connected friendly kingdom": [
-    "src/ui/game_presenter.gd:331"
+    "src/ui/game_presenter.gd:326"
   ],
   "Isolated land. Reconnect it before its soldiers starve.": [
-    "src/game/player_actions.gd:130"
+    "src/game/player_actions.gd:132"
   ],
   "Isolated · no treasury": [
-    "src/ui/game_presenter.gd:296"
+    "src/ui/game_presenter.gd:291"
+  ],
+  "Joining lobby…": [
+    "src/network/steam_online.gd:93"
   ],
   "Józef Chełmoński": [
     "src/game/event_catalog.gd:6"
   ],
+  "Keep an expensive army paid": [
+    "src/game/tutorial_lessons.gd:110"
+  ],
   "Keep editing": [
     "src/editor/discard_dialog.gd:40"
   ],
-  "Keep the army paid": [
-    "src/game/tutorial_lessons.gd:80"
+  "Keep profile": [
+    "src/ui/player_profile_panel.gd:185"
   ],
-  "Keep the momentum": [
-    "src/game/tutorial_lessons.gd:89"
+  "Kill the Bear with your Knight": [
+    "src/game/tutorial_lessons.gd:187"
   ],
   "Kingdom %d G · net %+d G": [
-    "src/ui/game_presenter.gd:293"
+    "src/ui/game_presenter.gd:288"
+  ],
+  "Kingdom name": [
+    "src/ui/player_profile_panel.gd:122"
   ],
   "Kingdom · %d tiles\nTreasury %d G\nIncome +%d G · upkeep −%d G\nNet %+d G / turn": [
-    "src/ui/game_presenter.gd:326"
+    "src/ui/game_presenter.gd:321"
   ],
   "Kingdoms": [
-    "src/ui/multiplayer_setup.gd:48",
-    "src/ui/session_menus.gd:99"
+    "src/ui/multiplayer_setup.gd:49",
+    "src/ui/session_menus.gd:124"
+  ],
+  "Kingdoms (unused seats are AI)": [
+    "src/ui/steam_lobby.gd:41"
+  ],
+  "Kingdoms and money": [
+    "src/game/tutorial_lessons.gd:12"
   ],
   "Kingdoms: %d": [
-    "src/game/replay_summary.gd:159"
+    "src/game/replay_summary.gd:164"
   ],
   "Knight": [
     "src/editor/editor_view.gd:9",
-    "src/editor/editor_view.gd:363",
-    "src/editor/editor_view.gd:509",
-    "src/editor/editor_view.gd:517",
+    "src/editor/editor_view.gd:373",
+    "src/editor/editor_view.gd:519",
+    "src/editor/editor_view.gd:527",
     "src/editor/level_document.gd:9",
-    "src/editor/level_document.gd:166",
-    "src/editor/level_document.gd:174",
-    "src/editor/level_document.gd:180",
-    "src/editor/level_document.gd:180",
-    "src/editor/level_editor.gd:314",
+    "src/editor/level_document.gd:168",
+    "src/editor/level_document.gd:175",
+    "src/editor/level_document.gd:181",
+    "src/editor/level_document.gd:181",
+    "src/editor/level_editor.gd:310",
     "src/game/game_catalog.gd:7"
   ],
   "Lair destroyed: %s": [
-    "src/game/player_actions.gd:112"
+    "src/game/player_actions.gd:113"
   ],
   "Lairs need empty neutral land.": [
-    "src/editor/level_document.gd:266"
+    "src/editor/level_document.gd:270"
   ],
   "Land": [
     "src/editor/editor_view.gd:9",
-    "src/editor/editor_view.gd:267",
-    "src/editor/editor_view.gd:348",
-    "src/editor/editor_view.gd:349",
-    "src/editor/editor_view.gd:350",
-    "src/editor/editor_view.gd:354",
-    "src/editor/editor_view.gd:526",
+    "src/editor/editor_view.gd:264",
+    "src/editor/editor_view.gd:358",
+    "src/editor/editor_view.gd:359",
+    "src/editor/editor_view.gd:360",
+    "src/editor/editor_view.gd:364",
+    "src/editor/editor_view.gd:536",
     "src/editor/level_document.gd:9",
     "src/editor/level_document.gd:12",
-    "src/editor/level_document.gd:124",
-    "src/editor/level_document.gd:135",
+    "src/editor/level_document.gd:126",
+    "src/editor/level_document.gd:137",
     "src/editor/level_editor.gd:81",
-    "src/editor/level_editor.gd:305",
-    "src/editor/level_editor.gd:526",
-    "src/ui/game_presenter.gd:228"
+    "src/editor/level_editor.gd:301",
+    "src/editor/level_editor.gd:522",
+    "src/ui/game_presenter.gd:226"
   ],
   "Land needs a value from 1 to 6.": [
-    "src/editor/level_document.gd:274"
+    "src/editor/level_document.gd:280"
   ],
   "Land value": [
-    "src/editor/editor_view.gd:282"
+    "src/editor/editor_view.gd:279"
+  ],
+  "Landmark": [
+    "src/ui/province_view.gd:79"
+  ],
+  "Landmark: +1 mana / turn to its owner": [
+    "src/game/wildlife.gd:15"
+  ],
+  "Landmark: +5 G / turn to its kingdom while controlled": [
+    "src/game/wildlife.gd:14"
+  ],
+  "Landmarks grant lasting benefits": [
+    "src/game/tutorial_lessons.gd:179"
   ],
   "Landscape with Group of Trees and Woodcutters": [
     "src/game/event_catalog.gd:25"
@@ -1320,13 +1855,13 @@
     "src/game/event_catalog.gd:5"
   ],
   "Language": [
-    "src/ui/options_view.gd:78"
+    "src/ui/options_view.gd:63"
   ],
   "Language changes apply the next time you launch the game.": [
-    "src/ui/options_view.gd:224"
+    "src/ui/options_view.gd:215"
   ],
   "Language settings could not be saved.": [
-    "src/ui/options_view.gd:177"
+    "src/ui/options_view.gd:168"
   ],
   "Languages": [
     "src/ui/ui_theme.gd:57"
@@ -1335,79 +1870,79 @@
     "src/game/map_sizes.gd:17"
   ],
   "Learn by playing": [
-    "src/ui/tutorial_selection.gd:20"
+    "src/ui/tutorial_selection.gd:21"
+  ],
+  "Learn what to build, where, and when it pays off.": [
+    "src/game/tutorial_lessons.gd:13"
   ],
   "Leave blank for a new island, or enter 0–2147483647 to repeat one.": [
-    "src/ui/multiplayer_setup.gd:339"
+    "src/ui/multiplayer_setup.gd:336"
   ],
   "Leave game": [
-    "src/ui/session_menus.gd:171",
-    "src/ui/session_menus.gd:178",
-    "src/ui/session_menus.gd:390"
+    "src/ui/session_menus.gd:197",
+    "src/ui/session_menus.gd:204",
+    "src/ui/session_menus.gd:527"
   ],
   "Leave it alone": [
     "src/game/event_catalog.gd:18"
   ],
+  "Leave lobby": [
+    "src/ui/steam_lobby.gd:52"
+  ],
   "Left": [
-    "src/localization/native_messages.gd:14"
+    "src/localization/native_messages.gd:14",
+    "src/ui/player_profile_panel.gd:154"
   ],
   "Left choice": [
     "src/settings/key_settings.gd:8"
   ],
   "Left click: place or move start · Right click the marker: remove start": [
-    "src/editor/editor_view.gd:378"
+    "src/editor/editor_view.gd:388"
   ],
   "Left drag: paint · Right drag: clear decorations": [
-    "src/editor/editor_view.gd:376"
+    "src/editor/editor_view.gd:386"
   ],
   "Left drag: place / paint\nRight drag: Tiles deletes tiles; Paint clears decorations\nAlt + right drag: rotate · middle drag / wheel: pan / zoom\n%s / %s / %s / %s: pan\n%s: overhead / 3D · %s: value heatmap\nT / %s / %s / %s: Tiles / Units / Build / Paint\n1–6: choose card in open panel\nI / Alt + left click: eyedropper · V: random 1–3\nHome: center · F5: playtest\nCtrl+Z / Ctrl+Y: undo / redo\nCtrl+S: save · Ctrl+Shift+S: save as · Ctrl+O: load\nEnter / map interaction: finish text editing\nEscape: close panel / island settings": [
-    "src/editor/level_editor.gd:294"
+    "src/editor/level_editor.gd:290"
   ],
   "Left drag: place · Right drag: delete provinces": [
-    "src/editor/editor_view.gd:376"
+    "src/editor/editor_view.gd:386"
   ],
   "Left or right drag: delete provinces": [
-    "src/editor/editor_view.gd:377"
-  ],
-  "Lesson complete": [
-    "src/game/tutorial.gd:131",
-    "src/game/tutorial.gd:145"
+    "src/editor/editor_view.gd:387"
   ],
   "Let his death demonstrate our power.": [
     "src/game/event_catalog.gd:28"
   ],
-  "Let the turn play out": [
-    "src/game/tutorial_lessons.gd:61"
-  ],
   "Level %d": [
-    "src/ui/game_presenter.gd:332"
-  ],
-  "Level 1": [
-    "src/ui/game_hud.gd:106"
+    "src/ui/account_xp_bar.gd:31"
   ],
   "Level editor": [
-    "src/ui/session_menus.gd:290"
+    "src/ui/session_menus.gd:328"
   ],
   "Level name": [
-    "src/editor/editor_view.gd:131"
+    "src/editor/editor_view.gd:130"
   ],
   "Load": [
-    "src/editor/editor_view.gd:196"
+    "src/editor/editor_view.gd:195"
   ],
   "Load a level · Ctrl+O": [
-    "src/editor/editor_view.gd:196"
+    "src/editor/editor_view.gd:195"
   ],
   "Load an editor map to continue.": [
-    "src/ui/multiplayer_setup.gd:81"
+    "src/ui/multiplayer_setup.gd:82"
   ],
   "Load editor map…": [
-    "src/ui/multiplayer_setup.gd:87"
+    "src/ui/multiplayer_setup.gd:88"
+  ],
+  "Load events saved by the Event Editor": [
+    "src/editor/editor_view.gd:319"
   ],
   "Load level": [
-    "src/editor/level_editor.gd:413"
+    "src/editor/level_editor.gd:409"
   ],
   "Loaded %s": [
-    "src/editor/level_editor.gd:444"
+    "src/editor/level_editor.gd:440"
   ],
   "Loading replay…": [
     "src/ui/replay_viewer.gd:300",
@@ -1417,91 +1952,122 @@
     "src/ui/replay_viewer.gd:157",
     "src/ui/replay_viewer.gd:202"
   ],
+  "Loading...": [
+    "src/app/app.gd:101"
+  ],
   "Local multiplayer": [
-    "src/game/replay_summary.gd:138",
+    "src/game/replay_summary.gd:143",
     "src/ui/multiplayer_setup.gd:40"
   ],
   "Local multiplayer supports up to six active kingdoms per map.": [
     "src/game/match_setup.gd:78"
   ],
+  "Local player": [
+    "src/network/steam_online.gd:78"
+  ],
+  "Locked": [
+    "src/ui/painting_collection.gd:170"
+  ],
   "Long live the goose": [
     "src/game/event_catalog.gd:22"
+  ],
+  "Longest match": [
+    "src/ui/player_profile_panel.gd:102"
+  ],
+  "Lower left": [
+    "src/ui/player_profile_panel.gd:154"
+  ],
+  "Lower right": [
+    "src/ui/player_profile_panel.gd:154"
   ],
   "Lumberjack's Offer": [
     "src/game/event_catalog.gd:25"
   ],
   "M": [
-    "src/ui/status_effects.gd:26"
+    "src/ui/status_effects.gd:28"
   ],
   "MANA · NEXT TURN": [
-    "src/ui/game_hud.gd:160"
+    "src/ui/game_hud.gd:188"
+  ],
+  "MAP": [
+    "src/editor/level_editor.gd:173"
   ],
   "Main menu": [
-    "src/app/app.gd:146",
-    "src/editor/editor_view.gd:260",
-    "src/game/tutorial.gd:61",
-    "src/ui/session_menus.gd:172",
-    "src/ui/session_menus.gd:225"
+    "src/app/app.gd:259",
+    "src/editor/editor_view.gd:257",
+    "src/ui/session_menus.gd:198",
+    "src/ui/session_menus.gd:256"
   ],
   "Main outcome requirements: %s": [
-    "src/editor/editor_view.gd:424"
+    "src/editor/editor_view.gd:434"
   ],
-  "Make room to grow": [
-    "src/game/tutorial_lessons.gd:60"
+  "Mana and spells": [
+    "src/game/tutorial_lessons.gd:15"
   ],
-  "Make them go around": [
-    "src/game/tutorial_lessons.gd:73"
+  "Mana is shared across your kingdoms, unlike gold. The purple dock shows current mana, capacity and regeneration. Trailblaze costs 1 mana: your next neutral capture keeps its action. Any other valid move consumes the blessing without that extra action.": [
+    "src/game/tutorial_lessons.gd:159"
   ],
   "Mana per turn": [
-    "src/ui/status_effects.gd:26"
+    "src/ui/status_effects.gd:28"
   ],
   "Mana source": [
     "src/editor/editor_view.gd:9",
-    "src/editor/editor_view.gd:371",
-    "src/editor/editor_view.gd:526",
+    "src/editor/editor_view.gd:381",
+    "src/editor/editor_view.gd:536",
     "src/editor/level_document.gd:9",
     "src/editor/level_document.gd:11",
-    "src/editor/level_document.gd:167",
-    "src/editor/level_editor.gd:319"
+    "src/editor/level_document.gd:169",
+    "src/editor/level_editor.gd:315"
   ],
   "Mana source · +%d maximum mana": [
     "src/ui/province_view.gd:77"
   ],
   "Mana source · capacity +%d": [
-    "src/ui/game_presenter.gd:275"
+    "src/ui/game_presenter.gd:270"
   ],
   "Map": [
-    "src/ui/multiplayer_setup.gd:77"
-  ],
-  "Map & rules": [
-    "src/ui/multiplayer_setup.gd:42"
+    "src/ui/multiplayer_setup.gd:43",
+    "src/ui/multiplayer_setup.gd:78"
   ],
   "Map size": [
-    "src/editor/editor_view.gd:249",
-    "src/ui/session_menus.gd:88"
+    "src/editor/editor_view.gd:248",
+    "src/ui/session_menus.gd:113",
+    "src/ui/steam_lobby.gd:31"
   ],
   "Map: %s": [
-    "src/game/replay_summary.gd:156"
+    "src/game/replay_summary.gd:161"
   ],
   "Mark an owned province as the player's starting kingdom. The marker follows its current owner and keeps all objects.": [
-    "src/editor/editor_view.gd:373"
+    "src/editor/editor_view.gd:383"
   ],
   "Mark the player's starting kingdom on the map.": [
-    "src/editor/level_editor.gd:288"
+    "src/editor/level_editor.gd:284"
   ],
   "Match finished": [
-    "src/game/replay_summary.gd:133",
-    "src/ui/session_menus.gd:237"
+    "src/game/replay_summary.gd:138",
+    "src/ui/session_menus.gd:268"
+  ],
+  "Match record": [
+    "src/ui/player_profile_panel.gd:101"
+  ],
+  "Match won": [
+    "src/ui/tutorial_coach.gd:59"
+  ],
+  "Matches played": [
+    "src/ui/player_profile_panel.gd:102"
   ],
   "Maximum value %d": [
-    "src/ui/province_view.gd:126"
-  ],
-  "Meet the threat": [
-    "src/game/tutorial_lessons.gd:62"
+    "src/ui/province_view.gd:130"
   ],
   "Menu choices": [
     "src/ui/controls_view.gd:22",
-    "src/ui/game_hud.gd:293"
+    "src/ui/game_hud.gd:321"
+  ],
+  "Merge and protect armies": [
+    "src/game/tutorial_lessons.gd:87"
+  ],
+  "Merge the two Scouts": [
+    "src/game/tutorial_lessons.gd:88"
   ],
   "Meta": [
     "src/localization/native_messages.gd:13"
@@ -1510,57 +2076,49 @@
     "src/settings/key_settings.gd:8"
   ],
   "Mixed": [
-    "src/game/replay_summary.gd:158"
+    "src/game/replay_summary.gd:163"
   ],
   "Mode: %s": [
-    "src/game/replay_summary.gd:154"
+    "src/game/replay_summary.gd:159"
   ],
-  "Modern": [
-    "src/editor/editor_view.gd:250",
-    "src/ui/multiplayer_setup.gd:94",
-    "src/ui/options_view.gd:65"
-  ],
-  "Modern adds province development, mana, spells,\nbridges and castle surrender.\n\nClassic keeps the original prototype rules.\n\nChanging rules resets your game and generates\na new island.": [
-    "src/ui/options_view.gd:71"
-  ],
-  "Modern terrain cannot use Classic rules.": [
-    "src/editor/level_document.gd:275"
+  "Motto (optional)": [
+    "src/ui/player_profile_panel.gd:126"
   ],
   "Mountain": [
     "src/editor/editor_view.gd:9",
-    "src/editor/editor_view.gd:356",
-    "src/editor/editor_view.gd:526",
+    "src/editor/editor_view.gd:366",
+    "src/editor/editor_view.gd:536",
     "src/editor/level_document.gd:9",
     "src/editor/level_document.gd:11",
     "src/editor/level_document.gd:12",
-    "src/editor/level_document.gd:153",
-    "src/editor/level_editor.gd:306"
+    "src/editor/level_document.gd:156",
+    "src/editor/level_editor.gd:302"
   ],
   "Mountain provinces must be empty and neutral.": [
-    "src/editor/level_document.gd:272"
+    "src/editor/level_document.gd:278"
   ],
   "Mountains": [
-    "src/ui/game_presenter.gd:230",
+    "src/ui/game_presenter.gd:228",
     "src/ui/province_view.gd:70"
   ],
-  "Move capital · %d G": [
-    "src/game/game.gd:382",
-    "src/ui/province_view.gd:109"
+  "Move a capital out of danger": [
+    "src/game/tutorial_lessons.gd:151"
   ],
-  "Move from the cyan ring to the gold ring": [
-    "src/game/tutorial_lessons.gd:60"
+  "Move capital · %d G": [
+    "src/game/game.gd:407",
+    "src/ui/province_view.gd:113"
   ],
   "Move this territory's capital here using its local treasury.\nRequires clear land; a unit may stay here.\nEach relocation costs 10 G more for your color, even after splits or capital loss.": [
-    "src/ui/province_view.gd:109"
+    "src/ui/province_view.gd:113"
   ],
-  "Move your Knight onto the Bridge": [
-    "src/game/tutorial_lessons.gd:87"
+  "Move your Scout onto the marked forest. Trees and graves block province income. Clearing a tree restores that income and also pays 1 gold immediately.": [
+    "src/game/tutorial_lessons.gd:100"
   ],
   "Move your capital here?": [
-    "src/game/game.gd:379"
+    "src/game/game.gd:404"
   ],
   "Moved": [
-    "src/ui/game_presenter.gd:261"
+    "src/ui/game_presenter.gd:259"
   ],
   "Movement only": [
     "src/ui/replay_interface.gd:192"
@@ -1569,73 +2127,96 @@
     "src/ui/replay_interface.gd:193"
   ],
   "Moving…": [
-    "src/ui/game_presenter.gd:347"
+    "src/ui/game_presenter.gd:345"
   ],
   "Multiplayer": [
-    "src/ui/session_menus.gd:82"
+    "src/ui/session_menus.gd:102"
   ],
   "Mute all sounds": [
-    "src/ui/options_view.gd:111"
+    "src/ui/options_view.gd:96"
+  ],
+  "My country": [
+    "src/ui/country_picker.gd:49"
   ],
   "My island": [
-    "src/editor/level_document.gd:18"
+    "src/editor/level_document.gd:20"
   ],
   "Name": [
-    "src/ui/multiplayer_setup.gd:51"
+    "src/ui/multiplayer_setup.gd:52"
+  ],
+  "Name your kingdom": [
+    "src/ui/player_profile_panel.gd:124"
   ],
   "Name:": [
     "src/localization/native_messages.gd:10"
   ],
   "Neutral": [
-    "src/editor/editor_view.gd:278",
-    "src/editor/level_editor.gd:139",
-    "src/editor/level_editor.gd:321",
-    "src/editor/level_editor.gd:613",
-    "src/ui/game_presenter.gd:132",
-    "src/ui/game_presenter.gd:224",
+    "src/editor/editor_view.gd:275",
+    "src/editor/level_editor.gd:138",
+    "src/editor/level_editor.gd:317",
+    "src/editor/level_editor.gd:609",
+    "src/ui/game_presenter.gd:130",
+    "src/ui/game_presenter.gd:222",
     "src/ui/province_view.gd:69",
     "src/ui/province_view.gd:70"
   ],
+  "Neutral land belongs to nobody. Click a highlighted empty neutral province. Claiming it adds recurring income; the income arrives next turn, rather than immediately.": [
+    "src/game/tutorial_lessons.gd:73"
+  ],
   "New island": [
-    "src/editor/editor_view.gd:240"
+    "src/editor/editor_view.gd:239"
   ],
   "New key for %s.\nPress Escape to cancel.": [
     "src/ui/controls_view.gd:58"
   ],
   "New land uses this owner and value. Redrawing existing land keeps its owner and value.": [
-    "src/editor/editor_view.gd:354"
+    "src/editor/editor_view.gd:364"
   ],
   "Next action · Right arrow": [
     "src/ui/replay_interface.gd:181"
   ],
-  "Next match": [
-    "src/game/tutorial.gd:67"
+  "Next exercise": [
+    "src/ui/tutorial_coach.gd:50",
+    "src/ui/tutorial_coach.gd:125"
   ],
   "Next move: act again after a neutral capture\nAny move spends it": [
-    "src/ui/status_effects.gd:17"
+    "src/ui/status_effects.gd:19"
   ],
   "Next move: act again after a neutral capture\nAny move spends it · no stacking": [
     "src/game/spell_catalog.gd:16"
   ],
   "Next successful spell: 0 mana\nLasts until used": [
-    "src/ui/status_effects.gd:17"
+    "src/ui/status_effects.gd:19"
+  ],
+  "Next topic": [
+    "src/ui/tutorial_coach.gd:48"
+  ],
+  "Next →": [
+    "src/ui/painting_collection.gd:136"
   ],
   "No gold reward.": [
-    "src/game/encounter_rules.gd:168"
+    "src/game/encounter_rules.gd:193"
   ],
   "No matching events. Try another search.": [
-    "src/editor/editor_view.gd:417"
+    "src/editor/editor_view.gd:427"
   ],
   "No saved replays yet. Save one from the results screen after a match, or open a replay file.": [
     "src/ui/replay_viewer.gd:203"
   ],
+  "None": [
+    "src/ui/player_profile_panel.gd:141"
+  ],
   "Normal": [
-    "src/ui/multiplayer_setup.gd:71",
-    "src/ui/multiplayer_setup.gd:119"
+    "src/ui/multiplayer_setup.gd:72",
+    "src/ui/multiplayer_setup.gd:118"
+  ],
+  "Not ready": [
+    "src/ui/steam_lobby.gd:81",
+    "src/ui/steam_lobby.gd:90"
   ],
   "Not recorded": [
-    "src/game/replay_summary.gd:140",
-    "src/game/replay_summary.gd:143"
+    "src/game/replay_summary.gd:145",
+    "src/game/replay_summary.gd:148"
   ],
   "Nothing happens.": [
     "src/game/event_catalog.gd:18",
@@ -1645,52 +2226,61 @@
     "src/localization/native_messages.gd:10"
   ],
   "Objects overlap on a province.": [
-    "src/editor/level_document.gd:271"
+    "src/editor/level_document.gd:277"
   ],
   "Off": [
-    "src/ui/options_view.gd:127"
+    "src/ui/options_view.gd:112"
   ],
   "On: area border + curved arrow\nOff: tile outlines + dotted path": [
-    "src/ui/options_view.gd:76"
+    "src/ui/options_view.gd:61"
   ],
   "On: flowing waves and foam\nOff: original calm water": [
-    "src/ui/options_view.gd:164"
+    "src/ui/options_view.gd:155"
+  ],
+  "On: reflective plastic tops and rubber bases\nOff: original matte tiles\nChanges apply immediately and are saved automatically.": [
+    "src/ui/options_view.gd:137"
   ],
   "On: warm sunlight, cool shadows and nearby light accents\nOff: original simple lighting\nChanges apply immediately and are saved automatically.": [
-    "src/ui/options_view.gd:169"
+    "src/ui/options_view.gd:160"
   ],
   "One animal per lair · respawns after 3 World turns": [
-    "src/ui/game_presenter.gd:256"
-  ],
-  "One capture uses one action. Ready your Soldier for the final attack.": [
-    "src/game/tutorial_lessons.gd:64"
+    "src/ui/game_presenter.gd:254"
   ],
   "One step too far": [
     "src/game/event_catalog.gd:19"
   ],
   "One visit only. Main outcome requirements: %s": [
-    "src/ui/game_presenter.gd:287"
+    "src/ui/game_presenter.gd:282"
+  ],
+  "Online": [
+    "src/ui/game_presenter.gd:330"
   ],
   "Open": [
     "src/localization/native_messages.gd:10"
   ],
-  "Open a new front": [
-    "src/game/tutorial_lessons.gd:86"
+  "Open Build and choose Bridge. This water crossing costs 15 gold. Bridges earn no income and stay neutral: every kingdom can use the route, including your opponents.": [
+    "src/game/tutorial_lessons.gd:128"
+  ],
+  "Open Build and choose House. Use highlighted clear land without an army, building or capital. It costs 20 gold for +4 income per turn and no wages. When cheap development is available, that can be the better first investment.": [
+    "src/game/tutorial_lessons.gd:120"
+  ],
+  "Open Recruit, choose Scout, then click clear friendly land. It costs 10 gold now and 4 per turn. New armies are ready immediately, so this Scout can expand while the first rests.": [
+    "src/game/tutorial_lessons.gd:75"
   ],
   "Open replay file": [
     "src/ui/replay_interface.gd:144"
   ],
   "Options": [
-    "src/ui/session_menus.gd:159",
-    "src/ui/session_menus.gd:163",
-    "src/ui/session_menus.gd:292"
+    "src/ui/session_menus.gd:186",
+    "src/ui/session_menus.gd:190",
+    "src/ui/session_menus.gd:330"
   ],
-  "Options — Audio, Video, Gameplay and Controls": [
-    "src/ui/session_menus.gd:160"
+  "Options Ă˘â‚¬â€ť Audio, Video, Gameplay and Controls": [
+    "src/ui/session_menus.gd:187"
   ],
   "Other sources": [
-    "src/ui/status_effects.gd:62",
-    "src/ui/status_effects.gd:75"
+    "src/ui/status_effects.gd:65",
+    "src/ui/status_effects.gd:78"
   ],
   "Our court cartographer admits the border was drawn with a wine stain as reference. The neighbouring villages have accepted his correction with suspicious enthusiasm.": [
     "src/game/event_catalog.gd:27"
@@ -1702,37 +2292,37 @@
     "src/game/event_catalog.gd:25"
   ],
   "Overall volume": [
-    "src/ui/options_view.gd:98"
+    "src/ui/options_view.gd:83"
   ],
   "Overhead / 3D · ": [
-    "src/editor/level_editor.gd:293"
+    "src/editor/level_editor.gd:289"
   ],
   "Overhead / 3D · Tab. Alt + right drag rotates.": [
-    "src/editor/editor_view.gd:158"
+    "src/editor/editor_view.gd:157"
   ],
   "Owner": [
     "src/editor/editor_view.gd:9",
-    "src/editor/editor_view.gd:279",
-    "src/editor/editor_view.gd:348",
+    "src/editor/editor_view.gd:276",
     "src/editor/editor_view.gd:358",
-    "src/editor/editor_view.gd:526",
+    "src/editor/editor_view.gd:368",
+    "src/editor/editor_view.gd:536",
     "src/editor/level_document.gd:9",
-    "src/editor/level_document.gd:143"
+    "src/editor/level_document.gd:145"
   ],
   "PLAYER START": [
-    "src/editor/level_editor.gd:122"
+    "src/editor/level_editor.gd:121"
   ],
   "Paint": [
     "src/editor/editor_view.gd:9",
-    "src/editor/editor_view.gd:173",
-    "src/editor/level_editor.gd:174",
-    "src/editor/level_editor.gd:532"
+    "src/editor/editor_view.gd:172",
+    "src/editor/level_editor.gd:173",
+    "src/editor/level_editor.gd:528"
   ],
   "Paint some land first.": [
-    "src/editor/level_document.gd:287"
+    "src/editor/level_document.gd:292"
   ],
   "Pan": [
-    "src/ui/game_hud.gd:293"
+    "src/ui/game_hud.gd:321"
   ],
   "Pan backward": [
     "src/settings/key_settings.gd:8"
@@ -1747,88 +2337,92 @@
     "src/settings/key_settings.gd:8"
   ],
   "Pan · scroll to zoom": [
-    "src/ui/game_hud.gd:293"
+    "src/ui/game_hud.gd:321"
   ],
   "Path:": [
     "src/localization/native_messages.gd:5"
   ],
+  "Pattern": [
+    "src/ui/player_profile_panel.gd:134"
+  ],
   "Pause / options. Escape cancels an action first, then pauses.": [
-    "src/ui/game_hud.gd:133"
+    "src/ui/game_hud.gd:161"
   ],
   "Pause · Space": [
     "src/ui/replay_viewer.gd:427"
   ],
   "Paused": [
-    "src/ui/session_menus.gd:155"
+    "src/ui/session_menus.gd:177"
   ],
   "Pay %d gold (your entire treasury).": [
-    "src/game/encounter_rules.gd:172"
+    "src/game/encounter_rules.gd:197"
   ],
-  "Pay 10 gold here; permanently gain 1 gold per turn in your income treasury.": [
-    "src/game/encounter_rules.gd:246"
+  "Pay 10 gold here; build a landmark granting its kingdom 1 gold per turn while controlled.": [
+    "src/game/encounter_rules.gd:271"
   ],
-  "Pay 10 gold.\nPermanently gain 1 gold per turn.": [
+  "Pay 10 gold.\nBuild a landmark: +1 gold per turn to its kingdom while controlled.": [
     "src/game/event_catalog.gd:29"
   ],
   "Pay 100% of this kingdom's gold.": [
-    "src/game/event_catalog.gd:30"
+    "src/game/event_catalog.gd:30",
+    "resources/events/custom_events.json:revolt:choices:1:hint"
   ],
   "Perhaps tomorrow should have an income.": [
     "src/game/event_catalog.gd:29"
   ],
-  "Permanent income +5 G / turn": [
-    "src/game/wildlife.gd:14"
-  ],
-  "Permanent mana regeneration +1 / turn": [
-    "src/game/wildlife.gd:15"
-  ],
-  "Permanently gain 1–2 gold per turn.\n50% chance of each.": [
-    "src/game/event_catalog.gd:23"
-  ],
-  "Permanently reduce Knight upkeep by 2 gold.": [
-    "src/game/event_catalog.gd:31"
-  ],
   "Picked %s · value %d · %s": [
-    "src/editor/level_editor.gd:321"
+    "src/editor/level_editor.gd:317"
   ],
   "Place a Knight on owned land. Keeps capitals and mana sources; replaces other objects.": [
-    "src/editor/editor_view.gd:363"
+    "src/editor/editor_view.gd:373"
   ],
   "Place a Scout on owned land. Keeps capitals and mana sources; replaces other objects.": [
-    "src/editor/editor_view.gd:361"
+    "src/editor/editor_view.gd:371"
   ],
   "Place a Soldier on owned land. Keeps capitals and mana sources; replaces other objects.": [
-    "src/editor/editor_view.gd:362"
+    "src/editor/editor_view.gd:372"
   ],
   "Place a bear cave on neutral land. Replaces other objects. Its bear emerges on the first World turn.": [
-    "src/editor/editor_view.gd:366"
+    "src/editor/editor_view.gd:376"
   ],
   "Place a boar burrow on neutral land. Replaces other objects. Its boar emerges on the first World turn.": [
-    "src/editor/editor_view.gd:368"
+    "src/editor/editor_view.gd:378"
   ],
   "Place a capital on owned land. Uses that province's owner and keeps mana sources.": [
-    "src/editor/editor_view.gd:360"
-  ],
-  "Place a house on owned land. Uses that province's owner and keeps mana sources.": [
-    "src/editor/editor_view.gd:364"
-  ],
-  "Place a tower on owned land. Uses that province's owner and keeps mana sources.": [
-    "src/editor/editor_view.gd:365"
-  ],
-  "Place a wolf den on neutral land. Replaces other objects. Its wolf emerges on the first World turn.": [
-    "src/editor/editor_view.gd:367"
-  ],
-  "Place graves on land. Replaces other objects and keeps mana sources.": [
     "src/editor/editor_view.gd:370"
   ],
+  "Place a house on owned land. Uses that province's owner and keeps mana sources.": [
+    "src/editor/editor_view.gd:374"
+  ],
+  "Place a tower on owned land. Uses that province's owner and keeps mana sources.": [
+    "src/editor/editor_view.gd:375"
+  ],
+  "Place a wolf den on neutral land. Replaces other objects. Its wolf emerges on the first World turn.": [
+    "src/editor/editor_view.gd:377"
+  ],
+  "Place graves on land. Replaces other objects and keeps mana sources.": [
+    "src/editor/editor_view.gd:380"
+  ],
   "Place neutral, zero-value bridges over water. Units can cross them during play.": [
-    "src/editor/editor_view.gd:357"
+    "src/editor/editor_view.gd:367"
   ],
   "Place the Player start marker on an owned province.": [
-    "src/editor/level_document.gd:288"
+    "src/editor/level_document.gd:293"
   ],
   "Place trees on land. Replaces other objects and keeps mana sources.": [
-    "src/editor/editor_view.gd:369"
+    "src/editor/editor_view.gd:379"
+  ],
+  "Plastic tiles": [
+    "src/ui/options_view.gd:134"
+  ],
+  "Play a small real match. Choose your own strategy.": [
+    "src/game/tutorial_lessons.gd:17"
+  ],
+  "Play tutorial": [
+    "src/ui/session_menus.gd:382"
+  ],
+  "Play with 2–6 friends, or fill spare kingdoms with computer players.\n\nJoin a friend by accepting their invitation in Steam.": [
+    "src/ui/steam_lobby.gd:83"
   ],
   "Play · Space": [
     "src/ui/replay_interface.gd:180",
@@ -1838,58 +2432,62 @@
     "src/ui/replay_interface.gd:187"
   ],
   "Player": [
-    "src/ui/multiplayer_setup.gd:63"
+    "src/ui/multiplayer_setup.gd:64"
   ],
   "Player %d": [
     "src/game/match_setup.gd:34",
-    "src/ui/multiplayer_setup.gd:61",
-    "src/ui/multiplayer_setup.gd:205"
+    "src/ui/multiplayer_setup.gd:62",
+    "src/ui/multiplayer_setup.gd:203"
   ],
   "Player options": [
-    "src/ui/multiplayer_setup.gd:109",
-    "src/ui/multiplayer_setup.gd:115"
+    "src/ui/multiplayer_setup.gd:108",
+    "src/ui/multiplayer_setup.gd:114"
   ],
   "Player options…": [
-    "src/ui/multiplayer_setup.gd:50"
+    "src/ui/multiplayer_setup.gd:51"
+  ],
+  "Player profile": [
+    "src/ui/player_profile_panel.gd:58",
+    "src/ui/player_profile_panel.gd:271"
   ],
   "Player start": [
-    "src/editor/editor_view.gd:178",
-    "src/editor/editor_view.gd:373",
-    "src/editor/editor_view.gd:378",
+    "src/editor/editor_view.gd:177",
+    "src/editor/editor_view.gd:383",
+    "src/editor/editor_view.gd:388",
     "src/editor/level_document.gd:9",
-    "src/editor/level_document.gd:118",
-    "src/editor/level_document.gd:211",
-    "src/editor/level_editor.gd:115"
+    "src/editor/level_document.gd:120",
+    "src/editor/level_document.gd:213",
+    "src/editor/level_editor.gd:114"
   ],
   "Player start must be on the map.": [
-    "src/editor/level_document.gd:276"
+    "src/editor/level_document.gd:281"
   ],
   "Player start needs at least two connected provinces.": [
-    "src/editor/level_document.gd:290"
+    "src/editor/level_document.gd:295"
   ],
   "Players": [
-    "src/ui/multiplayer_setup.gd:41"
+    "src/ui/multiplayer_setup.gd:42"
   ],
   "Playtest": [
-    "src/ui/game_presenter.gd:333"
+    "src/ui/game_presenter.gd:330"
   ],
   "Playtest the draft · F5": [
-    "src/editor/editor_view.gd:197"
+    "src/editor/editor_view.gd:196"
   ],
   "Playtest →": [
-    "src/editor/editor_view.gd:197"
+    "src/editor/editor_view.gd:196"
+  ],
+  "Please give your kingdom a name.": [
+    "src/ui/player_profile_panel.gd:306"
+  ],
+  "Position": [
+    "src/ui/player_profile_panel.gd:153"
   ],
   "Prepare editor island": [
-    "src/editor/level_editor.gd:375"
+    "src/editor/level_editor.gd:371"
   ],
   "Prepare island": [
-    "src/game/game.gd:212"
-  ],
-  "Prepare the assault": [
-    "src/game/tutorial_lessons.gd:78"
-  ],
-  "Preparing island…": [
-    "src/ui/preparation_screen.gd:20"
+    "src/game/game.gd:221"
   ],
   "Press a key…": [
     "src/ui/controls_view.gd:57",
@@ -1899,13 +2497,15 @@
     "src/ui/replay_interface.gd:179"
   ],
   "Profit": [
-    "src/ui/game_presenter.gd:120"
+    "src/ui/game_presenter.gd:118"
+  ],
+  "Progress could not be saved.": [
+    "src/ui/painting_collection.gd:146"
   ],
   "Progress will reset. The same level will be used.": [
-    "src/ui/session_menus.gd:397"
+    "src/ui/session_menus.gd:534"
   ],
   "Province": [
-    "src/ui/game_presenter.gd:270",
     "src/ui/province_view.gd:26",
     "src/ui/province_view.gd:70"
   ],
@@ -1913,110 +2513,126 @@
     "src/ui/province_view.gd:71"
   ],
   "Province is outside the map.": [
-    "src/editor/level_document.gd:255"
+    "src/editor/level_document.gd:259"
   ],
   "Province value": [
-    "src/editor/editor_view.gd:445",
-    "src/ui/game_hud.gd:245"
+    "src/editor/editor_view.gd:456",
+    "src/ui/game_hud.gd:273"
   ],
   "Province value heatmap · ": [
-    "src/editor/level_editor.gd:292"
+    "src/editor/level_editor.gd:288"
   ],
   "Province values\nShortcut: %s": [
-    "src/ui/game_hud.gd:276"
+    "src/ui/game_hud.gd:304"
   ],
   "Province · Value %d": [
-    "src/ui/game_presenter.gd:268"
+    "src/ui/game_presenter.gd:265"
   ],
-  "Push them back": [
-    "src/game/tutorial_lessons.gd:63"
+  "Question marks reveal encounters when an army arrives. Their choices explain guaranteed rewards and any risks. Move onto this one, read both outcomes and think about immediate reinforcements versus lasting income.": [
+    "src/game/tutorial_lessons.gd:177"
   ],
   "Quick Play": [
-    "src/game/replay_summary.gd:137",
-    "src/ui/game_presenter.gd:333",
-    "src/ui/session_menus.gd:81",
-    "src/ui/session_menus.gd:87"
+    "src/game/replay_summary.gd:142",
+    "src/ui/game_presenter.gd:330",
+    "src/ui/session_menus.gd:98",
+    "src/ui/session_menus.gd:112"
   ],
   "Quit": [
-    "src/ui/session_menus.gd:161"
+    "src/ui/session_menus.gd:188"
   ],
   "Quit game": [
-    "src/ui/session_menus.gd:173",
-    "src/ui/session_menus.gd:293"
+    "src/ui/player_profile_panel.gd:270",
+    "src/ui/session_menus.gd:199",
+    "src/ui/session_menus.gd:331"
   ],
   "Quit the game?": [
-    "src/ui/session_menus.gd:388"
+    "src/ui/session_menus.gd:525"
   ],
   "Random": [
-    "src/ui/multiplayer_setup.gd:103",
-    "src/ui/session_menus.gd:123"
+    "src/ui/multiplayer_setup.gd:102"
+  ],
+  "Random default": [
+    "src/ui/country_picker.gd:50",
+    "src/ui/country_picker.gd:102"
   ],
   "Random value 1–3 · V\nApplies to new land / Value painting": [
-    "src/editor/editor_view.gd:287"
+    "src/editor/editor_view.gd:284"
   ],
   "Random values 1–3": [
-    "src/editor/editor_view.gd:285"
+    "src/editor/editor_view.gd:282"
+  ],
+  "Read the outcomes and choose either": [
+    "src/game/tutorial_lessons.gd:178"
+  ],
+  "Read the shortfall in the gold tooltip": [
+    "src/game/tutorial_lessons.gd:111"
+  ],
+  "Read your next turn": [
+    "src/game/tutorial_lessons.gd:98"
   ],
   "Ready": [
-    "src/ui/game_presenter.gd:261"
+    "src/ui/game_presenter.gd:259",
+    "src/ui/steam_lobby.gd:50",
+    "src/ui/steam_lobby.gd:81",
+    "src/ui/steam_lobby.gd:90"
   ],
   "Ready Scout on empty friendly land\nClears trees / graves · tree reward +1 G\nUpkeep −%d G / turn": [
     "src/game/spell_catalog.gd:17"
   ],
-  "Ready the next strike": [
-    "src/game/tutorial_lessons.gd:94"
-  ],
-  "Ready your Knight and regenerate mana. Watch the enemy entrench its border garrison.": [
-    "src/game/tutorial_lessons.gd:88"
-  ],
-  "Ready your Knight. The enemy will fortify the road to their capital.": [
-    "src/game/tutorial_lessons.gd:76"
-  ],
   "Real playing time, including AI turns and excluding pauses.": [
-    "src/ui/session_menus.gd:203"
+    "src/ui/session_menus.gd:229"
   ],
   "Rebels seize this province and neighbouring land.\nUnits there join the rebels.": [
-    "src/game/event_catalog.gd:30"
+    "src/game/event_catalog.gd:30",
+    "resources/events/custom_events.json:revolt:choices:0:hint"
+  ],
+  "Received an incompatible game state. Use the same game build as the host.": [
+    "src/network/network_match.gd:244"
   ],
   "Recent:": [
     "src/localization/native_messages.gd:7"
   ],
   "Recognise their independence. From a distance.": [
-    "src/game/event_catalog.gd:30"
+    "src/game/event_catalog.gd:30",
+    "resources/events/custom_events.json:revolt:choices:0:label"
   ],
   "Reconnect this province to develop it": [
-    "src/ui/province_view.gd:105"
+    "src/ui/province_view.gd:109"
   ],
   "Recruit": [
     "src/settings/key_settings.gd:8",
-    "src/ui/game_hud.gd:153",
-    "src/ui/game_hud.gd:179",
-    "src/ui/game_presenter.gd:38",
-    "src/ui/game_presenter.gd:335"
+    "src/ui/game_hud.gd:181",
+    "src/ui/game_hud.gd:207",
+    "src/ui/game_presenter.gd:36",
+    "src/ui/game_presenter.gd:333"
   ],
   "Recruit / build / spells": [
-    "src/ui/game_hud.gd:293"
+    "src/ui/game_hud.gd:321"
   ],
-  "Recruit a Scout on the gold ring": [
-    "src/game/tutorial_lessons.gd:58"
+  "Recruit a Scout on the marked western province. Its 10-gold price empties only the western treasury. Gold held by the eastern kingdom cannot pay for this purchase.": [
+    "src/game/tutorial_lessons.gd:105"
   ],
-  "Recruit a Soldier onto your Scout": [
-    "src/game/tutorial_lessons.gd:62"
+  "Recruit a second Scout": [
+    "src/game/tutorial_lessons.gd:75"
   ],
-  "Recruit on friendly land\nUpgrade unmoved units · uses local gold\nShortcut: %s": [
-    "src/ui/game_hud.gd:277"
+  "Recruit in the western kingdom": [
+    "src/game/tutorial_lessons.gd:105"
+  ],
+  "Recruit or upgrade using local gold\nUpgrading does not restore a spent action\nShortcut: %s": [
+    "src/ui/game_hud.gd:305"
   ],
   "Recruit the volunteers.": [
-    "src/game/event_catalog.gd:23"
+    "src/game/event_catalog.gd:23",
+    "resources/events/custom_events.json:comet:choices:1:label"
   ],
-  "Recruit, claim land, and win your first battle.": [
-    "src/game/tutorial_lessons.gd:10"
+  "Recruit, move, claim neutral land and learn every rank.": [
+    "src/game/tutorial_lessons.gd:11"
   ],
   "Redo": [
-    "src/editor/editor_view.gd:163"
+    "src/editor/editor_view.gd:162"
   ],
   "Redo stroke · Ctrl+Y / Ctrl+Shift+Z": [
-    "src/editor/level_editor.gd:285"
+    "src/editor/level_editor.gd:281"
   ],
   "Refresh": [
     "src/ui/replay_interface.gd:144"
@@ -2024,116 +2640,135 @@
   "Refresh files.": [
     "src/localization/native_messages.gd:6"
   ],
+  "Regenerate enough mana for Shatter": [
+    "src/game/tutorial_lessons.gd:167"
+  ],
   "Regroup!": [
     "src/game/event_catalog.gd:26"
   ],
+  "Reload": [
+    "src/editor/editor_view.gd:316"
+  ],
+  "Relocate the threatened border capital": [
+    "src/game/tutorial_lessons.gd:152"
+  ],
   "Remove provinces and everything on them.": [
-    "src/editor/editor_view.gd:355"
+    "src/editor/editor_view.gd:365"
   ],
   "Replay could not be saved. Try again.": [
-    "src/ui/session_menus.gd:271"
+    "src/ui/session_menus.gd:309"
   ],
   "Replay could not be saved: ": [
-    "src/game/game.gd:183"
+    "src/game/game.gd:192"
   ],
   "Replay details unavailable": [
     "src/ui/replay_viewer.gd:263"
   ],
   "Replay not saved. Save it before leaving this screen.": [
-    "src/ui/session_menus.gd:259"
+    "src/ui/session_menus.gd:297"
   ],
   "Replay recording stopped: %s": [
-    "src/game/game.gd:670"
+    "src/game/game.gd:713"
   ],
   "Replay saved. Open Replays from the main menu.": [
-    "src/ui/session_menus.gd:270"
+    "src/ui/session_menus.gd:308"
   ],
   "Replays": [
     "src/ui/replay_interface.gd:75",
     "src/ui/replay_interface.gd:98",
-    "src/ui/session_menus.gd:291"
+    "src/ui/session_menus.gd:329"
   ],
   "Replays open paused. Use the timeline to inspect any move.": [
     "src/ui/replay_interface.gd:137"
   ],
   "Requires a Knight": [
-    "src/ui/game_presenter.gd:245",
-    "src/ui/game_presenter.gd:254",
-    "src/ui/province_view.gd:91"
+    "src/ui/game_presenter.gd:243",
+    "src/ui/game_presenter.gd:252",
+    "src/ui/province_view.gd:95"
   ],
   "Requires a Soldier or Knight": [
-    "src/ui/game_presenter.gd:245",
-    "src/ui/game_presenter.gd:254",
-    "src/ui/province_view.gd:91"
+    "src/ui/game_presenter.gd:243",
+    "src/ui/game_presenter.gd:252",
+    "src/ui/province_view.gd:95"
   ],
   "Restart": [
-    "src/ui/session_menus.gd:157",
-    "src/ui/session_menus.gd:398"
+    "src/ui/session_menus.gd:184",
+    "src/ui/session_menus.gd:535"
   ],
   "Restart level": [
-    "src/ui/session_menus.gd:211",
-    "src/ui/session_menus.gd:219"
+    "src/ui/session_menus.gd:242",
+    "src/ui/session_menus.gd:250"
   ],
   "Restart level\nSame island and starting state": [
-    "src/ui/session_menus.gd:158"
+    "src/ui/session_menus.gd:185"
   ],
   "Restart the game to apply the selected language.": [
-    "src/ui/options_view.gd:224"
+    "src/ui/options_view.gd:215"
   ],
   "Restart this level?": [
-    "src/ui/session_menus.gd:396"
+    "src/ui/session_menus.gd:533"
   ],
   "Restore defaults": [
     "src/ui/controls_view.gd:41"
   ],
-  "Result not recorded": [
-    "src/game/replay_summary.gd:126"
+  "Restore this exercise's starting board, gold, mana and choices. Earlier exercises stay complete.": [
+    "src/ui/tutorial_coach.gd:45"
   ],
-  "Retry step": [
-    "src/game/tutorial.gd:59"
+  "Result not recorded": [
+    "src/game/replay_summary.gd:131"
+  ],
+  "Retry exercise": [
+    "src/ui/tutorial_coach.gd:43"
   ],
   "Return everyone to the recruitment office.": [
     "src/game/event_catalog.gd:26"
   ],
   "Return to editor": [
-    "src/app/app.gd:146",
-    "src/ui/session_menus.gd:388"
+    "src/app/app.gd:259",
+    "src/ui/session_menus.gd:525"
   ],
   "Return to editor?": [
-    "src/ui/session_menus.gd:388"
+    "src/ui/session_menus.gd:525"
   ],
   "Return to main menu?": [
-    "src/ui/session_menus.gd:388"
+    "src/ui/session_menus.gd:525"
+  ],
+  "Return to the main menu before starting an online match.": [
+    "src/app/app.gd:70"
+  ],
+  "Return to the main menu to accept your Steam invitation.": [
+    "src/app/app.gd:63"
   ],
   "Revise the map. Quietly.": [
     "src/game/event_catalog.gd:27"
   ],
   "Reward: +1 mana / turn": [
-    "src/ui/province_view.gd:92"
+    "src/ui/province_view.gd:96"
   ],
   "Reward: +5 G / turn": [
-    "src/ui/province_view.gd:92"
+    "src/ui/province_view.gd:96"
   ],
   "Reward: 20 G + 2 mana": [
-    "src/ui/province_view.gd:92"
+    "src/ui/province_view.gd:96"
   ],
   "Right": [
-    "src/localization/native_messages.gd:14"
+    "src/localization/native_messages.gd:14",
+    "src/ui/player_profile_panel.gd:154"
   ],
   "Right choice": [
     "src/settings/key_settings.gd:8"
   ],
   "Right-click": [
-    "src/ui/game_hud.gd:293"
+    "src/ui/game_hud.gd:321"
   ],
   "Right-drag": [
-    "src/ui/game_hud.gd:293"
+    "src/ui/game_hud.gd:321"
   ],
   "Roaming near its lair": [
-    "src/ui/game_presenter.gd:251"
+    "src/ui/game_presenter.gd:249"
   ],
   "Rotate and tilt": [
-    "src/ui/game_hud.gd:293"
+    "src/ui/game_hud.gd:321"
   ],
   "Round": [
     "src/ui/income_graph.gd:69"
@@ -2145,323 +2780,418 @@
     "src/ui/replay_viewer.gd:562"
   ],
   "Rounds: %s": [
-    "src/game/replay_summary.gd:153"
+    "src/game/replay_summary.gd:158"
   ],
   "Royalty is a liquid asset.": [
     "src/game/event_catalog.gd:28"
   ],
-  "Rules": [
-    "src/editor/editor_view.gd:251",
-    "src/ui/multiplayer_setup.gd:89",
-    "src/ui/options_view.gd:61"
-  ],
   "Rules: %s": [
-    "src/game/replay_summary.gd:155"
+    "src/game/replay_summary.gd:160"
   ],
   "S": [
-    "src/ui/status_effects.gd:19"
+    "src/ui/status_effects.gd:21"
+  ],
+  "Saltire": [
+    "src/ui/player_profile_panel.gd:135"
   ],
   "Save": [
-    "src/editor/editor_view.gd:195",
+    "src/editor/editor_view.gd:194",
     "src/localization/native_messages.gd:10"
   ],
+  "Save changes": [
+    "src/ui/player_profile_panel.gd:77",
+    "src/ui/player_profile_panel.gd:269"
+  ],
   "Save level": [
-    "src/editor/level_editor.gd:405"
+    "src/editor/level_editor.gd:401"
   ],
   "Save level · Ctrl+S. Ctrl+Shift+S: save as.": [
-    "src/editor/editor_view.gd:195"
+    "src/editor/editor_view.gd:194"
   ],
   "Save replay": [
-    "src/ui/session_menus.gd:210",
-    "src/ui/session_menus.gd:223"
+    "src/ui/session_menus.gd:241",
+    "src/ui/session_menus.gd:254"
   ],
   "Saved %s": [
-    "src/editor/level_editor.gd:425"
+    "src/editor/level_editor.gd:421"
   ],
   "Saved replays": [
     "src/ui/replay_interface.gd:108"
   ],
   "Scout": [
     "src/editor/editor_view.gd:9",
-    "src/editor/editor_view.gd:361",
-    "src/editor/editor_view.gd:509",
-    "src/editor/editor_view.gd:517",
+    "src/editor/editor_view.gd:371",
+    "src/editor/editor_view.gd:519",
+    "src/editor/editor_view.gd:527",
     "src/editor/level_document.gd:9",
-    "src/editor/level_document.gd:166",
-    "src/editor/level_document.gd:174",
-    "src/editor/level_document.gd:180",
-    "src/editor/level_document.gd:180",
-    "src/editor/level_editor.gd:314",
+    "src/editor/level_document.gd:168",
+    "src/editor/level_document.gd:175",
+    "src/editor/level_document.gd:181",
+    "src/editor/level_document.gd:181",
+    "src/editor/level_editor.gd:310",
     "src/game/game_catalog.gd:7"
   ],
   "Scout summoned, ready to move.": [
     "src/game/spell_catalog.gd:8"
   ],
+  "Scouts have strength 1 and cannot defeat another Scout. Choose Soldier in Recruit, then click your Scout. Pay the 10-gold difference for strength 2 and wages of 12 per turn.": [
+    "src/game/tutorial_lessons.gd:80"
+  ],
   "Search and paint events.": [
-    "src/editor/level_editor.gd:288"
+    "src/editor/level_editor.gd:284"
   ],
   "Search events, descriptions or outcomes…": [
-    "src/editor/editor_view.gd:309"
+    "src/editor/editor_view.gd:306"
   ],
   "Seat order": [
-    "src/ui/multiplayer_setup.gd:106"
-  ],
-  "Secure a beachhead": [
-    "src/game/tutorial_lessons.gd:90"
-  ],
-  "Secure the border": [
-    "src/game/tutorial_lessons.gd:77"
+    "src/ui/multiplayer_setup.gd:105"
   ],
   "Seed must be a number between 0 and 2147483647.": [
-    "src/ui/multiplayer_setup.gd:267"
+    "src/ui/multiplayer_setup.gd:265"
   ],
   "Seed: %s": [
-    "src/game/replay_summary.gd:161"
+    "src/game/replay_summary.gd:166",
+    "src/ui/session_menus.gd:446"
   ],
   "Select": [
     "src/localization/native_messages.gd:10"
   ],
   "Select an event, then paint. Every encounter resolves on the first visit.": [
-    "src/editor/editor_view.gd:322"
+    "src/editor/editor_view.gd:332"
   ],
-  "Select your Scout": [
-    "src/game/tutorial_lessons.gd:59"
+  "Select either ready Scout and capture another empty neutral province. Keep alternating useful captures with End turn when your armies are spent. Hover over gold whenever you need to check the resulting budget.": [
+    "src/game/tutorial_lessons.gd:78"
+  ],
+  "Select either western Scout and capture the marked neutral gap. This joins the two regions into one kingdom and pools the remaining gold. Reconnection can rescue land that could not support itself.": [
+    "src/game/tutorial_lessons.gd:108"
+  ],
+  "Select the eastern kingdom": [
+    "src/game/tutorial_lessons.gd:106"
+  ],
+  "Select the new Scout and capture another empty neutral province. Each army normally gets one action per turn; both Scouts will then have acted.": [
+    "src/game/tutorial_lessons.gd:76"
+  ],
+  "Select your Scout and capture this neutral source. Sources increase maximum mana; every four controlled sources also add regeneration. Trailblaze leaves the Scout ready, so you can immediately use the new foothold.": [
+    "src/game/tutorial_lessons.gd:160"
+  ],
+  "Select your Scout and click the marked neutral shore, beyond the Bridge. Crossing friendly land and empty bridges is part of the same move. When the landing is reachable, avoid wasting a turn stopping on the Bridge.": [
+    "src/game/tutorial_lessons.gd:129"
+  ],
+  "Select your Soldier and attack the marked Scout. An attack normally needs higher strength than the province's defense. Armies lend up to strength 2 to adjacent land of the same owner; they do not protect enemy or neutral land.": [
+    "src/game/tutorial_lessons.gd:81"
+  ],
+  "Select your starting Scout": [
+    "src/game/tutorial_lessons.gd:72"
+  ],
+  "Separate kingdoms, separate gold": [
+    "src/game/tutorial_lessons.gd:103"
   ],
   "Set computer difficulty for every seat.": [
-    "src/ui/multiplayer_setup.gd:121"
+    "src/ui/multiplayer_setup.gd:120"
   ],
   "Set the value of existing land, from 1 to 6. Keeps ownership and objects.": [
-    "src/editor/editor_view.gd:359"
+    "src/editor/editor_view.gd:369"
   ],
   "Shadows": [
-    "src/ui/options_view.gd:137"
+    "src/ui/options_view.gd:122"
   ],
   "Shatter": [
     "src/game/spell_catalog.gd:9"
   ],
+  "Shatter a neutral structure": [
+    "src/game/tutorial_lessons.gd:166"
+  ],
+  "Shatter costs 2 mana. End turn to regenerate enough. Its targets are reachable neutral structures; it cannot erase an enemy-owned Tower or an impassable mountain.": [
+    "src/game/tutorial_lessons.gd:167"
+  ],
   "Shatter struck the neutral structure.": [
     "src/game/spell_catalog.gd:10"
+  ],
+  "Shatter the marked Bridge": [
+    "src/game/tutorial_lessons.gd:169"
   ],
   "Shift": [
     "src/localization/native_messages.gd:13"
   ],
   "Shortcut: %s": [
-    "src/ui/game_hud.gd:283",
-    "src/ui/game_presenter.gd:112",
-    "src/ui/province_view.gd:127"
+    "src/ui/game_hud.gd:311",
+    "src/ui/game_presenter.gd:110",
+    "src/ui/province_view.gd:131"
   ],
   "Show UI · F10": [
     "src/ui/replay_interface.gd:214"
   ],
   "Show map": [
-    "src/ui/session_menus.gd:224"
+    "src/ui/session_menus.gd:255"
   ],
   "Shuffle at start": [
-    "src/ui/multiplayer_setup.gd:106"
+    "src/ui/multiplayer_setup.gd:105"
   ],
   "Shuffle colours": [
-    "src/ui/multiplayer_setup.gd:125"
+    "src/ui/multiplayer_setup.gd:124"
   ],
   "Sight 3 · two actions each World turn": [
-    "src/ui/game_presenter.gd:247"
+    "src/ui/game_presenter.gd:245"
   ],
   "Single player": [
-    "src/game/replay_summary.gd:140"
+    "src/game/replay_summary.gd:145"
   ],
   "Size": [
-    "src/ui/multiplayer_setup.gd:88"
+    "src/ui/multiplayer_setup.gd:89",
+    "src/ui/player_profile_panel.gd:144"
   ],
   "Size: %s": [
-    "src/game/replay_summary.gd:157"
+    "src/game/replay_summary.gd:162"
+  ],
+  "Skip for now": [
+    "src/ui/session_menus.gd:383"
   ],
   "Sky": [
-    "src/ui/options_view.gd:131"
+    "src/ui/options_view.gd:116"
   ],
   "Slay & Reign": [
-    "src/ui/session_menus.gd:80"
+    "src/ui/session_menus.gd:97"
   ],
   "Small": [
     "src/game/map_sizes.gd:15"
   ],
   "Smoother edges\nHigher settings use more GPU power": [
-    "src/ui/options_view.gd:128"
+    "src/ui/options_view.gd:113"
   ],
   "Soldier": [
     "src/editor/editor_view.gd:9",
-    "src/editor/editor_view.gd:362",
-    "src/editor/editor_view.gd:509",
-    "src/editor/editor_view.gd:517",
+    "src/editor/editor_view.gd:372",
+    "src/editor/editor_view.gd:519",
+    "src/editor/editor_view.gd:527",
     "src/editor/level_document.gd:9",
-    "src/editor/level_document.gd:166",
-    "src/editor/level_document.gd:174",
-    "src/editor/level_document.gd:180",
-    "src/editor/level_document.gd:180",
-    "src/editor/level_editor.gd:314",
+    "src/editor/level_document.gd:168",
+    "src/editor/level_document.gd:175",
+    "src/editor/level_document.gd:181",
+    "src/editor/level_document.gd:181",
+    "src/editor/level_editor.gd:310",
     "src/game/game_catalog.gd:7"
   ],
   "Soldiers lost": [
-    "src/ui/session_menus.gd:198"
+    "src/ui/session_menus.gd:224"
   ],
   "Soldiers slain": [
-    "src/ui/session_menus.gd:198"
+    "src/ui/session_menus.gd:224"
+  ],
+  "Solid": [
+    "src/ui/player_profile_panel.gd:135"
+  ],
+  "Some encounters create structures with a lasting faction benefit. Move your Knight onto this question mark. This encounter appears only when you have a Knight and do not already control its landmark.": [
+    "src/game/tutorial_lessons.gd:180"
   ],
   "Sort files": [
     "src/localization/native_messages.gd:9"
   ],
   "Sound settings could not be saved.": [
-    "src/game/game.gd:726"
+    "src/game/game.gd:775"
   ],
   "Space": [
     "src/localization/native_messages.gd:13"
   ],
   "Speed up opponents": [
-    "src/ui/game_hud.gd:293"
+    "src/ui/game_hud.gd:321"
   ],
   "Spells": [
     "src/settings/key_settings.gd:8",
-    "src/ui/game_hud.gd:164",
-    "src/ui/game_presenter.gd:38",
-    "src/ui/game_presenter.gd:337"
+    "src/ui/game_hud.gd:192",
+    "src/ui/game_presenter.gd:36",
+    "src/ui/game_presenter.gd:335"
   ],
   "Spells\nUses faction mana\nShortcut: %s": [
-    "src/ui/game_hud.gd:279"
+    "src/ui/game_hud.gd:307"
   ],
   "Spend %d G from this territory's treasury to move its capital to the selected province?": [
-    "src/game/game.gd:380"
+    "src/game/game.gd:405"
   ],
   "Spend shared faction mana on a spell.": [
-    "src/ui/game_hud.gd:164"
+    "src/ui/game_hud.gd:192"
   ],
   "Standard": [
     "src/game/map_sizes.gd:16"
   ],
+  "Star": [
+    "src/ui/player_profile_panel.gd:141"
+  ],
   "Start": [
-    "src/editor/editor_view.gd:173",
-    "src/editor/editor_view.gd:178",
-    "src/editor/editor_view.gd:331",
-    "src/editor/level_editor.gd:287"
+    "src/editor/editor_view.gd:172",
+    "src/editor/editor_view.gd:177",
+    "src/editor/editor_view.gd:341",
+    "src/editor/level_editor.gd:283"
+  ],
+  "Start Steam and sign in, then try again.": [
+    "src/network/steam_online.gd:53"
   ],
   "Start game": [
-    "src/ui/multiplayer_setup.gd:129",
-    "src/ui/session_menus.gd:140"
+    "src/ui/multiplayer_setup.gd:128",
+    "src/ui/session_menus.gd:156",
+    "src/ui/steam_lobby.gd:51"
+  ],
+  "Start with the tutorial": [
+    "src/ui/session_menus.gd:377"
   ],
   "Started: %s UTC": [
-    "src/game/replay_summary.gd:160"
+    "src/game/replay_summary.gd:165"
   ],
   "Starting colour · choosing an occupied colour swaps the two seats.": [
-    "src/ui/multiplayer_setup.gd:65"
+    "src/ui/multiplayer_setup.gd:66"
   ],
   "Starting gold per kingdom": [
-    "src/editor/editor_view.gd:238"
+    "src/editor/editor_view.gd:237"
   ],
-  "Starting kingdoms · includes yours\nAll sizes: 2–6": [
-    "src/ui/session_menus.gd:103"
+  "Starting kingdoms Ă‚Â· includes yours\nAll sizes: 2Ă˘â‚¬â€ś6": [
+    "src/ui/session_menus.gd:128"
   ],
   "Starting position": [
     "src/ui/replay_interface.gd:165",
     "src/ui/replay_viewer.gd:556"
   ],
-  "Stop the raid": [
-    "src/game/tutorial_lessons.gd:75"
+  "Steam": [
+    "src/network/steam_online.gd:39",
+    "src/network/steam_online.gd:40",
+    "src/network/steam_online.gd:45",
+    "src/network/steam_online.gd:49"
+  ],
+  "Steam did not respond. Please try again.": [
+    "src/network/steam_online.gd:188"
+  ],
+  "Steam multiplayer": [
+    "src/ui/steam_lobby.gd:25"
+  ],
+  "Steam online…": [
+    "src/ui/multiplayer_setup.gd:41"
+  ],
+  "Steam support is unavailable in this build.": [
+    "src/network/steam_online.gd:46"
+  ],
+  "Stop a predator and its lair": [
+    "src/game/tutorial_lessons.gd:183"
   ],
   "Stylized water": [
-    "src/ui/options_view.gd:161"
+    "src/ui/options_view.gd:152"
   ],
   "Summon": [
     "src/game/spell_catalog.gd:7"
   ],
-  "Summon a Scout on the gold ring": [
-    "src/game/tutorial_lessons.gd:92"
+  "Summon a Scout on valid friendly land": [
+    "src/game/tutorial_lessons.gd:164"
   ],
   "Summon a ready Scout on empty land in a friendly kingdom. Clears trees or graves; a cleared tree gives 1 G. The Scout has normal upkeep.": [
     "src/game/spell_catalog.gd:8"
   ],
+  "Summon reinforcements": [
+    "src/game/tutorial_lessons.gd:162"
+  ],
+  "Sun": [
+    "src/ui/player_profile_panel.gd:141"
+  ],
   "Surely this calls for a modest subsidy.": [
-    "src/game/event_catalog.gd:30"
+    "src/game/event_catalog.gd:30",
+    "resources/events/custom_events.json:revolt:choices:1:label"
+  ],
+  "Sword": [
+    "src/ui/player_profile_panel.gd:141"
   ],
   "Synchronize frames with the display to reduce tearing.": [
-    "src/ui/options_view.gd:135"
+    "src/ui/options_view.gd:120"
   ],
   "T": [
-    "src/editor/level_editor.gd:290",
-    "src/game/replay_summary.gd:160",
+    "src/editor/level_editor.gd:286",
+    "src/game/replay_summary.gd:165",
     "src/ui/replay_viewer.gd:138",
     "src/ui/replay_viewer.gd:257"
   ],
   "Tab": [
     "src/localization/native_messages.gd:13"
   ],
-  "Take command": [
-    "src/game/tutorial_lessons.gd:59"
+  "Take the marked capital. Adjacent provinces in that kingdom surrender too. Their buildings remain, so the Tower becomes yours without paying to build one or destroying it in a direct attack.": [
+    "src/game/tutorial_lessons.gd:143"
   ],
-  "Take the enemy capital": [
-    "src/game/tutorial_lessons.gd:65",
-    "src/game/tutorial_lessons.gd:81",
-    "src/game/tutorial_lessons.gd:97"
-  ],
-  "Take the neutral shore. Watch your Knight stay ready after the capture.": [
-    "src/game/tutorial_lessons.gd:90"
-  ],
-  "Take the strongpoint": [
-    "src/game/tutorial_lessons.gd:95"
+  "Taking enemy territory": [
+    "src/game/tutorial_lessons.gd:14"
   ],
   "Targets buildings and provinces; cannot kill units": [
-    "src/ui/game_presenter.gd:246"
+    "src/ui/game_presenter.gd:244"
   ],
   "Targets units and provinces; leaves buildings intact": [
-    "src/ui/game_presenter.gd:246"
+    "src/ui/game_presenter.gd:244"
   ],
   "Targets units, buildings and provinces": [
-    "src/ui/game_presenter.gd:246"
+    "src/ui/game_presenter.gd:244"
   ],
   "Thank you, kind wizard": [
     "src/game/event_catalog.gd:21"
   ],
+  "That action is no longer available. Please try again.": [
+    "src/network/network_match.gd:93"
+  ],
   "The %s kingdom declares independence. Its constitution is mostly pitchforks.": [
-    "src/game/encounter_rules.gd:267"
+    "src/game/encounter_rules.gd:292"
   ],
   "The Pitchfork Parliament": [
-    "src/game/event_catalog.gd:30"
+    "src/game/event_catalog.gd:30",
+    "resources/events/custom_events.json:revolt:title"
+  ],
+  "The Soldier is defeated, but your Knight has spent its action. End turn before attacking the nearby Tower.": [
+    "src/game/tutorial_lessons.gd:85"
+  ],
+  "The Soldier now borders your lower province, two steps from the Tower. End turn to see it capture that uncovered land. Coverage and approach routes matter more than simply owning a Tower.": [
+    "src/game/tutorial_lessons.gd:126"
+  ],
+  "The Steam connection failed. The online match has ended.": [
+    "src/network/steam_online.gd:297"
+  ],
+  "The Tower protects adjacent ENEMY land, including its capital. It does not protect the neutral land or your provinces. The Scout above it lies outside its coverage and offers a weaker approach.": [
+    "src/game/tutorial_lessons.gd:139"
   ],
   "The altar awakens: a new mana source.": [
-    "src/game/kingdom_magic.gd:112"
+    "src/game/kingdom_magic.gd:129"
   ],
   "The army belongs to a connected kingdom.": [
     "src/game/event_catalog.gd:27"
   ],
   "The army remains reassuringly imbalanced.": [
-    "src/game/encounter_rules.gd:213"
+    "src/game/encounter_rules.gd:238"
   ],
   "The border is corrected. Several provinces were apparently a clerical error.": [
-    "src/game/encounter_rules.gd:236"
+    "src/game/encounter_rules.gd:261"
   ],
-  "The capital is next": [
-    "src/game/tutorial_lessons.gd:64"
+  "The cave has a clear exit beside your border House. End turn to see it spawn a Bear. A newly emerged animal does not also move that turn, giving you time to recognize the threat.": [
+    "src/game/tutorial_lessons.gd:184"
   ],
-  "The comet has improved the accounts: +%d gold per turn permanently.": [
-    "src/game/encounter_rules.gd:195"
+  "The connection could not keep up with the match.": [
+    "src/network/network_match.gd:88"
   ],
   "The current game will be discarded.": [
-    "src/ui/session_menus.gd:177",
-    "src/ui/session_menus.gd:389"
+    "src/ui/session_menus.gd:203",
+    "src/ui/session_menus.gd:526"
   ],
   "The drink lives up to its name. Your army does not.": [
-    "src/game/encounter_rules.gd:203"
+    "src/game/encounter_rules.gd:228"
   ],
-  "The enemy advances": [
-    "src/game/tutorial_lessons.gd:71"
+  "The enemy Knight can still defeat a Soldier. Click the Soldier's ground and choose Entrench. This spends the action to absorb one attack on this province. It can buy time when a stronger army threatens a position you need to hold.": [
+    "src/game/tutorial_lessons.gd:89"
   ],
-  "The family pays 20 gold. No receipt is requested.": [
-    "src/game/encounter_rules.gd:240"
-  ],
-  "The garrison digs in": [
+  "The enemy Knight threatens the forward Scout. Move your rear Scout onto it to merge into a ready Soldier. Merging costs no gold, but wages rise from 8 for two Scouts to 12 for the Soldier.": [
     "src/game/tutorial_lessons.gd:88"
   ],
-  "The garrison will absorb one attack. Use your extra action to wear it down.": [
-    "src/game/tutorial_lessons.gd:91"
+  "The enemy Soldier can capture your exposed border capital next turn. Click the marked rear province and choose Move capital. Confirm the 10-gold price. Relocation protects the treasury; later moves cost more. Cancelling spends nothing.": [
+    "src/game/tutorial_lessons.gd:152"
+  ],
+  "The event library changed. Start a new Steam lobby to use the updated events.": [
+    "src/network/steam_online.gd:210"
+  ],
+  "The family pays 20 gold. No receipt is requested.": [
+    "src/game/encounter_rules.gd:265"
   ],
   "The ground gives way. A hidden pit swallows your army before anyone can throw down a rope.": [
     "src/game/event_catalog.gd:19"
+  ],
+  "The host left. Return to multiplayer to start a new lobby.": [
+    "src/network/steam_online.gd:108"
   ],
   "The imbalance is traditional.": [
     "src/game/event_catalog.gd:26"
@@ -2470,11 +3200,18 @@
     "src/game/event_catalog.gd:24"
   ],
   "The journey continues.": [
-    "src/game/encounter_rules.gd:271",
-    "src/game/kingdom_magic.gd:97"
+    "src/game/authored_event_runtime.gd:184",
+    "src/game/encounter_rules.gd:296",
+    "src/game/kingdom_magic.gd:113"
   ],
-  "The last push": [
-    "src/game/tutorial_lessons.gd:96"
+  "The marked chest pays 15 gold when captured. Move your Scout onto it. Immediate loot can fund another purchase this turn, while ordinary province income arrives on later turns.": [
+    "src/game/tutorial_lessons.gd:174"
+  ],
+  "The marked connection supports three Soldiers in the lower pocket. Use your Knight to take it. The pocket is large enough to form a new kingdom, but its poor land cannot pay 36 gold of wages.": [
+    "src/game/tutorial_lessons.gd:149"
+  ],
+  "The marked province is the exposed Scout's only connection to its treasury. Take it with your Soldier. A single isolated province has no kingdom bank to pay its army.": [
+    "src/game/tutorial_lessons.gd:146"
   ],
   "The marshal reports that our army is perfectly balanced, provided one ignores its composition, deployment, and continued existence. He proposes a fresh start.": [
     "src/game/event_catalog.gd:26"
@@ -2482,80 +3219,100 @@
   "The next unit you move can move again if it captures neutral land. Any valid move consumes this effect. Persists until used.": [
     "src/game/event_catalog.gd:35"
   ],
+  "The opponent took your last capital. Retry this exercise to try a different opening. Expand into useful land, keep your armies paid, and reinforce where they can act.": [
+    "src/ui/tutorial_coach.gd:67"
+  ],
   "The peasants have formed a representative assembly. Every representative carries a pitchfork, and their first motion is that we should leave immediately.": [
-    "src/game/event_catalog.gd:30"
+    "src/game/event_catalog.gd:30",
+    "resources/events/custom_events.json:revolt:text"
   ],
   "The priests predict disaster. The treasurer predicts revenue. The recruiting sergeant proposes recruiting volunteers inspired by the omen.": [
-    "src/game/event_catalog.gd:23"
+    "src/game/event_catalog.gd:23",
+    "resources/events/custom_events.json:comet:text"
   ],
   "The royal forester has spent three months counting trees. A man with an axe offers to conclude the investigation before lunch.": [
     "src/game/event_catalog.gd:25"
   ],
+  "The same Scout is still ready. Capture another highlighted neutral province without ending the turn. This is how a small mana investment can turn into more land and recurring income during ordinary expansion.": [
+    "src/game/tutorial_lessons.gd:161"
+  ],
   "The sleeping altar": [
     "src/game/event_catalog.gd:18"
   ],
+  "The treasury is empty.": [
+    "resources/events/custom_events.json:revolt:choices:1:outcomes:0:text"
+  ],
   "The treasury is empty. The peasants have discovered fiscal policy.": [
-    "src/game/encounter_rules.gd:250"
+    "src/game/encounter_rules.gd:275"
+  ],
+  "The upgrade did not give your army another action. Click End turn to ready the Knight before its next attack.": [
+    "src/game/tutorial_lessons.gd:83"
   ],
   "The warlord's challenge": [
     "src/game/event_catalog.gd:20"
   ],
-  "Their Scout guards the border. Upgrade yours: a Soldier beats a Scout.": [
-    "src/game/tutorial_lessons.gd:62"
-  ],
-  "Their defenses are gone. Take the capital and end the war.": [
-    "src/game/tutorial_lessons.gd:81"
-  ],
-  "Their entrenchment is gone. Next turn your Knight can defeat the garrison.": [
-    "src/game/tutorial_lessons.gd:94"
-  ],
-  "They fall back on defense": [
-    "src/game/tutorial_lessons.gd:76"
-  ],
-  "They went around your Tower. Your Knight can reach them through friendly land.": [
-    "src/game/tutorial_lessons.gd:75"
+  "This capital has defense 2 because of the neighboring Tower, so your Soldier needs a Knight upgrade. Pay 20 gold. Buying the rank does not restore its spent action.": [
+    "src/game/tutorial_lessons.gd:141"
   ],
   "This connected kingdom has trees. Rewards depend on how much potential income they block.": [
     "src/game/event_catalog.gd:25"
   ],
-  "This is not a supported Slay level.": [
-    "src/editor/level_document.gd:230",
-    "src/editor/level_editor.gd:435"
+  "This crossing could let either side approach. Destroying a bridge removes the route, and any army standing on it is lost. Check what depends on the crossing before spending mana to cut it.": [
+    "src/game/tutorial_lessons.gd:168"
   ],
-  "This level uses its authored rules. Choose rules for a new island in the editor.": [
-    "src/app/app.gd:145"
+  "This encounter offers an income landmark or a ready Scout with normal wages. Both choices are valid here. Landmarks remain on the province; their benefits depend on keeping control of that land.": [
+    "src/game/tutorial_lessons.gd:178"
+  ],
+  "This invitation is for a different game or incompatible version.": [
+    "src/network/steam_online.gd:270"
+  ],
+  "This is a normal small match against an Easy opponent: one Scout, 10 gold, and no prescribed moves. Expand into neutral land, fund the units you need, and take the enemy capital. Buildings and magic are tools, not compulsory purchases. Retry restarts this practice position.": [
+    "src/game/tutorial_lessons.gd:67"
+  ],
+  "This is not a supported Slay level.": [
+    "src/editor/level_document.gd:232",
+    "src/editor/level_editor.gd:431"
+  ],
+  "This kingdom earns 39 per turn. A Knight and Scout cost 40, and savings are empty. You cannot dismiss armies to avoid wages: plan purchases carefully. Ending now would bankrupt this kingdom and kill its supported armies.": [
+    "src/game/tutorial_lessons.gd:111"
+  ],
+  "This kingdom has four sources, including its capital, for capacity 5 and regeneration 2. Start with 1 mana and end turn: it becomes 3. Regeneration cannot exceed capacity, so unused mana may stop growing.": [
+    "src/game/tutorial_lessons.gd:163"
   ],
   "This map changed. Load it again to update the player seats.": [
-    "src/app/app.gd:73"
+    "src/app/app.gd:174"
   ],
   "This map file is too large.": [
     "src/game/match_setup.gd:65"
+  ],
+  "This permanently deletes your kingdom, flag, match record and tutorial progress. You will start again with a new profile.": [
+    "src/ui/player_profile_panel.gd:181"
   ],
   "This province and your neighbouring land become neutral.\nUnits and buildings there are lost.": [
     "src/game/event_catalog.gd:27"
   ],
   "This unit has already moved.": [
-    "src/game/player_actions.gd:132"
-  ],
-  "Three short matches. Start anywhere.": [
-    "src/ui/tutorial_selection.gd:21"
+    "src/game/player_actions.gd:134"
   ],
   "Tile arrival / departure animations\nTurning off finishes the current transition": [
-    "src/ui/options_view.gd:146"
+    "src/ui/options_view.gd:132"
   ],
   "Tiles": [
     "src/editor/editor_view.gd:9",
-    "src/editor/editor_view.gd:173",
-    "src/editor/level_editor.gd:174",
-    "src/editor/level_editor.gd:290",
-    "src/editor/level_editor.gd:291",
-    "src/editor/level_editor.gd:525"
+    "src/editor/editor_view.gd:172",
+    "src/editor/level_editor.gd:173",
+    "src/editor/level_editor.gd:286",
+    "src/editor/level_editor.gd:287",
+    "src/editor/level_editor.gd:521"
   ],
   "Tiles conquered": [
-    "src/ui/session_menus.gd:198"
+    "src/ui/session_menus.gd:224"
   ],
   "Time played": [
-    "src/ui/session_menus.gd:198"
+    "src/ui/session_menus.gd:224"
+  ],
+  "Time played: %s": [
+    "src/ui/session_menus.gd:454"
   ],
   "Timeline\nDrag to seek. Left / Right: previous / next action.": [
     "src/ui/replay_interface.gd:172"
@@ -2573,22 +3330,32 @@
     "src/game/event_catalog.gd:29"
   ],
   "Top-down": [
-    "src/game/game.gd:593",
+    "src/game/game.gd:636",
     "src/ui/replay_viewer.gd:503"
   ],
   "Top-down / 3D": [
-    "src/ui/game_hud.gd:293"
+    "src/ui/game_hud.gd:321"
+  ],
+  "Topic complete": [
+    "src/ui/tutorial_coach.gd:59"
+  ],
+  "Total play time": [
+    "src/ui/player_profile_panel.gd:102"
   ],
   "Tower": [
     "src/editor/editor_view.gd:9",
-    "src/editor/editor_view.gd:365",
-    "src/editor/editor_view.gd:526",
+    "src/editor/editor_view.gd:375",
+    "src/editor/editor_view.gd:536",
     "src/editor/level_document.gd:9",
-    "src/editor/level_document.gd:166",
-    "src/editor/level_document.gd:181"
+    "src/editor/level_document.gd:168",
+    "src/editor/level_document.gd:182",
+    "src/ui/player_profile_panel.gd:141"
   ],
   "Tower · cost %d G\nProtects self + adjacent friendly land\nNeeds clear land · no upkeep": [
-    "src/game/game_catalog.gd:34"
+    "src/game/game_catalog.gd:32"
+  ],
+  "Towers protect your land": [
+    "src/game/tutorial_lessons.gd:122"
   ],
   "Tradition wins another decisive victory.": [
     "src/game/event_catalog.gd:26"
@@ -2600,15 +3367,21 @@
   "Trailblaze is ready for your next move.": [
     "src/game/spell_catalog.gd:6"
   ],
-  "Trailblaze lets your next neutral capture keep its action.": [
-    "src/game/tutorial_lessons.gd:89"
+  "Trailblaze keeps momentum": [
+    "src/game/tutorial_lessons.gd:158"
   ],
   "Treasure chest · guaranteed %d G on capture": [
-    "src/ui/game_presenter.gd:289",
-    "src/ui/province_view.gd:85"
+    "src/ui/game_presenter.gd:284",
+    "src/ui/province_view.gd:89"
   ],
   "Treasure collected · +%d G to your kingdom.": [
-    "src/game/player_actions.gd:114"
+    "src/game/player_actions.gd:115"
+  ],
+  "Treasure needs empty neutral land and a positive gold reward.": [
+    "src/editor/level_document.gd:275"
+  ],
+  "Treasure pays once": [
+    "src/game/tutorial_lessons.gd:173"
   ],
   "Try Father's Final Request.": [
     "src/game/event_catalog.gd:24"
@@ -2616,120 +3389,146 @@
   "Try Headman's Last Breath.": [
     "src/game/event_catalog.gd:24"
   ],
+  "Turn %02d · %s": [
+    "src/ui/game_presenter.gd:330"
+  ],
   "Turn %d": [
-    "src/game/opponent_turns.gd:211"
+    "src/game/opponent_turns.gd:213"
   ],
   "Turn 3D shadows off to reduce graphics load.": [
-    "src/ui/options_view.gd:138"
-  ],
-  "Turn defense into victory": [
-    "src/game/tutorial_lessons.gd:81"
+    "src/ui/options_view.gd:123"
   ],
   "Turn existing land into neutral, impassable mountains with value 0. Clears all objects.": [
-    "src/editor/editor_view.gd:356"
+    "src/editor/editor_view.gd:366"
   ],
   "Turn order": [
-    "src/ui/multiplayer_setup.gd:99"
+    "src/ui/multiplayer_setup.gd:98"
   ],
   "Turns": [
-    "src/ui/session_menus.gd:198"
+    "src/ui/session_menus.gd:224"
   ],
   "Tutorial": [
-    "src/ui/game_presenter.gd:332",
-    "src/ui/game_presenter.gd:333",
-    "src/ui/session_menus.gd:83"
-  ],
-  "Tutorial finished. Return to the menu when you are ready.": [
-    "src/game/tutorial.gd:148"
-  ],
-  "Tutorial order failed. Retry this step or return to the editor.": [
-    "src/game/tutorial.gd:239"
+    "src/ui/game_presenter.gd:330",
+    "src/ui/session_menus.gd:103"
   ],
   "Tutorial override ignored: ": [
-    "src/game/tutorial_lessons.gd:29"
+    "src/game/tutorial_lessons.gd:34"
+  ],
+  "Two Knights are the exception to the higher-strength rule: they can attack each other, but both die and the target's ownership stays unchanged. Try the exchange here before risking an expensive army in a match.": [
+    "src/game/tutorial_lessons.gd:93"
+  ],
+  "Understand income, wages and separate treasuries.": [
+    "src/game/tutorial_lessons.gd:12"
+  ],
+  "Undiscovered painting": [
+    "src/ui/painting_collection.gd:181"
   ],
   "Undo": [
-    "src/editor/editor_view.gd:162"
+    "src/editor/editor_view.gd:161"
   ],
   "Undo stroke · Ctrl+Z": [
-    "src/editor/level_editor.gd:284"
+    "src/editor/level_editor.gd:280"
   ],
   "Units": [
     "src/editor/editor_view.gd:9",
-    "src/editor/editor_view.gd:173",
-    "src/editor/level_editor.gd:290",
-    "src/editor/level_editor.gd:528",
-    "src/ui/game_presenter.gd:120"
+    "src/editor/editor_view.gd:172",
+    "src/editor/level_editor.gd:286",
+    "src/editor/level_editor.gd:524",
+    "src/ui/game_presenter.gd:118"
   ],
   "Units and buildings need an owner.": [
-    "src/editor/level_document.gd:268"
+    "src/editor/level_document.gd:272"
   ],
   "Unknown kingdom": [
-    "src/game/replay_summary.gd:104",
-    "src/game/replay_summary.gd:118"
+    "src/game/replay_summary.gd:109",
+    "src/game/replay_summary.gd:123"
   ],
   "Unmet requirements draw a weighted event that can affect the arriving army. The lumberjack adapts to the current forest coverage.": [
-    "src/editor/editor_view.gd:424"
+    "src/editor/editor_view.gd:434"
   ],
   "Unsaved level": [
     "src/editor/discard_dialog.gd:28"
   ],
   "Unsupported object.": [
-    "src/editor/level_document.gd:264",
-    "src/editor/level_document.gd:265"
+    "src/editor/level_document.gd:268",
+    "src/editor/level_document.gd:269"
   ],
   "Up": [
     "src/localization/native_messages.gd:14"
   ],
-  "Upgrade your Scout to a Knight": [
-    "src/game/tutorial_lessons.gd:74"
+  "Upgrade for the Tower-protected capital": [
+    "src/game/tutorial_lessons.gd:141"
   ],
-  "Use the unit or purchase named in this lesson.": [
-    "src/game/tutorial.gd:114"
+  "Upgrade the Soldier to a Knight": [
+    "src/game/tutorial_lessons.gd:82"
+  ],
+  "Upgrade your Scout to a Soldier": [
+    "src/game/tutorial_lessons.gd:80"
+  ],
+  "Upper left": [
+    "src/ui/player_profile_panel.gd:154"
+  ],
+  "Upper right": [
+    "src/ui/player_profile_panel.gd:154"
+  ],
+  "Use sources and all three spells with a purpose.": [
+    "src/game/tutorial_lessons.gd:15"
+  ],
+  "Use the summoned Scout before ending the turn. Summon is useful when another ready army can do something now; creating troops you cannot support just moves the cost into future wages.": [
+    "src/game/tutorial_lessons.gd:165"
+  ],
+  "Use your cheaper, ready Scout to capture ordinary value-1 neutral land. Keep the Knight guarding your border. You do not need a rare rich province or another expensive unit: one extra connected income covers this small shortfall.": [
+    "src/game/tutorial_lessons.gd:112"
   ],
   "VSync": [
-    "src/ui/options_view.gd:134"
+    "src/ui/options_view.gd:119"
   ],
   "Value": [
     "src/editor/editor_view.gd:9",
-    "src/editor/editor_view.gd:349",
-    "src/editor/editor_view.gd:350",
     "src/editor/editor_view.gd:359",
-    "src/editor/editor_view.gd:526",
+    "src/editor/editor_view.gd:360",
+    "src/editor/editor_view.gd:369",
+    "src/editor/editor_view.gd:536",
     "src/editor/level_document.gd:9",
-    "src/editor/level_document.gd:151"
+    "src/editor/level_document.gd:154"
   ],
   "Value %d": [
     "src/ui/province_view.gd:73"
   ],
   "Value heatmap": [
     "src/settings/key_settings.gd:8",
-    "src/ui/game_hud.gd:293"
+    "src/ui/game_hud.gd:321"
+  ],
+  "Vertical halves": [
+    "src/ui/player_profile_panel.gd:135"
   ],
   "Very Small": [
     "src/game/map_sizes.gd:13"
   ],
+  "Victories": [
+    "src/ui/player_profile_panel.gd:102"
+  ],
   "Victory": [
-    "src/game/replay_summary.gd:124",
-    "src/game/replay_summary.gd:131",
-    "src/ui/session_menus.gd:237"
+    "src/game/replay_summary.gd:129",
+    "src/game/replay_summary.gd:136",
+    "src/ui/session_menus.gd:268"
   ],
   "Victory for %s!": [
-    "src/game/game.gd:466",
-    "src/game/game.gd:488"
-  ],
-  "Victory!": [
-    "src/game/tutorial.gd:131",
-    "src/game/tutorial.gd:145"
+    "src/game/game.gd:500",
+    "src/game/game.gd:524",
+    "src/network/network_match.gd:270"
   ],
   "Video": [
-    "src/ui/options_view.gd:36"
+    "src/ui/options_view.gd:34"
   ],
   "Video settings could not be saved.": [
-    "src/ui/options_view.gd:174"
+    "src/ui/options_view.gd:165"
+  ],
+  "View at 100% for original size. Scroll to explore larger paintings. Escape returns to the album.": [
+    "src/ui/painting_collection.gd:137"
   ],
   "View capital": [
-    "src/ui/game_presenter.gd:145"
+    "src/ui/game_presenter.gd:143"
   ],
   "View items as a grid of thumbnails.": [
     "src/localization/native_messages.gd:8"
@@ -2738,7 +3537,16 @@
     "src/localization/native_messages.gd:8"
   ],
   "Volume changes are saved automatically.": [
-    "src/ui/options_view.gd:107"
+    "src/ui/options_view.gd:92"
+  ],
+  "Waiting for host…": [
+    "src/game/game.gd:716"
+  ],
+  "Waiting for players…": [
+    "src/game/game.gd:716"
+  ],
+  "Waiting for turn…": [
+    "src/game/game.gd:716"
   ],
   "Warning: Huge maps can slow the game and require extensive micromanagement.": [
     "src/game/map_sizes.gd:26"
@@ -2751,37 +3559,40 @@
   ],
   "Water": [
     "src/editor/editor_view.gd:9",
-    "src/editor/editor_view.gd:355",
-    "src/editor/editor_view.gd:377",
-    "src/editor/editor_view.gd:526",
+    "src/editor/editor_view.gd:365",
+    "src/editor/editor_view.gd:387",
+    "src/editor/editor_view.gd:536",
     "src/editor/level_document.gd:9",
     "src/editor/level_document.gd:12",
-    "src/editor/level_document.gd:126",
-    "src/ui/options_view.gd:131"
+    "src/editor/level_document.gd:128",
+    "src/ui/options_view.gd:116"
   ],
-  "Water separates the armies. A Bridge gives your Knight a crossing.": [
-    "src/game/tutorial_lessons.gd:86"
+  "We strongly recommend playing the tutorial before your first match. Learn how kingdoms, armies and the economy work through short, playable lessons.\n\nYou can revisit every lesson from the main menu.": [
+    "src/ui/session_menus.gd:380"
   ],
   "Wheel drag": [
-    "src/ui/game_hud.gd:293"
+    "src/ui/game_hud.gd:321"
   ],
   "Wheel: zoom · right drag: rotate · middle drag: pan\nHome: centre camera": [
     "src/ui/replay_viewer.gd:504"
   ],
-  "Widen your foothold": [
-    "src/game/tutorial_lessons.gd:93"
+  "When a House is the better investment": [
+    "src/game/tutorial_lessons.gd:131"
   ],
-  "Win across the water": [
-    "src/game/tutorial_lessons.gd:97"
+  "William Turner of Oxford": [
+    "resources/events/custom_events.json:comet:painting_artist"
+  ],
+  "Win rate": [
+    "src/ui/player_profile_panel.gd:102"
   ],
   "Window size": [
-    "src/ui/options_view.gd:119"
+    "src/ui/options_view.gd:104"
   ],
   "Windowed": [
-    "src/ui/options_view.gd:115"
+    "src/ui/options_view.gd:100"
   ],
   "Windowed mode only\nFullscreen uses the display's native size": [
-    "src/ui/options_view.gd:124"
+    "src/ui/options_view.gd:109"
   ],
   "Wizard's gift": [
     "src/game/event_catalog.gd:36"
@@ -2791,7 +3602,7 @@
   ],
   "Wolf den": [
     "src/editor/editor_view.gd:9",
-    "src/editor/editor_view.gd:367",
+    "src/editor/editor_view.gd:377",
     "src/editor/level_document.gd:9",
     "src/editor/level_document.gd:10",
     "src/editor/level_document.gd:11",
@@ -2804,39 +3615,33 @@
     "src/ui/province_view.gd:73"
   ],
   "World": [
-    "src/game/opponent_turns.gd:211",
-    "src/ui/game_presenter.gd:333",
+    "src/game/opponent_turns.gd:213",
+    "src/ui/game_presenter.gd:331",
     "src/ui/replay_viewer.gd:561"
   ],
-  "You are green. Spend your 10 G on a Scout.": [
-    "src/game/tutorial_lessons.gd:58"
+  "You command Fern, the green kingdom. Click your Scout. Highlighted destinations show where it can go through connected friendly land. Scroll to zoom; Controls explains camera movement.": [
+    "src/game/tutorial_lessons.gd:72"
   ],
-  "You defeated your opponent. Play the next match or return to the menu.": [
-    "src/game/tutorial.gd:148"
+  "You crossed and captured shore in one action. The Bridge remains a public route. Your army needs a route back to a supporting treasury; expanding or reconnecting on the far shore makes a stronger foothold.": [
+    "src/game/tutorial_lessons.gd:130"
   ],
-  "You defeated your opponent. You are ready for Quick Play.": [
-    "src/game/tutorial.gd:148"
+  "You have completed this topic. Choose another subject or use what you learned in Your first match. Every topic is available immediately.": [
+    "src/ui/tutorial_coach.gd:65"
   ],
-  "Your House and land cover the Knight's wages. Ready the final attack.": [
-    "src/game/tutorial_lessons.gd:80"
+  "You won the practice match. Try a new island in Quick Play, or return to a topic to practice a particular skill.": [
+    "src/ui/tutorial_coach.gd:66"
   ],
-  "Your Knight is spent. Summon a ready Scout using mana instead of gold.": [
-    "src/game/tutorial_lessons.gd:92"
+  "Your Knight is ready. Select it and attack the marked Soldier. A Soldier cannot beat defense 2; a Knight can. Use the least expensive rank that can do the job.": [
+    "src/game/tutorial_lessons.gd:84"
   ],
-  "Your Knights' upkeep is permanently reduced by 2 gold each.": [
-    "src/game/encounter_rules.gd:270"
+  "Your Soldier can beat this defense-1 Scout. Take its province to approach the capital. Against an unprotected capital, a Soldier would also be sufficient.": [
+    "src/game/tutorial_lessons.gd:140"
   ],
-  "Your Scout can use the crossing too. Claim more land while the Knight rests.": [
-    "src/game/tutorial_lessons.gd:93"
-  ],
-  "Your Scout has moved. End turn to collect income and watch your opponent advance.": [
-    "src/game/tutorial_lessons.gd:61"
-  ],
-  "Your Soldier is stronger. Take the guarded province.": [
-    "src/game/tutorial_lessons.gd:63"
+  "Your Soldier survived a stronger attacker and is ready again. The Knight spent its action, and the shield is gone. Entrenchment buys a turn; it does not make the army permanently stronger.": [
+    "src/game/tutorial_lessons.gd:91"
   ],
   "Your armies stand down. %d gold is returned to their treasuries.": [
-    "src/game/encounter_rules.gd:223"
+    "src/game/encounter_rules.gd:248"
   ],
   "Your army finds a foreign royal travelling incognito, accompanied by twelve servants carrying his portrait. His family may pay handsomely for his continued discretion.": [
     "src/game/event_catalog.gd:28"
@@ -2845,64 +3650,76 @@
     "src/game/event_catalog.gd:19"
   ],
   "Your army survives the drink and wins 4 gold on a wager.": [
-    "src/game/encounter_rules.gd:205"
+    "src/game/encounter_rules.gd:230"
   ],
   "Your army was lost in the pit.": [
-    "src/game/kingdom_magic.gd:106"
+    "src/game/kingdom_magic.gd:122"
   ],
   "Your army was lost.": [
-    "src/game/kingdom_magic.gd:119"
-  ],
-  "Your border is protected. Save another turn of income for a stronger army.": [
-    "src/game/tutorial_lessons.gd:73"
-  ],
-  "Your border is safe. Ready your Knight to attack the Tower.": [
-    "src/game/tutorial_lessons.gd:78"
-  ],
-  "Your bridge, magic and reinforcements opened the way. Take their capital.": [
-    "src/game/tutorial_lessons.gd:97"
+    "src/game/kingdom_magic.gd:136"
   ],
   "Your champion wins and gains a tier.": [
-    "src/game/kingdom_magic.gd:115"
+    "src/game/kingdom_magic.gd:132"
   ],
-  "Your crossing is secure. Ready your Knight to finish the match.": [
-    "src/game/tutorial_lessons.gd:96"
+  "Your country": [
+    "src/ui/session_menus.gd:144"
   ],
-  "Your faction has a Knight and has not discovered stainless steel yet.": [
+  "Your country in game": [
+    "src/ui/player_profile_panel.gd:133"
+  ],
+  "Your disconnected kingdoms each have 10 gold. Hover over gold to check the selected western kingdom. Faction color does not make their treasuries shared.": [
+    "src/game/tutorial_lessons.gd:104"
+  ],
+  "Your faction has a Knight and does not control a stainless steel landmark.": [
     "src/game/event_catalog.gd:31"
   ],
   "Your faction has at least two units on the board.": [
     "src/game/event_catalog.gd:26"
   ],
-  "Your first Scout": [
-    "src/game/tutorial_lessons.gd:58"
-  ],
-  "Your income now supports a Knight. Upgrade the Scout to break their advance.": [
-    "src/game/tutorial_lessons.gd:74"
-  ],
-  "Your kingdom": [
-    "src/ui/session_menus.gd:119"
+  "Your first match": [
+    "src/game/tutorial_lessons.gd:17"
   ],
   "Your kingdom against computer opponents.": [
-    "src/ui/session_menus.gd:277"
+    "src/ui/session_menus.gd:315"
+  ],
+  "Your kingdom fell": [
+    "src/ui/tutorial_coach.gd:60"
   ],
   "Your kingdom gains %d gold.": [
-    "src/game/kingdom_magic.gd:122"
+    "src/game/kingdom_magic.gd:139"
+  ],
+  "Your kingdom gains {amount} gold.": [
+    "resources/events/custom_events.json:gold:choices:0:outcomes:0:text"
   ],
   "Your kingdom has fallen.": [
-    "src/game/game.gd:479"
+    "src/game/game.gd:515"
+  ],
+  "Your kingdom, flag and match record": [
+    "src/ui/session_menus.gd:355"
+  ],
+  "Your match record could not be saved.": [
+    "src/app/app.gd:277"
   ],
   "Your next capital relocation will cost %d G.": [
-    "src/game/game.gd:381"
+    "src/game/game.gd:406"
   ],
   "Your next spell is free.": [
-    "src/game/kingdom_magic.gd:103"
+    "src/game/kingdom_magic.gd:119"
   ],
   "Your next successful spell costs 0 mana.": [
     "src/game/event_catalog.gd:21"
   ],
   "Your next successfully cast spell costs no mana. Persists until used.": [
     "src/game/event_catalog.gd:36"
+  ],
+  "Your preference could not be saved. Please try again.": [
+    "src/ui/session_menus.gd:411"
+  ],
+  "Your profile could not be deleted. Please try again.": [
+    "src/ui/player_profile_panel.gd:329"
+  ],
+  "Your profile could not be saved. Please try again.": [
+    "src/ui/player_profile_panel.gd:314"
   ],
   "[/center]": [
     "src/ui/event_text.gd:91"
@@ -2920,29 +3737,32 @@
     "src/ui/event_text.gd:13"
   ],
   "clear decorations": [
-    "src/editor/editor_view.gd:504",
-    "src/editor/level_editor.gd:291"
+    "src/editor/editor_view.gd:514",
+    "src/editor/level_editor.gd:287"
   ],
   "delete tile": [
-    "src/editor/editor_view.gd:504"
+    "src/editor/editor_view.gd:514"
   ],
   "delete tiles": [
-    "src/editor/level_editor.gd:291"
+    "src/editor/level_editor.gd:287"
   ],
   "gain|gains|gained|earn|earns|earned|recruit|recruits|refund|refunds|free|clear|clears|remove|removes|reduce|reduces|reduced|lower|increase|increases|lose|loses|lost|loss|pay|pays|cost|costs|spend|spends|die|dies|death|disband|disbands|seize|seizes": [
     "src/ui/event_text.gd:10"
   ],
   "slay-level": [
-    "src/editor/level_document.gd:40",
-    "src/editor/level_document.gd:230"
+    "src/editor/level_document.gd:43",
+    "src/editor/level_document.gd:232"
   ],
   "slay-replay": [
     "src/game/replay_summary.gd:47"
   ],
   "wildlife-v1": [
-    "src/game/wildlife.gd:32"
+    "src/game/wildlife.gd:31"
   ],
   "{\"data\":": [
     "src/game/replay_summary.gd:60"
+  ],
+  "← Previous": [
+    "src/ui/painting_collection.gd:128"
   ]
 }

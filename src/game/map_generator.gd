@@ -7,7 +7,7 @@ const StartingTerritories = preload("res://src/game/starting_territories.gd")
 const Archipelago = preload("res://src/game/archipelago.gd")
 const DIRECTIONS = Grid.DIRECTIONS
 const NONE = Grid.NONE
-const GENERATION_VERSION := 12
+const GENERATION_VERSION := 13
 var state
 var adjacency: Dictionary = {}
 var protected_landings: Dictionary = {}
@@ -201,12 +201,11 @@ func generate(seed_value: int = -1, size_id := "small", kingdom_count := 0, allo
 				break
 	state.rebuild_kingdoms()
 	for kingdom in state.kingdoms.values():
-		kingdom["gold"] = Catalog.MODERN_START_GOLD if state.is_modern() else Catalog.START_GOLD
-	if state.is_modern():
-		generate_province_resources()
-		generate_mountains()
-		for faction in range(state.faction_count):
-			state.set_mana(faction, 1)
+		kingdom["gold"] = Catalog.START_GOLD
+	generate_province_resources()
+	generate_mountains()
+	for faction in range(state.faction_count):
+		state.set_mana(faction, 1)
 
 func connect_mainland(seeds: Array) -> void:
 	# A randomized spanning tree replaces the fixed central hub. Extra links make

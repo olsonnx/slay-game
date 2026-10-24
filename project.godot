@@ -15,7 +15,9 @@ run/main_scene="res://scenes/app.tscn"
 config/use_custom_user_dir=true
 config/custom_user_dir_name="Godot/app_userdata/SlayGame"
 config/features=PackedStringArray("4.6", "Forward Plus")
-config/icon="res://assets/icon.svg"
+boot_splash/stretch_mode=4
+boot_splash/image="uid://bb3pnoev2n0f7"
+config/icon="uid://dp4scko17axt5"
 config/custom_user_dir_name.linux="godot/app_userdata/SlayGame"
 
 [audio]
@@ -29,6 +31,9 @@ Sound="*res://src/audio/audio_manager.gd"
 Video="*res://src/settings/video_settings.gd"
 Gameplay="*res://src/settings/gameplay_settings.gd"
 Keys="*res://src/settings/key_settings.gd"
+SteamOnline="*res://src/network/steam_online.gd"
+PaintingAlbum="*res://src/settings/painting_collection.gd"
+PlayerProfile="*res://src/settings/player_profile.gd"
 
 [display]
 
@@ -56,3 +61,7 @@ timers/tooltip_delay_sec=0.65
 
 rendering_device/driver.windows="d3d12"
 anti_aliasing/quality/msaa_3d=2
+
+[steam]
+
+initialization/app_data/app_id=480

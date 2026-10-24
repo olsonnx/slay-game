@@ -17,7 +17,9 @@ func run() -> void:
 	root.get_node("Gameplay").set_rules("modern",false)
 	root.get_node("Video").set_preference(&"level_transitions", false, false)
 	var app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	await process_frame
 	var menus = app.menus
 	menus.show_screen(menus.Screen.MULTIPLAYER)
@@ -31,7 +33,7 @@ func run() -> void:
 	var starting_kingdoms: Dictionary = game.rules.kingdoms.duplicate(true)
 	await game.end_turn()
 	expect(game.player_faction == 1 and game.active_faction == 1 and game.round_number == 1, "Ending Fern's turn hands off to Ember within the same round")
-	expect(game.active_kingdom()["owner"] == 1 and game.round_label.text.contains("EMBER") and game.round_label.text.contains("Hotseat"), "HUD and treasury follow Ember")
+	expect(game.active_kingdom()["owner"] == 1 and game.level_label.text == "Ember" and game.hud.country_flag.design.field == game.COLORS[1].to_html(false) and game.round_label.text.contains("Hotseat"), "HUD and treasury follow Ember")
 	var capital: Vector2i = game.active_capital()
 	game.rules.kingdoms[capital]["gold"] = 100
 	var fern_gold: int = 0
@@ -104,12 +106,17 @@ func run() -> void:
 			cell["capital"] = -1
 			cell["unit"] = 0
 	game.rules.rebuild_kingdoms()
+	game.cells[Vector2i(40, 0)] = game.rules.make_cell(0)
+	game.cells[Vector2i(40, 0)]["building"] = "house"
+	game.cells[Vector2i(40, 0)]["unit"] = 1
+	game.rules.rebuild_kingdoms()
 	game.check_winner()
 	expect(not game.game_over, "One eliminated human does not end the other players' match")
 	await game.end_turn()
 	expect(game.player_faction == 1, "The surviving human continues")
 	await game.end_turn()
 	expect(game.player_faction == 1 and game.round_number == 3, "The next rotation skips the eliminated human")
+	expect(not game.rules.has_units(0), "Stranded armies settle without handing an empty turn to an eliminated player")
 	for cell in game.cells.values():
 		if cell["owner"] == 2:
 			cell["capital"] = -1
@@ -125,18 +132,23 @@ func run() -> void:
 			cell["capital"] = -1
 			cell["unit"] = 0
 	game.rules.rebuild_kingdoms()
+	for faction in [0, 1]:
+		var remnant := Vector2i(40 + faction * 4, 0)
+		game.cells[remnant] = game.rules.make_cell(faction)
+		game.cells[remnant]["building"] = "house"
+	game.rules.rebuild_kingdoms()
 	game.check_winner()
-	expect(game.game_over and game.message.contains("all local kingdoms"), "Losing every human seat ends the match without an endless AI loop")
+	expect(game.game_over and game.message.contains("all local kingdoms"), "Isolated human houses cannot keep the match in an endless AI loop")
 	await app.return_to_main_menu()
 	var gameplay = root.get_node("Gameplay")
 	var original_rules: String = gameplay.rule_mode
-	gameplay.set_rules("classic", false)
+	gameplay.set_rules("modern", false)
 	await app.start_new_game(456, "small", "easy", 6, {}, 6)
 	game = app.game
-	expect(game.rules.human_factions.size() == 6 and not game.rules.is_modern(), "Classic supports six local players")
+	expect(game.rules.human_factions.size() == 6 and game.rules.is_modern(), "The current rules support six local players")
 	for seat in range(1, 7):
 		await game.end_turn()
-		expect(game.player_faction == seat % 6 and not game.busy, "Every Classic seat receives a controllable turn")
+		expect(game.player_faction == seat % 6 and not game.busy, "Every local seat receives a controllable turn")
 	expect(game.round_number == 2, "Six seats form one round")
 	gameplay.set_rules(original_rules, false)
 	await app.return_to_main_menu()

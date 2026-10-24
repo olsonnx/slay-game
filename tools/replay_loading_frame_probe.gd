@@ -12,7 +12,9 @@ func run() -> void:
 	root.size = Vector2i(960, 620)
 	process_frame.connect(sample)
 	var app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	await create_timer(0.5).timeout
 	var started := Time.get_ticks_usec()
 	app.open_replays()

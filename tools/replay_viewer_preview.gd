@@ -5,7 +5,9 @@ func _initialize() -> void: call_deferred("capture")
 func capture() -> void:
 	root.size = Vector2i(960, 620)
 	var app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	await create_timer(0.4).timeout
 	await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png("res://artifacts/replay_main_menu.png")

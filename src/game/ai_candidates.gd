@@ -85,38 +85,35 @@ static func preparation(model, faction: int, queries = null) -> Array:
 				add(result, "house", coord, 2.0, {"capital": capital})
 			if model.can_develop(coord, faction) and not cell["tree"] and not cell["grave"] and not urgent and Analysis.safe_spending(kingdom,model.development_cost(coord),1,queries):
 				add(result, "develop", coord, 2.0 / maxf(1.0, model.development_cost(coord)), {"capital": capital})
-		if not model.is_modern():
-			continue
 		for site in model.bridge_targets(faction, capital):
 			if kingdom["gold"] < model.BRIDGE_COST + 10 or not Analysis.safe_spending(kingdom,model.BRIDGE_COST,0,queries): continue
 			var benefit: float = queries.bridge_value(site,capital) + queries.bridge_campaign(site,capital) - model.BRIDGE_COST * 0.16
 			if benefit > 0:
 				add(result, "bridge", site, benefit, {"capital": capital})
 	# Mana opportunities compete faction-wide, rather than kingdom iteration order.
-	if model.is_modern():
-		for spell in model.Spells.SPELLS:
-			for coord in model.spell_targets(spell, faction):
-				var cell: Dictionary = model.cells[coord]
-				var utility := 0.0
-				match spell:
-					"summon":
-						var kingdom: Dictionary = model.kingdom_at(coord)
-						if Analysis.sustainable(model, kingdom, model.unit_upkeep(1, faction), 0, queries):
-							utility = 4.0 if queries.recruitment_value(coord,1) > 0 else 0.0
-							if Analysis.endangered(model, coord, danger) and danger[coord]["strength"] == 1:
-								utility += 15.0
-					"shatter":
-						if model.is_bridge(coord) and cell["unit"] > 0 and model.unit_faction(coord) != faction:
-							utility = Analysis.UNIT_VALUE[cell["unit"]] * 0.65
-						elif model.is_bridge(coord):
-							utility = queries.bridge_threat_relief(coord,faction)
-						if model.is_bridge(coord):
-							utility -= queries.bridge_access_loss(coord,faction)
-							if cell["unit"] > 0 and model.unit_faction(coord) == faction: utility -= Analysis.UNIT_VALUE[cell["unit"]]
-					"trailblaze":
-						utility = 7.0 if trail_useful else 0.0
-				if utility > 0:
-					add(result, "spell", coord, utility, {"spell": spell})
+	for spell in model.Spells.SPELLS:
+		for coord in model.spell_targets(spell, faction):
+			var cell: Dictionary = model.cells[coord]
+			var utility := 0.0
+			match spell:
+				"summon":
+					var kingdom: Dictionary = model.kingdom_at(coord)
+					if Analysis.sustainable(model, kingdom, model.unit_upkeep(1, faction), 0, queries):
+						utility = 4.0 if queries.recruitment_value(coord,1) > 0 else 0.0
+						if Analysis.endangered(model, coord, danger) and danger[coord]["strength"] == 1:
+							utility += 15.0
+				"shatter":
+					if model.is_bridge(coord) and cell["unit"] > 0 and model.unit_faction(coord) != faction:
+						utility = Analysis.UNIT_VALUE[cell["unit"]] * 0.65
+					elif model.is_bridge(coord):
+						utility = queries.bridge_threat_relief(coord,faction)
+					if model.is_bridge(coord):
+						utility -= queries.bridge_access_loss(coord,faction)
+						if cell["unit"] > 0 and model.unit_faction(coord) == faction: utility -= Analysis.UNIT_VALUE[cell["unit"]]
+				"trailblaze":
+					utility = 7.0 if trail_useful else 0.0
+			if utility > 0:
+				add(result, "spell", coord, utility, {"spell": spell})
 	result.sort_custom(func(a, b): return a["priority"] > b["priority"])
 	return diverse(result, int(Analysis.profile(model)["candidates"]), false)
 

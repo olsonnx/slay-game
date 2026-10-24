@@ -151,6 +151,7 @@ func run() -> void:
 		for q in range(-1, 8):
 			var coord := Vector2i(q, faction * 4 - 6)
 			game.cells[coord] = game.rules.make_cell(faction if q >= 0 and q <= 6 else -1)
+			game.cells[coord]["value"] = 2
 			if q in [1, 5]:
 				game.cells[coord]["unit"] = 1
 	game.rules.rebuild_kingdoms()

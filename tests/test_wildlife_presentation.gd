@@ -189,7 +189,9 @@ func hotseat() -> void:
 	var previous_transitions: bool = video.level_transitions
 	video.set_preference(&"level_transitions",false,false)
 	var app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	await app.start_new_game(42,"large","easy",2,{},2)
 	var game = app.game
 	var initial: Dictionary = game.cells.duplicate(true)

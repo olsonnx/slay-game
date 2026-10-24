@@ -8,6 +8,8 @@
 | `ui_click` | `assets/sfx/ui_click.mp3` | UI activation, keyboard activation, friendly tile selection, or issuing a move |
 | `ui_close` | `assets/sfx/ui_close.mp3` | Closing a menu or cancelling an active action |
 | `action_place` | `assets/sfx/action_place.mp3` | Successful recruitment, upgrade or construction; movement/attack/merge arrival; AI recruitment and construction |
+| `gold_develop` | `assets/sfx/gold_develop.ogg` | The player's successful province development, including playback; other factions' development is silent |
+| `event_popup` | `assets/sfx/event_popup.ogg` | An encounter dialog is revealed |
 
 Invalid placements, disabled controls, idle mouse movement over map tiles and no-op cancellation are silent. Cancelled movement never emits arrival audio. Placement is tied to the animation's completion signal, so audio follows what is visible rather than the earlier rules commit.
 

@@ -76,7 +76,7 @@ func prepare(state, policy: String, metrics: Dictionary) -> void:
 		if border_threat and not champion:
 			for coord in bank["hexes"]:
 				var tier: int = state.cells[coord]["unit"]
-				if tier > 0 and tier < wanted and net(state, bank) >= state.Catalog.unit_upkeep(wanted, true) - state.Catalog.unit_upkeep(tier, true):
+				if tier > 0 and tier < wanted and net(state, bank) >= state.Catalog.unit_upkeep(wanted) - state.Catalog.unit_upkeep(tier):
 					if state.recruit(coord, 0, wanted, capital):
 						metrics["upgrades"] += 1
 						break

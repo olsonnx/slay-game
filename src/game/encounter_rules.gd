@@ -2,6 +2,8 @@ extends RefCounted
 ## Conditional encounters and durable faction effects. No UI or retained model.
 const Loc = preload("res://src/localization/text.gd")
 const Events = preload("res://src/game/event_catalog.gd")
+const Authored = preload("res://src/game/authored_event_runtime.gd")
+const Sites = preload("res://src/game/event_sites.gd")
 const NEW_EVENTS := ["comet", "innkeeper", "lumberjack", "regroup", "cartographer", "ransom", "economist", "revolt", "stainless_steel"]
 
 static func primary_treasury(state, faction: int, preferred: Dictionary = {}) -> Dictionary:
@@ -17,8 +19,10 @@ static func primary_treasury(state, faction: int, preferred: Dictionary = {}) ->
 static func income_adjustment(state, kingdom: Dictionary) -> int:
 	var faction: int = kingdom["owner"]
 	var bonus: int = state.effects_by_faction.get(faction, {}).get("income_bonus", 0)
-	if bonus == 0: return 0
-	return bonus if primary_treasury(state, faction).get("capital") == kingdom["capital"] else 0
+	var total := bonus if bonus != 0 and primary_treasury(state, faction).get("capital") == kingdom["capital"] else 0
+	for coord in kingdom["hexes"]:
+		if Sites.protected(state.cells[coord]): total += int(state.cells[coord].get("site_income",0))
+	return total
 
 static func change_income(state, faction: int, kingdom: Dictionary, amount: int, source := "") -> void:
 	if not state.effects_by_faction.has(faction): state.effects_by_faction[faction] = {}
@@ -45,7 +49,7 @@ static func forest(state, kingdom: Dictionary) -> Dictionary:
 	if kingdom.is_empty(): return result
 	for coord in kingdom["hexes"]:
 		var cell: Dictionary = state.cells[coord]
-		var value: int = cell["value"] if state.is_modern() else 1
+		var value: int = cell["value"]
 		result["potential"] += value + (state.HOUSE_INCOME if cell["building"] == "house" else 0)
 		if cell["tree"]:
 			result["trees"].append(coord)
@@ -72,7 +76,8 @@ static func region(state, coord: Vector2i) -> Array:
 
 static func main_outcome_available(state, id: String, coord: Vector2i, faction: int) -> bool:
 	if not Events.EVENTS.has(id) or not state.cells.has(coord) or state.cells[coord]["unit"] <= 0 or state.unit_faction(coord) != faction: return false
-	if id in NEW_EVENTS and not state.is_modern(): return false
+	if Events.EVENTS[id].has("authored"):
+		return Authored.available(state,Events.EVENTS[id].authored,{"coord":coord,"faction":faction})
 	var kingdom: Dictionary = state.kingdom_at(coord)
 	for requirement in Events.EVENTS[id].get("requires", []):
 		match requirement:
@@ -93,7 +98,7 @@ static func main_outcome_available(state, id: String, coord: Vector2i, faction: 
 					if other != faction and (state.territory(other) > 0 or state.has_units(other)): found = true
 				if not found: return false
 			"income_trade":
-				var treasury := primary_treasury(state, faction, kingdom)
+				var treasury := kingdom
 				if treasury.is_empty() or (state.income(treasury) < 1 and kingdom["gold"] < 10): return false
 			"rebel_slot":
 				if rebel_faction(state) < 0 or region(state, coord).size() < 2: return false
@@ -114,7 +119,8 @@ static func main_outcome_available(state, id: String, coord: Vector2i, faction: 
 static func forest_reward(trees: Dictionary) -> int:
 	return 0 if trees["blocked"] * 2 > trees["potential"] else trees["trees"].size()
 
-static func weighted_event(state, coord: Vector2i = Vector2i.ZERO, faction: int = -1, weights: Dictionary = Events.WEIGHTS) -> String:
+static func weighted_event(state, coord: Vector2i = Vector2i.ZERO, faction: int = -1, weights = null, used: Dictionary = {}) -> String:
+	if weights == null: weights = Events.WEIGHTS
 	var pool: Dictionary = {}
 	var total := 0
 	for entry in weights:
@@ -124,6 +130,16 @@ static func weighted_event(state, coord: Vector2i = Vector2i.ZERO, faction: int 
 		if faction >= 0 and not main_outcome_available(state, id, coord, faction): continue
 		pool[id] = int(pool.get(id, 0)) + weight
 		total += weight
+	# Prefer unused types without losing weighting or making exhausted pools empty.
+	var unused: Dictionary = {}
+	var unused_total := 0
+	for id in pool:
+		if not used.has(id):
+			unused[id] = pool[id]
+			unused_total += int(pool[id])
+	if not unused.is_empty():
+		pool = unused
+		total = unused_total
 	if total == 0: return ""
 	var ticket: int = state.rng.randi_range(1, total)
 	for id in pool:
@@ -137,9 +153,18 @@ static func prepare_event(state, id: String, coord: Vector2i, faction: int) -> D
 	# Choose once, before revealing any text. Ineligible encounters never become
 	# no-op stories, and an already revealed choice never rerolls the encounter.
 	if not main_outcome_available(state, id, coord, faction):
-		id = weighted_event(state, coord, faction)
+		var used: Dictionary = {}
+		for site in state.cells:
+			var cell: Dictionary = state.cells[site]
+			for key in ["event", "event_seen"]:
+				var previous: String = Events.canonical_id(String(cell.get(key, "")))
+				if previous != "": used[previous] = true
+		for pending in state.pending_events: used[pending.id] = true
+		id = weighted_event(state, coord, faction, null, used)
 	if id.is_empty(): return {}
-	return {"id": id, "coord": coord, "faction": faction}
+	var event := {"id": id, "coord": coord, "faction": faction}
+	if Events.EVENTS[id].has("authored"): Authored.prepare(state,Events.EVENTS[id].authored,event)
+	return event
 
 static func choice_allowed(state, event: Dictionary, choice: int) -> bool:
 	var coord: Vector2i = event["coord"]
@@ -150,7 +175,7 @@ static func choice_allowed(state, event: Dictionary, choice: int) -> bool:
 		"ransom": return choice == 0 or state.get_mana(faction) < state.mana_capacity(faction)
 		"economist":
 			if kingdom.is_empty(): return false
-			var treasury := primary_treasury(state, faction, kingdom)
+			var treasury := kingdom
 			return not treasury.is_empty() and state.income(treasury) > 0 if choice == 0 else kingdom["gold"] >= 10
 		"revolt": return choice == 1 or rebel_faction(state) >= 0
 	return true
@@ -191,8 +216,8 @@ static func resolve(state, event: Dictionary, choice: int) -> String:
 		"comet":
 			if choice == 0:
 				var gain: int = state.rng.randi_range(1, 2)
-				change_income(state, faction, kingdom, gain, "comet")
-				return Loc.text("The comet has improved the accounts: +%d gold per turn permanently.") % gain
+				Sites.create(state,coord,"comet",gain)
+				return Loc.text("A landmark is built: +%d gold per turn to its kingdom while controlled.") % gain
 			var site := recruit_site(state, kingdom)
 			state.cells[site]["unit"] = 1
 			state.cells[site]["moved"] = false
@@ -228,7 +253,7 @@ static func resolve(state, event: Dictionary, choice: int) -> String:
 				disband(state, site)
 				cell["owner"] = -1
 				cell["capital"] = -1
-				cell["building"] = ""
+				if not Sites.protected(cell): cell["building"] = ""
 				cell["fortified"] = false
 				cell["fortified_by"] = -1
 				cell["barrier_by"] = -1
@@ -242,8 +267,8 @@ static func resolve(state, event: Dictionary, choice: int) -> String:
 			return Loc.text("A grim demonstration of power: +1 mana.")
 		"economist":
 			kingdom["gold"] += 10 if choice == 0 else -10
-			change_income(state, faction, kingdom, -1 if choice == 0 else 1, "economist")
-			return Loc.text("Gain 10 gold here; permanently lose 1 gold per turn from your income treasury.") if choice == 0 else Loc.text("Pay 10 gold here; permanently gain 1 gold per turn in your income treasury.")
+			Sites.create(state,coord,"economist",-1 if choice == 0 else 1)
+			return Loc.text("Gain 10 gold here; build a landmark costing its kingdom 1 gold per turn while controlled.") if choice == 0 else Loc.text("Pay 10 gold here; build a landmark granting its kingdom 1 gold per turn while controlled.")
 		"revolt":
 			if choice == 1:
 				kingdom["gold"] = 0
@@ -266,6 +291,6 @@ static func resolve(state, event: Dictionary, choice: int) -> String:
 			state.set_mana(rebels, 0)
 			return Loc.text("The %s kingdom declares independence. Its constitution is mostly pitchforks.") % state.faction_names[rebels]
 		"stainless_steel":
-			state.set_effect(faction, "stainless_steel", true)
-			return Loc.text("Your Knights' upkeep is permanently reduced by 2 gold each.")
+			Sites.create(state,coord,"stainless_steel",0,0,true)
+			return Loc.text("A landmark is built: its owner pays 2 gold less upkeep per Knight.")
 	return Loc.text("The journey continues.")

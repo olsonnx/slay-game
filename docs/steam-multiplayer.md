@@ -1,0 +1,17 @@
+# Steam multiplayer
+
+Open **Multiplayer → Steam online…**. Sign into Steam, choose **Host friends-only game**, then **Invite friends…**. Friends accept the invitation in Steam. Everyone chooses **Ready**; the host selects the map size and kingdom count and chooses **Start game**. Spare kingdoms are Normal computer players. Local multiplayer remains available on its existing screen.
+
+This development build uses **Spacewar (App ID 480)**. Both computers must run the same game build and use **different signed-in Steam accounts**. A single account running two copies is not a real Steam multiplayer test. Before shipping, set `steam/initialization/app_data/app_id` in `project.godot` to the game's own Steam App ID.
+
+GodotSteam 4.23.2 GDExtension is bundled for Windows x86-64 in `addons/godotsteam/`, including the Steam API redistributable and its license. It loads in the existing Godot 4.6.3 editor/runtime; no custom engine is needed. The extension's minimum Godot version is 4.4. The Windows export preset includes the extension and its native dependencies. Other target platforms need the corresponding official GodotSteam libraries before exporting.
+
+Source: [official GodotSteam release](https://codeberg.org/godotsteam/godotsteam/releases/tag/v4.23.2-gde). Lobby and invitation behavior follows [Steam matchmaking](https://partner.steamgames.com/doc/features/multiplayer/matchmaking); gameplay uses reliable [Steam Networking Messages](https://partner.steamgames.com/doc/api/ISteamNetworkingMessages), which supports Valve relay routing without a port-forwarding setup.
+
+Steam initializes when a running Steam client is detected, or when opening the online screen. Without Steam, solo play, local multiplayer, editors and replays continue to work. Running-game invite callbacks and launch arguments (`+connect_lobby`) are supported. Lobby metadata identifies Slay & Reign and the protocol version so unrelated Spacewar lobbies are rejected.
+
+The lobby owner is the authoritative host. Steam identity assigns one faction per player. Clients send commands; the host checks identity, turn ownership, request sequence, current revision and the normal game rules. It runs moves, purchases, spells, development, entrenchment, capital relocation, encounter choices, AI and world turns. Clients receive bounded, compressed, object-free state snapshots and render human movement animations without rerunning authoritative rules. All players must finish loading before commands unlock.
+
+Pause/options affect only the local screen. The host keeps servicing other players; online restarts are disabled. An explicit leave, lost Steam session, host departure or 45-second peer timeout ends the match and shows a message. Back leaves the lobby. This first version has no public lobby browser, mid-match joins, reconnect recovery, host migration or online editor-map selection. AI turns arrive as their resulting state rather than streaming every individual AI animation. Only the host records a replay.
+
+`tests/test_steam_multiplayer.gd` checks the installed extension API, simulated lobby callbacks/readiness, member admission, host loss and a two-peer game using the actual packet codec. The integration covers initial state transfer, remote movement, spending, duplicate/stale/out-of-turn rejection, event decisions, AI/world settlement and exact RNG/state agreement. These tests do not establish that invitations, the overlay and relay connections work across two real accounts; run the two-computer flow above before release.

@@ -2,21 +2,34 @@ extends Node3D
 ## Procedural scenery and shared faction-colored unit sprites.
 
 const Catalog = preload("res://src/game/game_catalog.gd")
+const SceneryMaterials = preload("res://src/rendering/scenery_materials.gd")
 var COLORS: Array = Catalog.TERRAIN_COLORS.duplicate()
 const NEUTRAL := Color("a0aa83")
 var material_cache: Dictionary = {}
 const MATERIAL_CACHE_LIMIT := 1024
 var mesh_cache: Dictionary = {}
 var icon_cache: Dictionary = {}
-var unit_sprites = preload("res://src/rendering/unit_sprite_library.gd").new()
+# Color-keyed textures survive scene changes and are prepared at application boot.
+static var shared_unit_sprites = preload("res://src/rendering/unit_sprite_library.gd").new()
+var unit_sprites = shared_unit_sprites
 var sprite_cache: Dictionary = {}
 var image_cache: Dictionary = {}
-var hover_outline_cache: Dictionary = {}
+static var hover_outline_cache: Dictionary = {}
+var outline_cache: Dictionary = hover_outline_cache
 var shadow_texture: Texture2D
 var sprite_lighting
 var lighting_materials: Dictionary = {}
 var lighting_registrations := 0
 var internal_border_visibility := 0.0
+var plastic_tiles := true
+
+func set_plastic_tiles(value: bool) -> bool:
+	if plastic_tiles == value: return false
+	plastic_tiles = value
+	for key in mesh_cache.keys():
+		if str(key).begins_with("kingdom_cap:") or str(key).begins_with("tile_base:"):
+			mesh_cache.erase(key)
+	return true
 
 func set_internal_border_visibility(value: float) -> bool:
 	if is_equal_approx(internal_border_visibility, value):
@@ -48,6 +61,26 @@ func cache_material(key: String, value: StandardMaterial3D) -> StandardMaterial3
 			material_cache.erase(material_cache.keys()[0])
 	material_cache[key] = value
 	return value
+
+func tile_material(color: Color, rubber := false) -> StandardMaterial3D:
+	if not plastic_tiles: return material(color)
+	var key := "tile:%s:%s" % [color, rubber]
+	if material_cache.has(key):
+		return material_cache[key]
+	var result := StandardMaterial3D.new()
+	result.albedo_color = color
+	result.metallic = 0.0
+	result.roughness = 0.78 if rubber else 0.32
+	result.metallic_specular = 0.28 if rubber else 0.55
+	return cache_material(key, result)
+
+func scenery_material(color: Color, kind: String) -> StandardMaterial3D:
+	var key := "scenery:%s:%s" % [kind, color]
+	if material_cache.has(key): return material_cache[key]
+	var result := StandardMaterial3D.new()
+	result.albedo_color = color
+	SceneryMaterials.apply(result, kind)
+	return cache_material(key, result)
 
 func cylinder_mesh(top: float, bottom: float, height: float, sides := 8) -> CylinderMesh:
 	var key := "cylinder:%s:%s:%s:%s" % [top, bottom, height, sides]
@@ -167,19 +200,26 @@ func add_tree(parent: Node3D, offset: Vector3) -> void:
 	tree.name = "Tree"
 	parent.add_child(tree)
 	shadow(tree, offset, 0.85)
-	cylinder(tree, offset + Vector3(0, 0.3, 0), 0.075, 0.11, 0.6, Color("72563e"), 6)
+	var trunk := cylinder(tree, offset + Vector3(0, 0.3, 0), 0.075, 0.11, 0.6, Color("72563e"), 6)
+	trunk.material_override = scenery_material(Color("72563e"), "bark")
 	for index in range(3):
 		var radius := 0.48 - index * 0.11
-		cylinder(tree, offset + Vector3(0, 0.52 + index * 0.32, 0), 0.02, radius, 0.62, Color("416447").lightened(index * 0.05), 7)
+		var color := Color("416447").lightened(index * 0.05)
+		var foliage := cylinder(tree, offset + Vector3(0, 0.52 + index * 0.32, 0), 0.02, radius, 0.62, color, 7)
+		foliage.material_override = scenery_material(color, "foliage")
 
 func add_mountain(parent: Node3D, coord: Vector2i) -> void:
 	var rotation := float(posmod(coord.x * 7 + coord.y * 13, 6)) * PI / 3
 	var range_root := Node3D.new()
 	range_root.rotation.y = rotation
 	parent.add_child(range_root)
-	cylinder(range_root, Vector3(-0.13, 0.82, 0), 0, 0.76, 1.64, Color("777c79"), 5)
-	cylinder(range_root, Vector3(-0.13, 1.44, 0), 0, 0.18, 0.40, Color("dedfd4"), 5)
-	cylinder(range_root, Vector3(0.41, 0.53, 0.27), 0, 0.43, 1.06, Color("92948a"), 5)
+	var peak := cylinder(range_root, Vector3(-0.13, 0.82, 0), 0, 0.76, 1.64, Color("777c79"), 5)
+	peak.material_override = scenery_material(Color("777c79"), "rock")
+	# Sit just above the rock cone instead of burying the cap inside it.
+	var snow := cylinder(range_root, Vector3(-0.13, 1.45, 0), 0, 0.20, 0.42, Color("dedfd4"), 5)
+	snow.material_override = scenery_material(Color("dedfd4"), "snow")
+	var ridge := cylinder(range_root, Vector3(0.41, 0.53, 0.27), 0, 0.43, 1.06, Color("92948a"), 5)
+	ridge.material_override = scenery_material(Color("92948a"), "rock")
 
 func add_grave(parent: Node3D, offset: Vector3) -> void:
 	shadow(parent, offset, 0.6)
@@ -294,13 +334,13 @@ func unit_icon_texture(tier: int, owner: int) -> Texture2D:
 	return unit_sprites.portrait(tier,COLORS[owner])
 
 func soldier_hover_outline(tier: int, owner: int, frame_index := 0) -> Texture2D:
-	var key := Vector3i(tier, owner, frame_index)
-	if hover_outline_cache.has(key):
-		return hover_outline_cache[key]
+	var key := "%d:%s:%d" % [tier, COLORS[owner].to_html(), frame_index]
+	if outline_cache.has(key):
+		return outline_cache[key]
 	soldier_texture(tier, owner)
 	var source: Image = unit_sprites.frame(tier,COLORS[owner],"idle",frame_index).image
 	var texture := pixel_hover_outline(source)
-	hover_outline_cache[key] = texture
+	outline_cache[key] = texture
 	return texture
 
 static func pixel_hover_outline(source: Image) -> Texture2D:
@@ -379,10 +419,24 @@ func register_lighting_material(value: StandardMaterial3D, role: String) -> void
 			for id in lighting_materials.keys():
 				if lighting_materials[id].get_ref() == null: lighting_materials.erase(id)
 	lighting_materials[value.get_instance_id()] = weakref(value)
-	preload("res://src/rendering/lighting_style.gd").apply_material(value,Video.atmospheric_lighting,shadow_texture)
+	var preferences = Engine.get_main_loop().root.get_node("Video")
+	preload("res://src/rendering/lighting_style.gd").apply_material(value,preferences.atmospheric_lighting,shadow_texture)
 
 func refresh_lighting_materials(rich: bool) -> void:
 	for id in lighting_materials.keys():
 		var value: StandardMaterial3D = lighting_materials[id].get_ref()
 		if value == null: lighting_materials.erase(id)
 		else: preload("res://src/rendering/lighting_style.gd").apply_material(value,rich,shadow_texture)
+
+func add_monument(parent: Node3D, flag_color: Color, offset := Vector3.ZERO) -> void:
+	var model := Node3D.new()
+	model.name = "Landmark"
+	model.position = offset
+	parent.add_child(model)
+	# One shared placeholder for all encounter and cleared-lair sites.
+	shadow(model, Vector3.ZERO, 1.0)
+	box(model, Vector3(0,0.08,0), Vector3(0.76,0.14,0.76), Color("999681"))
+	box(model, Vector3(0,0.22,0), Vector3(0.54,0.16,0.54), Color("d3cbb2"))
+	cylinder(model, Vector3(0,0.62,0),0.16,0.23,0.68,Color("dfd9c6"),6)
+	cylinder(model, Vector3(0,1.02,0),0.0,0.26,0.24,Color("b5a276"),6)
+	box(model, Vector3(0.22,0.71,0),Vector3(0.24,0.18,0.025),flag_color)

@@ -16,6 +16,18 @@ func run() -> void:
 	game.set_process(false)
 	await process_frame
 	await process_frame
+	var library = preload("res://src/rendering/unit_sprite_library.gd").new()
+	for tier in range(1,4):
+		expect(library.NORMAL_SHEETS[tier].get_size() == library.SHEETS[tier].get_size(),"Unit normal sheets match their artwork dimensions")
+		for pose in library.CLIPS[tier]:
+			for index in range(int(library.clip(tier,pose)[1])):
+				var texture: Texture2D = library.frame(tier,Color.WHITE,pose,index).texture
+				var material = preload("res://src/rendering/sprite_lighting.gd").make_material(texture,Vector2(texture.get_size()),library.pixel_size(tier))
+				expect(material.get_shader_parameter("has_normal_map") and material.get_shader_parameter("normal_texture") == library.NORMAL_SHEETS[tier],"Every unit pose binds its tier's normal map")
+				var region: Rect2 = texture.get_meta("normal_region")
+				var sequence: Array = library.clip(tier,pose)
+				var expected := Rect2(Vector2(index*32,int(sequence[0])*32+(0 if tier == 3 else 12))/Vector2(library.SHEETS[tier].get_size()),Vector2(32,32 if tier == 3 else 20)/Vector2(library.SHEETS[tier].get_size()))
+				expect(region == expected,"Normal maps follow the animation frame and infantry crop")
 	var renderer = game.view.sprite_lighting
 	var source: Vector2i = game.view.unit_actors.keys()[0]
 	for coord in game.view.unit_actors:

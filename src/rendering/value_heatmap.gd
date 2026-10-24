@@ -15,6 +15,11 @@ var painted: Dictionary = {}
 var hidden: Dictionary = {}
 var prop_materials: Dictionary = {}
 var hovered := Grid.NONE
+var switching := false
+var preparing := false
+var cached_painted: Dictionary = {}
+var cached_hidden: Dictionary = {}
+var pending_coords: Dictionary = {}
 
 func _init(view) -> void:
 	board = view
@@ -36,6 +41,11 @@ static func value_color(value: float, highest: int) -> Color:
 func set_active(value: bool) -> void:
 	if active == value:
 		return
+	switching = true
+	var batching: bool = board.static_batches != null and board.static_batches.enabled and not board.static_batches.suspended
+	if batching:
+		board.flush_batch_update()
+		board.static_batches.begin_presentation(value)
 	active = value
 	visible = value
 	board.clear_unit_hover()
@@ -43,19 +53,71 @@ func set_active(value: bool) -> void:
 	board.overlay_root.visible = not value and not board.level_transitioning
 	board.invalidate_pick()
 	if value:
-		sync()
+		if not apply_prepared(): sync()
 		var previous_hover := hovered
 		hovered = Grid.NONE
 		set_hovered(previous_hover)
 	else:
 		restore()
 		set_hovered(Grid.NONE)
+	if not preparing:
+		if batching:
+			board.static_batches.finish_presentation(board.tile_nodes)
+			board.batch_dirty_ids.clear()
+			board.batch_update_pending = false
+		else: board.refresh_static_batches()
+		if board.unit_batches != null: board.unit_batches.queue_sync()
 	changed.emit()
+	switching = false
+
+func apply_prepared() -> bool:
+	if cached_painted.is_empty(): return false
+	var complete := pending_coords.is_empty()
+	for id in cached_painted:
+		var record: Dictionary = cached_painted[id]
+		if not is_instance_valid(record.node) or record.node.is_queued_for_deletion() or pending_coords.has(record.coord) or record.node.material_override != record.original:
+			pending_coords[record.coord] = true
+			complete = false
+			continue
+		painted[id] = record
+		record.node.material_override = record.filter
+	for id in cached_hidden:
+		var record: Dictionary = cached_hidden[id]
+		if not is_instance_valid(record.node) or record.node.is_queued_for_deletion() or pending_coords.has(record.coord):
+			pending_coords[record.coord] = true
+			complete = false
+			continue
+		hidden[id] = record
+		record.node.hide()
+	cached_painted = {}
+	cached_hidden = {}
+	return complete
+
+func invalidate_prepared() -> void:
+	cached_painted.clear()
+	cached_hidden.clear()
+	pending_coords.clear()
+
+func prepare() -> void:
+	if active or board.cells.is_empty() or not board.static_batches.enabled or board.static_batches.suspended: return
+	preparing = true
+	set_active(true)
+	await board.static_batches.finish_presentation(board.tile_nodes, 4000)
+	# Real draws prepare the value materials and border pipeline under the cover.
+	for frame in range(3):
+		await get_tree().process_frame
+		if DisplayServer.get_name() != "headless": await RenderingServer.frame_post_draw
+	set_active(false)
+	await board.static_batches.finish_presentation(board.tile_nodes, 4000)
+	board.batch_dirty_ids.clear()
+	board.batch_update_pending = false
+	preparing = false
+	board.unit_batches.queue_sync()
 
 func paint(mesh: MeshInstance3D, material: Material) -> void:
 	var id := mesh.get_instance_id()
 	if not painted.has(id) or mesh.material_override != painted[id]["filter"]:
-		painted[id] = {"node": mesh, "original": mesh.material_override, "filter": material}
+		painted[id] = {"node": mesh, "original": mesh.material_override, "filter": material, "coord":source_coord(mesh)}
 	else:
 		painted[id]["filter"] = material
 	if mesh.material_override != material:
@@ -63,21 +125,32 @@ func paint(mesh: MeshInstance3D, material: Material) -> void:
 		mark_source_dirty(mesh)
 
 func mark_source_dirty(node: Node) -> void:
+	if switching: return
 	var parent := node
 	while parent != null and parent != board.board_root and parent != board.animation_root:
 		if parent.has_meta("surface"):
+			var mutation: bool = board.static_batches.presentation_mutation
+			board.static_batches.presentation_mutation = true
 			board.mark_batch_dirty(parent.get_meta("hex"))
+			board.static_batches.presentation_mutation = mutation
 			return
 		parent = parent.get_parent()
 
 func hide_detail(node: Node3D, role := "prop") -> void:
 	var id := node.get_instance_id()
 	if not hidden.has(id):
-		hidden[id] = {"node": node, "original": node.visible, "role": role}
+		hidden[id] = {"node": node, "original": node.visible, "role": role, "coord":source_coord(node)}
 	if node.visible:
 		node.hide()
 		if role == "prop":
 			mark_source_dirty(node)
+
+func source_coord(node: Node) -> Vector2i:
+	var parent := node
+	while parent != null and parent != board:
+		if parent.has_meta("hex"): return parent.get_meta("hex")
+		parent = parent.get_parent()
+	return Grid.NONE
 
 func restore() -> void:
 	for record in painted.values():
@@ -93,7 +166,7 @@ func restore() -> void:
 			show_original = show_original and board.cells.get(node.get_meta("hex", Grid.NONE), {}).get("unit", 0) > 0
 			# Occupation briefly leaves the old defender registered alongside
 			# the arriving actor. Restore the traveler, never the defeated unit.
-			if node.get_parent() != board.animation_root:
+			if node.get_parent() != board.animation_root and board.animation_root.get_child_count() > 0:
 				for actor in board.unit_actors.values():
 					if actor != node and actor.get_parent() == board.animation_root and actor.get_meta("hex") == node.get_meta("hex"):
 						show_original = false
@@ -101,8 +174,10 @@ func restore() -> void:
 			var cell: Dictionary = board.cells.get(node.get_parent().get_meta("hex", Grid.NONE), {})
 			show_original = show_original and (cell.get("fortified", false) or cell.get("entrenched_by", -1) >= 0 or cell.get("barrier_by", -1) >= 0)
 		node.visible = show_original
-	painted.clear()
-	hidden.clear()
+	cached_painted = painted
+	cached_hidden = hidden
+	painted = {}
+	hidden = {}
 
 func mute_props(node: Node, mountain: bool, skip: MeshInstance3D = null) -> void:
 	if node is MeshInstance3D and node != skip:
@@ -131,6 +206,10 @@ func set_hovered(coord: Vector2i) -> void:
 
 func sync() -> void:
 	if not active:
+		# Values/units can change without altering normal terrain geometry.
+		board.static_batches.invalidate_cached_tiles(board.tile_nodes, board.visible_change_coords)
+		if not cached_painted.is_empty() and not board.visible_change_coords.is_empty(): pending_coords.merge(board.visible_change_coords)
+		else: invalidate_prepared()
 		return
 	# Drop references to props/tiles replaced during normal board playback.
 	for records in [painted, hidden]:
@@ -145,6 +224,8 @@ func sync() -> void:
 		next_boundaries.append([coord, cell["owner"], cell.get("kingdom", Grid.NONE), cell["building"] == "bridge"])
 	var range_changed := maximum != next_maximum
 	maximum = next_maximum
+	# A changed scale recolors every province, including untouched cached chunks.
+	if switching and range_changed: board.static_batches.presentation_full_dirty = true
 	for coord in tiles.keys():
 		if not board.cells.has(coord):
 			remove_child(tiles[coord])
@@ -157,7 +238,7 @@ func sync() -> void:
 		var original_tile: Node3D = board.tile_nodes[coord]
 		var surface: MeshInstance3D = original_tile.get_meta("surface")
 		var id := original_tile.get_instance_id()
-		var filter_is_current: bool = (board.batch_incremental_event and not range_changed
+		var filter_is_current: bool = ((board.batch_incremental_event or switching) and not range_changed and not pending_coords.has(coord)
 			and not board.batch_dirty_ids.has(id) and tiles.has(coord)
 			and tiles[coord].get_meta("source_tile", 0) == id and painted.has(surface.get_instance_id())
 			and surface.material_override == painted[surface.get_instance_id()]["filter"]
@@ -189,6 +270,7 @@ func sync() -> void:
 		rebuild_borders()
 	if range_changed:
 		changed.emit()
+	pending_coords.clear()
 
 func build_label(coord: Vector2i) -> void:
 	var tile := Node3D.new()

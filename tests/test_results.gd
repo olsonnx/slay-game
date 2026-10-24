@@ -89,7 +89,9 @@ func run() -> void:
 	root.get_node("Video").set_preference(&"level_transitions", false, false)
 	root.size = Vector2i(960, 620)
 	var app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	await process_frame
 	for victory in [true, false]:
 		await app.start_new_game(42, "very_small", "easy", 2)

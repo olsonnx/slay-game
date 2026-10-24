@@ -419,9 +419,6 @@ func generation() -> void:
 			s.generate(seed_value,size,6)
 			expect(s.cells == cells and s.rng.state == rng_state,"Restart reproduces lair placement and game RNG")
 	expect(standard_lairs > 0 and kinds.size() == 3,"Standard maps can contain lairs, and all three species appear")
-	var classic = Rules.new()
-	classic.generate(42,"large",6)
-	expect(classic.cells.values().all(func(c):return not Wildlife.present(c)),"Classic remains unchanged")
 	print("Wildlife generation: Standard lairs across eight seeds = ",standard_lairs)
 
 func run() -> void:

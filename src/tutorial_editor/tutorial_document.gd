@@ -2,10 +2,11 @@ extends RefCounted
 ## Serializable authoring document; vectors are encoded as [q, r] in files.
 const Level = preload("res://src/editor/level_document.gd")
 const NONE := Vector2i(999,999)
-const ACTIONS := ["continue","any","recruit","move","build","spell","end_turn","select","inspect","develop","entrench","view","heatmap","stats"]
-const PREDICATES := ["owner","unit","building","gold","mana","round","victory","value","clear","entrenched","territory"]
+const ACTIONS := ["continue","any","recruit","move","build","spell","end_turn","select","inspect","develop","entrench","relocate_capital","event","view","heatmap","stats","finance","status","kingdom","animal"]
+const PREDICATES := ["owner","unit","building","gold","mana","round","victory","value","clear","entrenched","territory","income"]
 const ORDERS := ["move","recruit","build","spell","entrench","develop"]
 const MAX_BYTES := 8000000
+const CATEGORIES := ["armies","economy","construction","conquest","magic","exploration","practice"]
 var data: Dictionary = {}
 var path := ""
 var saved := ""
@@ -39,7 +40,7 @@ static func validate(value: Variant) -> String:
 	if not value is Dictionary or value.get("format") != "slay-tutorial" or value.get("version") != 1: return "Unsupported tutorial file."
 	if not value.get("title") is String or value.title.strip_edges().is_empty() or value.title.length() > 120: return "Give the tutorial a title (up to 120 characters)."
 	if not value.get("description","") is String or value.get("description","").length() > 200: return "Keep the menu description under 200 characters."
-	if value.get("category") not in ["basics","intermediate","advanced"]: return "Choose a tutorial category."
+	if value.get("category") not in CATEGORIES: return "Choose a tutorial topic."
 	if value.get("opponent_mode","scripted") not in ["scripted","ai","idle"]: return "Unknown opponent mode."
 	if not value.get("require_victory",true) is bool: return "Victory requirement must be a checkbox."
 	var level := Level.new()
@@ -56,12 +57,39 @@ static func validate(value: Variant) -> String:
 		for field in ["id","title","text","task"]:
 			if not step.get(field) is String or step[field].length() > {"id":80,"title":100,"text":4000,"task":160}[field]: return prefix + "Invalid " + field
 		if step.id.strip_edges().is_empty() or ids.has(step.id): return prefix + "Step IDs must be unique and nonempty."
+		if not step.get("exercise",step.id) is String: return prefix + "Exercise must have a name."
+		if not integer(step.get("count",1),1,20): return prefix + "Objective count must be between 1 and 20."
+		if not step.get("wildlife_turn",false) is bool: return prefix + "Wildlife turn must be a checkbox."
+		if not step.get("allow_turns",false) is bool: return prefix + "Turn permission must be a checkbox."
+		if step.has("setup"):
+			var setup_error := Level.new().read_data(step.setup)
+			if setup_error != "": return prefix + "Practice position: " + setup_error
+		if not step.get("criteria",{}) is Dictionary: return prefix + "Invalid objective criteria."
+		for key in step.get("criteria",{}):
+			var expected = step.criteria[key]
+			match key:
+				"animal_before":
+					if expected not in ["bear","wolf","boar"]: return prefix + "Unknown predator."
+				"owner_before":
+					if not integer(expected,-1,rules.faction_count-1): return prefix + "Invalid previous owner."
+				"unit_before","unit","source_tier":
+					if not integer(expected,0,3): return prefix + "Invalid objective rank."
+				"value_before","min_value":
+					if not integer(expected,1,6): return prefix + "Invalid objective value."
+				"plain":
+					if not expected is bool: return prefix + "Plain land must be a checkbox."
+				"building":
+					if expected not in ["house","tower","bridge","monument",""]: return prefix + "Invalid objective building."
+				_: return prefix + "Unknown objective criterion."
 		ids[step.id] = true
 		if step.get("kind") not in ACTIONS or not valid_coord(step.get("target")): return prefix + "Invalid action or target coordinates."
 		if not valid_coord(step.get("highlight")): return prefix + "Invalid highlight tile."
+		if not valid_coord(step.get("focus")): return prefix + "Invalid camera focus tile."
 		if not step.get("details",{}) is Dictionary: return prefix + "Invalid action options."
 		if not valid_coord(step.get("details",{}).get("source")): return prefix + "Invalid source coordinates."
 		if step.get("condition_mode","all") not in ["all","any"] or not step.get("restrict_actions",true) is bool: return prefix + "Invalid condition options."
+		if not step.get("confirm",false) is bool: return prefix + "Continue confirmation must be a checkbox."
+		if step.get("confirm",false) and step.kind not in ["inspect","stats"]: return prefix + "Continue confirmation is available for inspection and Stats."
 		if not step.get("conditions",[]) is Array or step.get("conditions",[]).size() > 30: return prefix + "Too many conditions."
 		for condition in step.get("conditions",[]):
 			if not condition is Dictionary or condition.get("type") not in PREDICATES or not valid_coord(condition.get("target")): return prefix + "Invalid board condition."
@@ -144,6 +172,7 @@ func runtime_steps() -> Array:
 	for step in result:
 		step.target = coord(step.get("target"))
 		if step.has("highlight"): step.highlight = coord(step.highlight)
+		if step.has("focus"): step.focus = coord(step.focus)
 		if step.get("details",{}).has("source"): step.details.source = coord(step.details.source)
 		for condition in step.get("conditions",[]): condition.target = coord(condition.get("target"))
 		for order in step.get("opponent",[]):

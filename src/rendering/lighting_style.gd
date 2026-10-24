@@ -1,5 +1,5 @@
 extends RefCounted
-## Shared art direction. Simple restores the original parameters exactly.
+## Shared art direction for gameplay and menu scenery.
 static var grade: GradientTexture1D
 static var contact_texture: Texture2D
 
@@ -9,15 +9,16 @@ static func apply(environment: Environment, sun: DirectionalLight3D, style: Stri
 	var forward_plus := RenderingServer.get_current_rendering_method() == "forward_plus"
 	sun.rotation_degrees = Vector3(-43,-38,0) if rich else Vector3(-52,-32,0)
 	sun.light_color = Color("ffe6be") if atmosphere else Color("ffebcb") if rich else Color("fff0d3")
-	sun.light_energy = 0.92 if atmosphere else 1.02 if rich else 0.88
+	sun.light_energy = 1.0 if atmosphere else 1.08 if rich else 0.94
 	environment.ambient_light_color = Color("92aecf") if atmosphere else Color("a9bed1") if rich else Color("b8c8d1")
-	environment.ambient_light_energy = 0.32 if atmosphere else 0.36 if rich else 0.42
+	# Lift shaded surfaces gently while retaining the warm/cool light balance.
+	environment.ambient_light_energy = 0.40 if atmosphere else 0.43 if rich else 0.48
 	environment.adjustment_enabled = rich
 	environment.adjustment_contrast = 1.035 if rich else 1.0
 	environment.adjustment_saturation = 0.98 if atmosphere else 1.0
 	environment.adjustment_color_correction = color_grade() if atmosphere else null
 	environment.fog_enabled = false
-	# Keep the strategy board sharp; use restrained depth shading rather than blur.
+	# Contact shading complements the camera's separate depth of field.
 	environment.ssao_enabled = forward_plus and atmosphere and sun.shadow_enabled
 	environment.ssao_radius = 0.55
 	environment.ssao_intensity = 0.46
@@ -25,8 +26,8 @@ static func apply(environment: Environment, sun: DirectionalLight3D, style: Stri
 	sun.light_angular_distance = 0.15 if forward_plus and atmosphere else 0.0
 	if forward_plus and atmosphere:
 		sun.light_color = Color("fff0d8")
-		sun.light_energy = 1.35
-		environment.ambient_light_energy = 0.32
+		sun.light_energy = 1.45
+		environment.ambient_light_energy = 0.40
 		environment.adjustment_saturation = 1.0
 
 static func color_grade() -> GradientTexture1D:

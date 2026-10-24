@@ -12,9 +12,18 @@ static func run(document, before := -1) -> Dictionary:
 	var round_number := 1
 	var steps: Array = document.runtime_steps()
 	var count := steps.size() if before < 0 else before
-	for index in range(count):
+	var start := 0
+	if before >= 0:
+		for number in range(mini(before+1,steps.size())):
+			if steps[number].has("setup"): start = number
+	for index in range(start,count):
 		var step: Dictionary = steps[index]
 		var prefix := "Step %d (%s): " % [index+1,step.title]
+		if step.has("setup"):
+			level.read_data(step.setup)
+			rules = level.build_rules()
+			round_number = 1
+		if step.kind == "any" or step.kind == "event" and not step.get("details",{}).has("choice") or int(step.get("count",1)) > 1: return {"error":prefix + "This challenge allows your own plan; use a manual playtest.","rules":rules,"round":round_number}
 		if step.kind == "end_turn":
 			for faction in range(1,rules.faction_count):
 				if document.data.get("opponent_mode","scripted") == "ai": rules.ai_turn(faction)
@@ -24,6 +33,7 @@ static func run(document, before := -1) -> Dictionary:
 						if int(order.get("faction",1)) != faction: continue
 						if not Actions.apply(rules,order,faction).ok: return {"error":prefix + "Illegal opponent order: " + str(order),"rules":rules,"round":round_number}
 			round_number += 1
+			if step.get("wildlife_turn",false): rules.Wildlife.world_turn(rules)
 			rules.begin_turn(0)
 		else:
 			var order: Dictionary = step.get("details",{}).duplicate(true)
@@ -37,5 +47,9 @@ static func run(document, before := -1) -> Dictionary:
 			if not Actions.apply(rules,order,0).ok: return {"error":prefix + "Player action is illegal or unaffordable.","rules":rules,"round":round_number}
 		if not Conditions.matches(rules,round_number,step.get("conditions",[]),step.get("condition_mode","all")):
 			return {"error":prefix + "Board conditions are not satisfied by this scripted path. Try a manual playtest.","rules":rules,"round":round_number}
+	if before >= 0 and before < steps.size() and steps[before].has("setup"):
+		level.read_data(steps[before].setup)
+		rules = level.build_rules()
+		round_number = 1
 	if before < 0 and document.data.get("require_victory",true) and not Conditions.victory(rules): error = "The script ends with an opponent still alive."
 	return {"error":error,"rules":rules,"round":round_number}

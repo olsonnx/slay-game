@@ -88,9 +88,6 @@ func test_event_scaling() -> void:
 	crossing.cells[Vector2i.ZERO]["building"] = "bridge"
 	crossing.magic.generate_events(crossing)
 	expect(event_sites(crossing).is_empty(), "Generated encounters never land on neutral bridge structures")
-	var classic = Rules.new()
-	classic.generate(42, "huge", 2)
-	expect(event_sites(classic).is_empty(), "Classic remains free of Modern encounters")
 
 func run() -> void:
 	test_event_scaling()
@@ -139,6 +136,7 @@ func run() -> void:
 	r.cells[neutral]["event"] = "gold"
 	r.perform_move(source, neutral)
 	var gold_event: Dictionary = r.pending_events[0]
+	var shared_gold: Dictionary = r.Events.EVENTS["gold"].duplicate(true)
 	var prepared: Dictionary = r.event_definition(gold_event)
 	var exact_reward: int = gold_event["gold_reward"]
 	var prepared_rng: int = r.rng.state
@@ -149,7 +147,7 @@ func run() -> void:
 	expect(r.resolve_event(gold_event, 99) == "" and r.rng.state == prepared_rng, "Invalid choice preserves the prepared reward and RNG")
 	r.resolve_event(gold_event, 0)
 	expect(r.kingdom_at(neutral)["gold"] == treasury_before + exact_reward and r.rng.state == prepared_rng, "Acknowledging the event awards exactly the displayed amount without another roll")
-	expect(r.Events.EVENTS["gold"]["choices"][0][1].contains("10–25"), "Exact reward presentation leaves the shared event catalogue unchanged")
+	expect(r.Events.EVENTS["gold"] == shared_gold, "Exact reward presentation leaves the shared event catalogue unchanged")
 	for id in ["altar", "duel"]:
 		var successes := 0
 		var deaths := 0
@@ -271,7 +269,10 @@ func ui_checks() -> void:
 	await process_frame
 	expect(not game.event_shade.visible and not game.event_panel.visible and game.event_panel.reveal == 0.0, "Closing during painting preparation cannot reopen the dialog")
 	for id in game.rules.Events.EVENTS:
-		game.rules.pending_events.append({"id": id, "coord": game.active_capital(), "faction": 0})
+		var encounter := {"id": id, "coord": game.active_capital(), "faction": 0}
+		if game.rules.Events.EVENTS[id].has("authored"):
+			game.rules.magic.Encounters.Authored.prepare(game.rules, game.rules.Events.EVENTS[id].authored, encounter)
+		game.rules.pending_events.append(encounter)
 		game.show_next_event()
 		await process_frame
 		await process_frame

@@ -79,7 +79,7 @@ func run() -> void:
 	var c := {"priority":1.0, "coord":Vector2i(2, 0)}
 	expect(canonical_ties([a,b,c]) == canonical_ties([b,a,c]), "Equivalent moves may swap inside an exact priority tie")
 	expect(canonical_ties([a,b,c]) != canonical_ties([a,c,b]) and canonical_ties([a,b,c]) != canonical_ties([a,c]), "Tie normalization preserves ranking and every selected action")
-	for mode in ["classic", "modern"]:
+	for mode in ["modern"]:
 		for seed_value in range(8):
 			var model = Rules.new()
 			model.rule_mode = mode
@@ -195,6 +195,8 @@ func run() -> void:
 	game.shutdown()
 	game.queue_free()
 	await process_frame
+	# Ogg playback is retired on the audio mixing clock after the board is freed.
+	await create_timer(1.2).timeout
 	video.set_preference(&"level_transitions", transitions, false)
 	print("Army optimization checks: %d passed, %d failed" % [checks - failures, failures])
 	quit(1 if failures else 0)

@@ -57,8 +57,6 @@ func run() -> void:
 		for coord in [Vector2i(3,0),Vector2i(0,2),Vector2i(0,3),Vector2i(0,4)]:
 			expect(not doc.paint(coord,tool,-1,1),"Lairs reject owned land, mountains, bridges and water")
 		expect(doc.erase(Vector2i.ZERO,tool) and doc.cells[Vector2i.ZERO].value == 3 and not doc.cells[Vector2i.ZERO].has("lair"),"Right erasing removes lairs without deleting land")
-		doc.rule_mode = "classic"
-		expect(not doc.paint(Vector2i.ZERO,tool,-1,1),"Classic rejects lair painting")
 	var editor = load("res://src/editor/level_editor.gd").new()
 	root.add_child(editor)
 	await process_frame
@@ -79,12 +77,6 @@ func run() -> void:
 		editor.select_tool("Land")
 		editor.sample_at(editor.view.camera.unproject_position(editor.view.coord_position(Vector2i.ZERO)))
 		expect(editor.active_tool() == tool,"Eyedropper selects the lair species")
-	editor.document.rule_mode = "classic"
-	editor.refresh()
-	editor.ui.tool_panel.close()
-	editor.open_tools("Build")
-	for button in editor.ui.tool_buttons:
-		expect(button.disabled == (button.get_meta("tool") in Document.LAIR_TOOLS),"Classic disables only the lair cards in Build")
 	editor.document.rule_mode = "modern"
 	editor.refresh()
 	editor.document.mark_saved()

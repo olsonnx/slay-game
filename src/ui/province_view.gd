@@ -75,6 +75,10 @@ func refresh(model, coord: Vector2i, can_act: bool, faction := 0) -> void:
 	var earnings: int = (0 if blocked else value) + (model.HOUSE_INCOME if cell["building"] == "house" else 0)
 	income_label.text = Loc.text("%d G / turn") % earnings
 	mana_label.text = Loc.text("Mana source · +%d maximum mana") % model.mana_source_capacity(cell) if cell.get("mana_source", false) else ""
+	if preload("res://src/game/event_sites.gd").protected(cell):
+		title.text = Loc.text("Landmark")
+		mana_label.text = preload("res://src/game/event_sites.gd").description(cell)
+		income_label.text = Loc.text("%d G / turn") % (earnings+int(cell.get("site_income",0)))
 	if mountain:
 		mana_label.text = Loc.text("Cannot be destroyed, developed or bridged")
 	if blocked:
@@ -92,7 +96,7 @@ func refresh(model, coord: Vector2i, can_act: bool, faction := 0) -> void:
 		if cell.get("lair", "") != "": income_label.text = Loc.text("Reward: +5 G / turn" if kind == "bear" else "Reward: +1 mana / turn" if kind == "wolf" else "Reward: 20 G + 2 mana")
 		income_label.add_theme_font_size_override("font_size",12)
 	else: income_label.add_theme_font_size_override("font_size",16)
-	entrench_button.visible = model.is_modern() and cell["unit"] > 0 and model.unit_faction(coord) == faction
+	entrench_button.visible = cell["unit"] > 0 and model.unit_faction(coord) == faction
 	entrench_button.disabled = not can_act or not model.can_entrench(coord, faction)
 	entrench_button.text = Loc.text("Entrenched") if model.is_entrenched(coord) else Loc.text("Entrench")
 	entrench_button.tooltip_text = Loc.text("An unmoved unit spends its action to absorb one valid attack.\nProtects only this tile; expires at your next turn.\nNo gold or mana cost; does not protect bridges from Shatter.")

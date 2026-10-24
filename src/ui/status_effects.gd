@@ -1,4 +1,5 @@
 extends HBoxContainer
+signal effect_inspected(effect: String)
 const Loc = preload("res://src/localization/text.gd")
 ## Update existing controls so refreshes preserve hover tooltips and node identity.
 const Hud = preload("res://src/ui/ui_theme.gd")
@@ -11,19 +12,20 @@ func _init() -> void:
 
 func refresh(model, faction := 0) -> void:
 	var active: Dictionary = {}
+	var owned_effects: Dictionary = preload("res://src/game/event_sites.gd").faction_effects(model,faction)
 	for effect in Events.EFFECTS:
 		if model.has_effect(faction, effect):
 			var definition: Array = Events.EFFECTS[effect]
 			active[effect] = [definition[0], Loc.text(definition[1]) + "\n" + (Loc.text("Next move: act again after a neutral capture\nAny move spends it") if effect == "trailblaze" else Loc.text("Next successful spell: 0 mana\nLasts until used")), Color("c7b2fa")]
 	if model.has_effect(faction, "stainless_steel"):
-		active["stainless_steel"] = ["S", Loc.text("Invention of stainless steel"), Color("b5d5df")]
-	var permanent_income: int = model.effects_by_faction.get(faction, {}).get("income_bonus", 0)
+		active["stainless_steel"] = ["S", Loc.text("Invention of stainless steel\nEach Knight costs 2 less gold per turn\nActive while you control its landmark"), Color("b5d5df")]
+	var permanent_income: int = owned_effects.get("income_bonus", 0)
 	if permanent_income != 0:
-		active["income_bonus"] = ["G", source_breakdown(model.effects_by_faction.get(faction, {}), "income", permanent_income, Loc.text("Gold per turn")), Color("eed3a1")]
+		active["income_bonus"] = ["G", source_breakdown(owned_effects, "income", permanent_income, Loc.text("Gold per turn")), Color("eed3a1")]
 	var counts := {"entrench": 0}
-	var wildlife_regen: int = model.effects_by_faction.get(faction, {}).get("wildlife_mana_regen",0)
+	var wildlife_regen: int = owned_effects.get("wildlife_mana_regen",0)
 	if wildlife_regen > 0:
-		active["wildlife_mana_regen"] = ["M",source_breakdown(model.effects_by_faction.get(faction, {}), "mana", wildlife_regen, Loc.text("Mana per turn")),Color("bdb0ed")]
+		active["wildlife_mana_regen"] = ["M",source_breakdown(owned_effects, "mana", wildlife_regen, Loc.text("Mana per turn")),Color("bdb0ed")]
 	for cell in model.cells.values():
 		if cell.get("entrenched_by", -1) == faction: counts["entrench"] += 1
 	if counts["entrench"] > 0:
@@ -45,6 +47,7 @@ func refresh(model, faction := 0) -> void:
 			Hud.button_foreground(icon,definition[2])
 			add_child(icon)
 			icons[id] = icon
+			icon.tooltip_shown.connect(func(): effect_inspected.emit(id))
 		var icon: Button = icons[id]
 		if icon.tooltip_text != definition[1]:
 			icon.tooltip_text = definition[1]

@@ -12,14 +12,14 @@ $generator = $generator.Replace('for r in range(-12, 13):', 'for r in range(-cei
 $generator = $generator.Replace('var state', "var state`nvar phase_started: int`n`nfunc checkpoint(label: String) -> void:`n`tvar now := Time.get_ticks_usec()`n`tstate.generation_stages[label] = (now - phase_started) / 1000.0`n`tphase_started = now")
 $generator = $generator.Replace('state.map_size = size_id', "phase_started = Time.get_ticks_usec()`n`tstate.generation_stages.clear()`n`tstate.map_size = size_id")
 foreach ($entry in @(
-    @('var seeds := starting_sites()', "var seeds := starting_sites()`n`tcheckpoint(`"starting_sites`")"),
+    @('var seeds := starting_sites().slice(0, mainland_factions)', "var seeds := starting_sites().slice(0, mainland_factions)`n`tcheckpoint(`"starting_sites`")"),
     @('# Remove any detached coastal specks', "checkpoint(`"links_and_lobes`")`n`t# Remove any detached coastal specks"),
     @('# Guarantee expansion space', "checkpoint(`"connectivity_cleanup`")`n`t# Guarantee expansion space"),
     @('# Cut bays and interior lakes', "checkpoint(`"minimum_land_fill`")`n`t# Cut bays and interior lakes"),
     @('# All factions start', "checkpoint(`"erosion`")`n`t# All factions start"),
     @('state.rebuild_kingdoms()', "checkpoint(`"ownership_and_trees`")`n`tstate.rebuild_kingdoms()`n`tcheckpoint(`"kingdoms`")"),
-    @('generate_province_resources()', "generate_province_resources()`n`t`tcheckpoint(`"resources`")"),
-    @('generate_mountains()', "generate_mountains()`n`t`tcheckpoint(`"mountains`")")
+    @('generate_province_resources()', "generate_province_resources()`n`tcheckpoint(`"resources`")"),
+    @('generate_mountains()', "generate_mountains()`n`tcheckpoint(`"mountains`")")
 )) {
     # Only instrument calls, not matching function declarations.
     $generator = $generator.Replace("`t" + $entry[0], "`t" + $entry[1])

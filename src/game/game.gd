@@ -15,6 +15,7 @@ signal faction_finished(faction: int)
 signal pause_requested
 signal tutorial_exit_requested
 signal defeat_requested
+signal match_completed
 
 var input_handler
 var presenter
@@ -32,6 +33,7 @@ var busy: bool:
 		if value: session.begin_work()
 		else: session.finish_work()
 var initial_human_count := 1
+var network_match
 var initial_match_config: Dictionary = {}
 var initial_quick_play_kingdom := -2 # Opt in only for generated solo sessions.
 var turn_order: Array = []
@@ -60,7 +62,12 @@ var visible_economy_tracker = VisibleEconomy.new()
 var ai_simulation_workers := true # Internal diagnostic override; graphics/settings are unaffected.
 var settling_turn := false
 var initial_seed := -1
-var initial_rule_mode := "classic"
+var initial_profile: Dictionary = {}
+var profile_match_id := ""
+var profile_owner_id := ""
+var profile_completion_reported := false
+var profile_xp_award: Dictionary = {}
+var initial_rule_mode := "modern"
 var initial_map_size := "small"
 var initial_kingdom_count := 0
 var initial_difficulty := "normal"
@@ -148,7 +155,7 @@ func new_game(seed_value := -1, render_board := true, generate_rules := true) ->
 	close_event_ui()
 	shown_event.clear()
 	pending_capital_relocation.clear()
-	hud.configure_rules_ui(session.rules.is_modern())
+	hud.configure_rules_ui(true)
 	close_province()
 	hud.reset_gold_feedback()
 	configure_players()
@@ -156,6 +163,8 @@ func new_game(seed_value := -1, render_board := true, generate_rules := true) ->
 	session.round_number = 1
 	match_clock.reset(not deferred_startup)
 	match_results.clear()
+	profile_completion_reported = false
+	profile_xp_award.clear()
 	inspecting_results_map = false
 	session.selection.selected = NONE
 	session.selection.hovered = NONE
@@ -204,7 +213,7 @@ func new_game(seed_value := -1, render_board := true, generate_rules := true) ->
 			view.render_cells(cells)
 		begin_local_turn()
 
-func prepare_board() -> void:
+func prepare_board(report: Callable = Callable()) -> void:
 	var job = preload("res://src/game/island_preparation.gd").new()
 	var work: Callable = job.generate.bind(initial_seed, initial_map_size, initial_rule_mode, initial_kingdom_count)
 	if not session.initial_level_data.is_empty():
@@ -213,6 +222,7 @@ func prepare_board() -> void:
 	while not WorkerThreadPool.is_task_completed(task):
 		await get_tree().process_frame
 	WorkerThreadPool.wait_for_task_completion(task)
+	if report.is_valid(): report.call(0.2)
 	assert(job.error.is_empty(), job.error)
 	prepared_level_document = job.document
 	session.rules = job.rules
@@ -222,7 +232,9 @@ func prepare_board() -> void:
 	new_game(initial_seed, false, false)
 	startup_timings["session_setup_ms"] = (Time.get_ticks_usec() - setup_started) / 1000.0
 	prepared_level_document = null
-	await view.build_initial_cells(cells)
+	if report.is_valid(): report.call(0.25)
+	await view.build_initial_cells(cells, func(value: float):
+		if report.is_valid(): report.call(0.25 + 0.75 * value))
 	startup_timings.merge(view.startup_timings, true)
 	refresh_ui()
 
@@ -232,6 +244,7 @@ func active_kingdom(economy = null) -> Dictionary:
 func build_event_ui() -> void:
 	event_dialog = preload("res://src/ui/event_dialog.gd").new(hud.button_at)
 	hud.ui_root.add_child(event_dialog)
+	event_dialog.painting_revealed.connect(func(artwork: Dictionary): PaintingAlbum.discover(artwork))
 	event_shade = event_dialog
 	event_panel = event_dialog.panel
 
@@ -248,13 +261,18 @@ func show_next_event() -> void:
 		return
 	shown_event = session.rules.pending_events[0]
 	var definition: Dictionary = session.rules.event_definition(shown_event)
+	if network_match != null and (not network_match.is_local_turn() or network_match.local_paused): return
 	close_menus()
 	reset_camera_gesture()
 	view.stop_camera_pan()
 	hud.world_tip.hide()
 	event_dialog.present(definition, resolve_shown_event)
+	Sound.play(&"event_popup")
 
 func resolve_shown_event(choice: int) -> void:
+	if network_match != null and not network_match.executing:
+		network_match.submit({"kind":"event", "choice":choice})
+		return
 	var result: String = session.rules.resolve_event(shown_event, choice)
 	if result == "":
 		return
@@ -324,10 +342,11 @@ func announce(text_value: String) -> void:
 	hud.toast_panel.visible = true
 
 func click_hex(coord: Vector2i, hit_kind := "auto") -> void:
+	if network_match != null and network_match.route_click(coord): return
 	await player_actions.click_hex(self, coord, hit_kind)
 
 func inspect_province(coord: Vector2i) -> void:
-	if not session.rules.is_modern() or not view.cells.has(coord):
+	if not view.cells.has(coord):
 		return
 	Sound.play(&"ui_click")
 	session.selection.inspected_hex = coord
@@ -350,17 +369,23 @@ func refresh_province(model = null) -> void:
 	province_view.refresh(economy, session.selection.inspected_hex, not commands_locked(), session.player_faction)
 
 func develop_province() -> void:
+	if network_match != null and not network_match.executing:
+		network_match.submit({"kind":"develop", "coord":session.selection.inspected_hex})
+		return
 	if commands_locked():
 		return
 	if not tutorial_permits("develop",session.selection.inspected_hex): return
 	if session.rules.develop(session.selection.inspected_hex, session.player_faction):
 		view.render_cells(cells)
 		view.action_marker(session.selection.inspected_hex, Color("eed3a1"))
-		Sound.play(&"action_place")
+		Sound.play(&"gold_develop")
 		refresh_ui()
 		report_tutorial_action("develop",session.selection.inspected_hex)
 
 func entrench_province() -> void:
+	if network_match != null and not network_match.executing:
+		network_match.submit({"kind":"entrench", "coord":session.selection.inspected_hex})
+		return
 	if commands_locked() or not province_view.visible or not tutorial_permits("entrench", session.selection.inspected_hex): return
 	if session.rules.entrench(session.selection.inspected_hex, session.player_faction):
 		session.selection.selected = NONE
@@ -388,6 +413,9 @@ func resolve_capital_relocation(choice: int) -> void:
 	pending_capital_relocation.clear()
 	close_event_ui()
 	var coord: Vector2i = request["coord"]
+	if network_match != null and not network_match.executing:
+		if choice == 0: network_match.submit({"kind":"relocate", "coord":coord})
+		return
 	var bank: Dictionary = session.rules.kingdom_at(coord)
 	if choice == 0 and not commands_locked() and session.player_faction == request["faction"] and session.rules.capital_relocation_cost(session.player_faction) == request["cost"] and bank.get("capital", NONE) == request["capital"] and tutorial_permits("relocate_capital", coord) and session.rules.relocate_capital(coord, session.player_faction):
 		session.selection.active_hex = coord
@@ -395,10 +423,11 @@ func resolve_capital_relocation(choice: int) -> void:
 		view.render_cells(cells)
 		view.action_marker(coord, Color("eed3a1"))
 		Sound.play(&"action_place")
+		report_tutorial_action("relocate_capital",coord)
 	if not closing: refresh_ui()
 
 func choose_spell(spell: String) -> void:
-	if commands_locked() or not session.rules.is_modern() or not Spells.SPELLS.has(spell):
+	if commands_locked() or not Spells.SPELLS.has(spell):
 		return
 	session.selection.chosen_spell = spell
 	session.selection.action_mode = "spell"
@@ -444,6 +473,9 @@ func active_capital() -> Vector2i:
 	return active_kingdom().get("capital", NONE)
 
 func end_turn() -> void:
+	if network_match != null and not network_match.executing:
+		network_match.submit({"kind":"end_turn"})
+		return
 	if session.tutorial != null:
 		await session.tutorial.end_turn()
 		return
@@ -454,6 +486,8 @@ func turn_button_activated() -> void:
 		end_turn()
 
 func check_winner() -> void:
+	if network_match != null and not network_match.transport.is_host(): return
+	if network_match != null and not session.rules.pending_events.is_empty(): return
 	if session.tutorial != null: return
 	if is_hotseat():
 		var survivors: Array = []
@@ -467,14 +501,16 @@ func check_winner() -> void:
 		else:
 			var human_survives := false
 			for faction in session.rules.human_factions:
-				if session.rules.territory(faction) > 0:
+				if session.rules.has_capital(faction):
 					human_survives = true
 			if not human_survives:
 				game_over = true
 				announce(Loc.text("Defeat — all local kingdoms have fallen."))
 		begin_completion_exit()
 		return
-	if session.rules.territory(session.player_faction) == 0:
+	# Isolated provinces can retain buildings and ownership without a treasury.
+	# They cannot keep a defeated player in the match after their last kingdom falls.
+	if not session.rules.has_capital(session.player_faction):
 		game_over = true
 		announce(Loc.text("Your kingdom has fallen."))
 	else:
@@ -498,12 +534,15 @@ func begin_completion_exit() -> void:
 	if not game_over: return
 	match_clock.pause()
 	if session.rules.replay_log != null and not session.rules.replay_log.finished:
-		var winner: int = winner_faction if is_hotseat() else session.player_faction if session.rules.territory(session.player_faction) > 0 else -1
+		var winner: int = winner_faction if is_hotseat() else session.player_faction if session.rules.has_capital(session.player_faction) else -1
 		var result := "victory" if not is_hotseat() and winner >= 0 else "defeat"
 		if is_hotseat():
 			result = "completed" if winner >= 0 else "draw" if not cells.values().any(func(cell): return cell["capital"] >= 0) else "defeat"
 		session.rules.replay_log.finish(session.rules, "completed", winner, {"duration_seconds":match_clock.seconds(), "result":result})
 		match_results = preload("res://src/game/match_results.gd").summarize(session.rules.replay_log)
+	if not profile_completion_reported:
+		profile_completion_reported = true
+		match_completed.emit()
 	if busy or closing or defeat_notified or not animate_level_changes: return
 	defeat_notified = true
 	session.selection.selected = NONE
@@ -543,9 +582,13 @@ func open_shop(kind: String) -> void:
 	presenter.open_shop(kind)
 
 func commands_locked() -> bool:
+	if network_match != null and network_match.locked(): return true
 	return session.commands_locked(get_tree().paused, view.level_transitioning, event_shade.visible)
 
 func cancel_action() -> void:
+	# Network commands commit on the host; selection can be cancelled before
+	# submission, but another player's in-flight move cannot be rolled back.
+	if network_match != null and (network_match.executing or network_match.waiting or network_match.applying): return
 	if interaction_blocked():
 		return
 	var closing_stats: bool = hud.stats_shade.visible
@@ -669,6 +712,8 @@ func refresh_ui(economy = null) -> void:
 		replay_error_reported = true
 		announce(Loc.text("Replay recording stopped: %s") % session.rules.replay_log.error)
 	presenter.refresh_hud(economy)
+	if network_match != null and network_match.locked():
+		hud.end_button.text = Loc.text("Waiting for players…") if network_match.revision < 0 else Loc.text("Waiting for host…") if network_match.waiting or network_match.applying else Loc.text("Waiting for turn…")
 	refresh_targets()
 	refresh_overlays()
 	refresh_province(economy)
@@ -718,7 +763,11 @@ func activate_ui(callback: Callable) -> void:
 	callback.call()
 
 func _on_visual_action_started(action: Dictionary) -> void:
-	if not closing and action["kind"] in ["recruit", "upgrade", "build", "spell", "develop"]:
+	if action["kind"] == "develop":
+		if not closing and action.get("faction", -1) == session.player_faction:
+			Sound.play(&"gold_develop")
+		return
+	if not closing and action["kind"] in ["recruit", "upgrade", "build", "spell"]:
 		Sound.play(&"action_place")
 
 func _on_audio_save_failed(_error: Error) -> void:
@@ -850,6 +899,7 @@ func configure_players() -> void:
 		initial_match_config = preload("res://src/game/match_setup.gd").quick_play(session.rules.map_size,session.rules.faction_count,initial_difficulty,initial_quick_play_kingdom,session.rules.level_seed,session.rules.rule_mode)
 	session.names = Catalog.FACTIONS.duplicate()
 	session.colors = Catalog.UI_COLORS.duplicate()
+	session.flags.clear()
 	view.COLORS = Catalog.TERRAIN_COLORS.duplicate()
 	var authored_document = null
 	if not session.initial_level_data.is_empty():
@@ -902,6 +952,13 @@ func configure_players() -> void:
 		turn_order.push_front(authored_player)
 	session.rules.faction_names = session.names.duplicate()
 	session.player_faction = turn_order[0]
+	if not initial_profile.is_empty() and session.initial_level_data.is_empty() and not is_hotseat():
+		var owner: int = session.player_faction
+		session.names[owner] = initial_profile.name
+		session.colors[owner] = Color(initial_profile.color)
+		session.flags[owner] = initial_profile.flag.duplicate(true)
+		view.COLORS[owner] = Color(initial_profile.color).darkened(0.06)
+		session.rules.faction_names = session.names.duplicate()
 
 func tutorial_permits(kind: String, coord := NONE, details: Dictionary = {}) -> bool:
 	return session.tutorial == null or session.tutorial.permits(kind,coord,details)
@@ -913,12 +970,15 @@ func ai_execution():
 	return preload("res://src/game/ai_execution.gd").new(get_tree(), session.is_closing, view.record_capture_sample if view.profile_capture else Callable())
 
 func interaction_blocked() -> bool:
+	if network_match != null and network_match.local_paused and not network_match.executing: return true
 	return session.interaction_blocked(get_tree().paused, view.level_transitioning, event_shade.visible)
 
 func input_suspended() -> bool:
+	if network_match != null and network_match.local_paused and not network_match.executing: return true
 	return session.input_suspended(get_tree().paused, event_shade.visible)
 
 func can_navigate() -> bool:
+	if network_match != null and network_match.local_paused and not network_match.executing: return false
 	return session.can_navigate(get_tree().paused, view.level_transitioning, event_shade.visible)
 
 func presentation_actions() -> Dictionary:

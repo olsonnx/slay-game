@@ -3,7 +3,7 @@ const Doc = preload("res://src/tutorial_editor/tutorial_document.gd")
 
 static func victory(rules) -> bool:
 	for faction in range(1,rules.faction_count):
-		if rules.territory(faction) > 0: return false
+		if rules.has_capital(faction): return false
 	return true
 
 static func matches(rules, round_number: int, conditions: Array, mode := "all") -> bool:
@@ -20,10 +20,15 @@ static func check(rules, round_number: int, condition: Dictionary) -> bool:
 	var value = condition.get("value",0)
 	var cell: Dictionary = rules.cells.get(at,{})
 	match condition.type:
-		"victory": return victory(rules) if faction < 0 else rules.territory(faction) == 0
+		"victory": return victory(rules) if faction < 0 else not rules.has_capital(faction)
 		"round": return round_number >= int(value)
 		"mana": return rules.get_mana(faction) >= int(value)
 		"territory": return rules.territory(faction) >= int(value)
+		"income":
+			var total := 0
+			for bank in rules.kingdoms.values():
+				if bank.owner == faction: total += rules.income(bank)
+			return total >= int(value)
 		"gold":
 			if at != Doc.NONE: return rules.kingdom_at(at).get("gold",-1) >= int(value)
 			var total := 0

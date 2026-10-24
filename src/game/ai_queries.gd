@@ -58,7 +58,7 @@ func supply_risk(coord: Vector2i) -> float:
 	if bank.is_empty() or bank["capital"] == coord: return 0.0
 	var ring := {}
 	for next in neighbors(coord):
-		if not model.is_mountain(next) and (model.cells[next]["kingdom"] == bank["capital"] or model.is_modern() and model.is_bridge(next)): ring[next] = true
+		if not model.is_mountain(next) and (model.cells[next]["kingdom"] == bank["capital"] or model.is_bridge(next)): ring[next] = true
 	# A connected surviving neighbour ring proves this is not a supply neck.
 	# Avoid a bank-wide graph pass for ordinary exposed border land.
 	var risk := 0.0
@@ -126,6 +126,9 @@ func capture_value(coord: Vector2i, faction: int) -> float:
 	if cell["owner"] >= 0 and cell["owner"] != faction: value += 5.0 + cut_value(coord)
 	if cell["capital"] >= 0: value += 30.0
 	if cell["mana_source"]: value += 5.0
+	if cell["building"] == "monument":
+		value += float(cell.get("site_income",0))*4.0+float(cell.get("site_mana",0))*8.0
+		if cell.get("site_steel",false): value += 12.0
 	if cell["unit"] > 0: value += [0.0,4.0,8.0,14.0][cell["unit"]]
 	if model.is_bridge(coord) and cell["unit"] > 0 and model.unit_faction(coord) != faction: value += 8.0
 	value += campaign_value(coord,faction)
@@ -420,7 +423,7 @@ func candidate_targets(source: Vector2i) -> Array:
 		var faction: int = model.unit_faction(source)
 		for coord in component["members"]:
 			var cell: Dictionary = model.cells[coord]
-			if (cell["building"] == "" or model.is_bridge(coord)) and (cell["unit"] == 0 or cell["unit"] == strength and strength < 3):
+			if (cell["building"] in ["", "monument"] or model.is_bridge(coord)) and (cell["unit"] == 0 or cell["unit"] == strength and strength < 3):
 				result.append(coord)
 		for coord in component["boundary"]:
 			var protection: int = model.attack_defense(coord,faction) if model.has_wildlife(coord) else defense(coord)
@@ -459,13 +462,12 @@ func bank_summary(kingdom: Dictionary) -> Dictionary:
 		# position is immutable, so account for every unit once across all banks.
 		for bank in model.kingdoms.values():
 			banks[bank["capital"]] = {"income": model.income(bank), "upkeep": 0}
-		var modern: bool = model.is_modern()
 		for coord in model.cells:
 			var cell: Dictionary = model.cells[coord]
 			if cell["unit"] == 0:
 				continue
 			var home: Dictionary = model.kingdom_at(coord)
-			if home.is_empty() and modern:
+			if home.is_empty():
 				home = support(coord)
 			if not home.is_empty():
 				banks[home["capital"]]["upkeep"] += model.unit_upkeep(cell["unit"], home["owner"])

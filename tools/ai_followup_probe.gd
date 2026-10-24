@@ -34,7 +34,7 @@ func run() -> void:
 				for rank in [1,2,3]:
 					var cost: int = model.recruitment_cost(coord,faction,rank,bank["capital"])
 					if cost < 0: continue
-					var wages: int = model.Catalog.unit_upkeep(rank,true)-model.Catalog.unit_upkeep(model.cells[coord]["unit"],true)
+					var wages: int = model.Catalog.unit_upkeep(rank)-model.Catalog.unit_upkeep(model.cells[coord]["unit"])
 					if not Analysis.sustainable(model,bank,wages,cost,queries): continue
 					var value: float = queries.recruitment_value(coord,rank)-wages*0.85-cost*0.16
 					if not best.has(str(rank)) or value > best[str(rank)]["value"]: best[str(rank)] = {"site":coord,"value":value,"cost":cost}

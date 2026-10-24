@@ -82,7 +82,7 @@ func run() -> void:
 	root.add_child(game)
 	game.set_process(false)
 	await process_frame
-	for modern in [true, false]:
+	for modern in [true]:
 		game.configure_rules_ui(modern)
 		var first: Button = game.recruit_button
 		var last: Button = game.spell_button if modern else game.build_button
@@ -107,14 +107,6 @@ func run() -> void:
 	for box in [game.province_view, game.stats_panel]:
 		var close_button: Button = box.get_node("Close")
 		expect(close_button.size == Vector2(32, 32), "Other close buttons share the square style")
-	game.rules.rule_mode = "classic"
-	game.configure_rules_ui(false)
-	game.open_shop("build")
-	game.shop_panel.reveal = 1
-	var classic_last: Button = game.shop_items.get_child(1)
-	expect(is_equal_approx(game.shop_items.position.x, game.shop_panel.size.x - game.shop_items.position.x - classic_last.position.x - classic_last.size.x), "Classic building cards retain equal side padding")
-	await capture("build_classic")
-	game.cancel_action()
 	game.rules.rule_mode = "modern"
 	game.configure_rules_ui(true)
 	for node in game.help_panel.get_children():
@@ -228,7 +220,7 @@ func run() -> void:
 		var painting := game.event_panel.get_node_or_null("EventPainting") as TextureRect
 		expect(painting != null, "Every encounter has dedicated or fallback art: " + id)
 		if painting != null:
-			var artwork: Dictionary = definition if definition.has("painting") else game.rules.Events.DEFAULT_PAINTING
+			var artwork: Dictionary = definition if definition.get("painting", "") != "" else game.rules.Events.DEFAULT_PAINTING
 			expect(painting.texture.resource_path == artwork["painting"], "Dedicated art takes precedence over the fallback: " + id)
 			expect(painting.mouse_filter != Control.MOUSE_FILTER_IGNORE and painting.tooltip_text.contains(artwork["painting_title"]) and painting.tooltip_text.contains(artwork["painting_artist"]), "Painting tooltip includes title and artist: " + id)
 			expect(painting.texture != null and painting.material is ShaderMaterial and painting.material.get_shader_parameter("corner_radius") == 8.0, "Event paintings share the rounded sepia treatment: " + id)

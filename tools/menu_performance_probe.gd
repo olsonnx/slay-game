@@ -20,7 +20,9 @@ func run() -> void:
 	root.get_node("Sound").set_muted(true, false)
 	Engine.max_fps = 0
 	app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	background = app.menus.menu_background
 	background.profile_updates = true
 	background.map.static_batches.profile_sync = true

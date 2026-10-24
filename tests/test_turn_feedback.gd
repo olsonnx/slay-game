@@ -113,8 +113,19 @@ func run() -> void:
 	expect(options.camera_follow_toggle.text == "Follow active kingdom" and not options.camera_follow_toggle.button_pressed, "Video options exposes the saved follow toggle")
 	game.busy = false
 	game.view.stop_camera_pan()
+	var original_active: int = game.session.active_faction
+	for faction in range(3):
+		game.session.active_faction = faction
+		game.refresh_ui()
+		var color: Color = game.session.colors[faction]
+		expect(game.hud.end_button.get_theme_stylebox("normal").bg_color == color,"Turn button follows the active faction, including opponents")
+		expect(game.hud.end_button.get_theme_stylebox("disabled").bg_color == color.darkened(0.16),"Disabled turn button retains the active kingdom colour")
+	game.session.active_faction = original_active
+	game.refresh_ui()
 	video.set_preference(&"follow_turn_camera", original_follow, false)
 	video.settings_path = original_path
+	game.queue_free()
+	await process_frame
 	root.get_node("Sound").stop_all()
 	await create_timer(1.20).timeout
 	print("Turn feedback checks: %d passed, %d failed" % [checks - failures, failures])

@@ -2,7 +2,6 @@ extends Node
 ## Materials are shared across frames; army lighting never rewrites instance buffers.
 const Solid = preload("res://resources/shaders/sprite_lighting.gdshader")
 const Fading = preload("res://resources/shaders/sprite_lighting_fade.gdshader")
-const ScoutNormal = preload("res://assets/units/scout_normal2.png")
 const CACHE_LIMIT := 512
 var normal_strength := 0.65
 var normal_invert_y := false
@@ -51,11 +50,11 @@ static func make_material(texture: Texture2D, pixels: Vector2, pixel_size: float
 
 static func bind_texture(material: ShaderMaterial, texture: Texture2D) -> void:
 	material.set_shader_parameter("sprite_texture", texture)
-	var has_normal := texture.has_meta("normal_region")
+	var has_normal := texture.has_meta("normal_texture") and texture.has_meta("normal_region")
 	material.set_shader_parameter("has_normal_map", has_normal)
 	if has_normal:
 		var region: Rect2 = texture.get_meta("normal_region")
-		material.set_shader_parameter("normal_texture", ScoutNormal)
+		material.set_shader_parameter("normal_texture", texture.get_meta("normal_texture"))
 		material.set_shader_parameter("normal_region", Vector4(region.position.x, region.position.y, region.size.x, region.size.y))
 
 func set_normal_options(strength: float, invert_y: bool) -> void:

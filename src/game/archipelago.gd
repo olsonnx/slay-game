@@ -44,7 +44,6 @@ static func starting_land_reachable(state) -> bool:
 	while not pending.is_empty():
 		var index: int = pending.pop_back()
 		for coord in regions[index]:
-			if not state.is_modern(): continue
 			for direction in Grid.DIRECTIONS:
 				var gap: Vector2i = coord + direction
 				if state.cells.has(gap) or not state.inside_map(gap): continue
@@ -56,7 +55,7 @@ static func starting_land_reachable(state) -> bool:
 	return reached.size() == regions.size()
 
 static func island_plans(state) -> Array:
-	if not state.is_modern() or state.rng.randf() < 0.35: return []
+	if state.rng.randf() < 0.35: return []
 	var total: int = preload("res://src/game/map_sizes.gd").APPROX_TILES[state.map_size]
 	var count := 1
 	if total >= 150 and state.faction_count >= 3 and state.rng.randf() < 0.5: count = 2

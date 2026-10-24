@@ -2,6 +2,7 @@ extends Node
 ## Standalone sandbox. Changes affect only this board and one lab save file.
 const Board = preload("res://src/rendering/board_view.gd")
 const Rules = preload("res://src/game/kingdom_rules.gd")
+const DOF = preload("res://src/rendering/depth_of_field.gd")
 const SAVE_PATH := "user://lighting_lab.cfg"
 var board
 var fields: Dictionary = {}
@@ -10,6 +11,10 @@ var status: Label
 var preset: OptionButton
 var saved_a: Dictionary = {}
 var rebuilding := false
+var zoom_status: Label
+var slider_captions: Dictionary = {}
+var dof_heading: Label
+var panel_scroll: ScrollContainer
 
 func _ready() -> void:
 	board = Board.new()
@@ -30,6 +35,7 @@ func _ready() -> void:
 	panel.offset_left = -340
 	layer.add_child(panel)
 	var scroll := ScrollContainer.new()
+	panel_scroll = scroll
 	panel.add_child(scroll)
 	rows = VBoxContainer.new()
 	rows.custom_minimum_size.x = 315
@@ -43,6 +49,7 @@ func _ready() -> void:
 	rows.add_child(preset)
 	preset.item_selected.connect(func(index): apply_preset(["atmospheric", "daylight", "simple"][index]))
 	button("Reset selected preset", func(): apply_preset(["atmospheric", "daylight", "simple"][preset.selected]))
+	button("Depth of field controls", func(): scroll.scroll_vertical = roundi(dof_heading.position.y))
 	slider("sun_energy", "Sun strength", 0, 3, 0.02)
 	slider("sun_pitch", "Sun elevation", -89, -5, 1)
 	slider("sun_yaw", "Sun direction", -180, 180, 1)
@@ -63,6 +70,18 @@ func _ready() -> void:
 	check("grade", "Atmospheric color grading")
 	check("ao", "Ambient occlusion (Forward+)")
 	slider("ao_strength", "Occlusion strength", 0, 2, 0.02)
+	dof_heading = label("DIORAMA DEPTH OF FIELD", 18)
+	label("Lower zoom numbers mean a closer view.\nBlur fades in between the two zoom limits.", 13)
+	check("dof_enabled", "Enable depth of field")
+	slider("dof_clear_zoom", "Blur starts below zoom", 9, 40, 0.5)
+	slider("dof_full_zoom", "Full blur below zoom", 8, 25, 0.5)
+	slider("dof_amount", "Maximum blur", 0, 0.3, 0.005)
+	slider("dof_sharp_band", "Sharp focus band", 0.1, 0.8, 0.01)
+	slider("dof_transition", "Blur falloff", 0.2, 1.5, 0.05)
+	slider("preview_zoom", "Preview zoom", 8, maxf(40, board.max_zoom), 0.1)
+	zoom_status = label("", 14)
+	button("Copy DOF settings", copy_dof_settings)
+	board.navigation.changed.connect(sync_camera_controls)
 	button("Close view", func(): board.zoom = 12; board.update_camera())
 	button("Whole map", func(): board.focus = board.map_center; board.zoom = board.max_zoom; board.update_camera())
 	button("Remember A", func(): saved_a = capture(); status.text = "A remembered for this session.")
@@ -98,6 +117,7 @@ func slider(key: String, title: String, low: float, high: float, step: float) ->
 	node.step = step
 	rows.add_child(node)
 	fields[key] = node
+	slider_captions[key] = [caption, title]
 	node.value_changed.connect(func(value): caption.text = "%s  %.2f" % [title, value]; update_lighting())
 
 func color_picker(key: String, title: String) -> void:
@@ -143,7 +163,11 @@ func apply_preset(style: String) -> void:
 		"shadows": sun.shadow_enabled, "shadow_opacity": 1.0, "softness": sun.light_angular_distance,
 		"normal_strength": 0.65, "normal_invert_y": false, "sprites": style == "atmospheric", "adjustments": env.adjustment_enabled, "brightness": 1.0,
 		"contrast": env.adjustment_contrast, "saturation": env.adjustment_saturation, "grade": style == "atmospheric",
-		"ao": env.ssao_enabled, "ao_strength": env.ssao_intensity})
+		"ao": env.ssao_enabled, "ao_strength": env.ssao_intensity,
+		"dof_enabled": DOF.DEFAULTS.enabled, "dof_clear_zoom": DOF.DEFAULTS.clear_zoom,
+		"dof_full_zoom": DOF.DEFAULTS.full_zoom, "dof_amount": DOF.DEFAULTS.amount,
+		"dof_sharp_band": DOF.DEFAULTS.sharp_band, "dof_transition": DOF.DEFAULTS.transition,
+		"preview_zoom": board.zoom})
 
 func update_lighting() -> void:
 	if rebuilding: return
@@ -168,6 +192,31 @@ func update_lighting() -> void:
 	board.sprite_lighting.set_normal_options(v.normal_strength, v.normal_invert_y)
 	board.sprite_lighting.set_enabled(v.sprites)
 	board.unit_batches.refresh_sprite_lighting()
+	# Keep the two limits ordered even while dragging either control.
+	if v.dof_full_zoom >= v.dof_clear_zoom:
+		v.dof_clear_zoom = v.dof_full_zoom + 0.5
+		fields.dof_clear_zoom.set_value_no_signal(v.dof_clear_zoom)
+	board.camera.set_meta("dof_settings", {
+		"enabled": v.dof_enabled, "clear_zoom": v.dof_clear_zoom,
+		"full_zoom": v.dof_full_zoom, "amount": v.dof_amount,
+		"sharp_band": v.dof_sharp_band, "transition": v.dof_transition})
+	board.stop_camera_pan()
+	board.zoom = v.preview_zoom
+	board.update_camera()
+	for key in slider_captions:
+		slider_captions[key][0].text = "%s  %.2f" % [slider_captions[key][1], fields[key].value]
+
+func sync_camera_controls() -> void:
+	if not fields.has("preview_zoom"): return
+	fields.preview_zoom.set_value_no_signal(board.zoom)
+	slider_captions.preview_zoom[0].text = "Preview zoom  %.1f" % board.zoom
+	var amount: float = board.camera.attributes.dof_blur_amount
+	var maximum: float = fields.dof_amount.value
+	zoom_status.text = "Zoom %.1f | Blur %d%%" % [board.zoom, roundi(amount / maximum * 100.0) if maximum > 0 else 0]
+
+func copy_dof_settings() -> void:
+	DisplayServer.clipboard_set(JSON.stringify({"depth_of_field": board.camera.get_meta("dof_settings"), "preview_zoom": board.zoom}, "\t"))
+	status.text = "DOF settings copied. Paste them in chat."
 
 func swap_a() -> void:
 	if saved_a.is_empty(): status.text = "Use Remember A first."; return
@@ -200,8 +249,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		if event.button_mask & MOUSE_BUTTON_MASK_RIGHT: board.orbit(event.relative)
 		elif event.button_mask & MOUSE_BUTTON_MASK_LEFT: board.drag_pan(event.relative)
 	if event is InputEventMouseButton and event.pressed:
-		if event.button_index == MOUSE_BUTTON_WHEEL_UP: board.change_zoom(-1)
-		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN: board.change_zoom(1)
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP: board.change_zoom(1)
+		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN: board.change_zoom(-1)
 
 func _process(_delta: float) -> void:
 	# Accent lights still fade normally; keep the user's shadow setting fixed.
@@ -211,20 +260,40 @@ func _process(_delta: float) -> void:
 
 func smoke() -> void:
 	for style in ["simple", "daylight", "atmospheric"]: apply_preset(style)
+	fields.preview_zoom.value = 19.0
+	assert(is_zero_approx(board.camera.attributes.dof_blur_amount))
+	fields.dof_clear_zoom.value = 23.0
+	assert(board.camera.attributes.dof_blur_amount > 0.0)
+	fields.dof_amount.value = 0.22
 	fields.sun_energy.value = 1.7
 	saved_a = capture()
 	fields.sun_energy.value = 0.4
+	fields.dof_amount.value = 0.05
 	swap_a()
 	assert(is_equal_approx(board.sun.light_energy, 1.7))
+	assert(is_equal_approx(fields.dof_amount.value, 0.22))
 	save_experiment()
 	fields.sun_energy.value = 0.2
+	fields.dof_clear_zoom.value = 16.0
 	load_experiment()
 	assert(is_equal_approx(board.sun.light_energy, 1.7))
+	assert(is_equal_approx(fields.dof_clear_zoom.value, 23.0) and board.camera.attributes.dof_blur_amount > 0.0)
+	fields.dof_enabled.button_pressed = false
+	assert(not board.camera.attributes.dof_blur_near_enabled and not board.camera.attributes.dof_blur_far_enabled)
+	fields.dof_enabled.button_pressed = true
+	fields.preview_zoom.value = 12.0
 	if DisplayServer.get_name() != "headless":
 		await get_tree().create_timer(1.5).timeout
+		panel_scroll.scroll_vertical = roundi(dof_heading.position.y)
+		await get_tree().process_frame
 		await RenderingServer.frame_post_draw
 		get_viewport().get_texture().get_image().save_png("res://artifacts/lighting-lab.png")
 	print("Lighting lab checks passed")
+	root_cleanup()
+
+func root_cleanup() -> void:
+	get_tree().root.get_node("Sound").stop_all()
+	await get_tree().create_timer(1.1).timeout
 	get_tree().quit()
 
 

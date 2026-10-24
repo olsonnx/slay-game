@@ -24,7 +24,7 @@ func fixture(six := false):
 	var document = Document.new()
 	document.title = "Six kingdoms" if six else "Cove and Tide"
 	document.map_size = "very_small"
-	document.rule_mode = "classic" if six else "modern"
+	document.rule_mode = "modern"
 	document.seed_value = 73
 	document.starting_gold = 37
 	var anchors := [Vector2i(-4,-2),Vector2i(0,-2),Vector2i(4,-2),Vector2i(-4,2),Vector2i(0,2),Vector2i(3,2)] if six else [Vector2i(0,0),Vector2i(4,0)]
@@ -75,7 +75,9 @@ func run() -> void:
 	save_data(BAD_PATH,solo.state())
 	expect(Setup.read_level(BAD_PATH)["error"].contains("at least two"),"Maps with only one faction cannot start multiplayer")
 	var app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	await process_frame
 	var panel = app.menus.multiplayer_panel
 	panel.load_config({"map_path":"res://artifacts/missing_multiplayer_map.json","count":2})
@@ -89,7 +91,7 @@ func run() -> void:
 	expect(panel.using_editor_map() and panel.seat_count() == 2,"Loading an editor map creates one seat per authored faction")
 	expect(panel.source_choice.get_item_text(1).contains("Cove and Tide"),"The selected map is identified by its title")
 	expect(panel.rows[0]["color"].selected == 2 and panel.rows[1]["color"].selected == 5,"Original map faction colours seed the lobby palette")
-	expect(panel.size_choice.disabled and panel.rules_choice.disabled and panel.count_choice.disabled and not panel.seed_input.editable,"Authored map settings are shown and fixed")
+	expect(panel.size_choice.disabled and panel.count_choice.disabled and not panel.seed_input.editable,"Authored map settings are shown and fixed")
 	expect(not panel.rows[0]["color"].disabled and not panel.rows[1]["difficulty"].disabled,"Player colours and AI preferences remain editable")
 	expect(not panel.start_button.disabled and not panel.rows[2]["name"].visible,"A two-player editor map is ready to start")
 	panel.rows[0]["name"].text = "Map player"
@@ -111,8 +113,8 @@ func run() -> void:
 	expect(game.cells[Vector2i.ZERO]["unit"] == 1 and game.cells[Vector2i(4,0)]["unit"] == 1,"Authored armies survive loading")
 	expect(game.rules.kingdom_at(Vector2i(4,0))["gold"] == 37,"Unstarted seats keep their authored treasury")
 	expect(game.NAMES[0] == "Map player" and game.view.COLORS[0] == game.Catalog.TERRAIN_COLORS[4],"Custom multiplayer names and colours apply to authored factions")
-	expect(app.menus.options_view.rules_choice.disabled and app.menus.quit_menu_button.text == "Main menu","Authored rules are protected and quitting goes to the main menu")
-	expect(panel.rules_choice.disabled and not panel.seed_input.editable,"Completing navigation does not unlock authored setup settings")
+	expect(app.menus.quit_menu_button.text == "Main menu","Authored rules are protected and quitting goes to the main menu")
+	expect(not panel.seed_input.editable,"Completing navigation does not unlock authored setup settings")
 	var cells: Dictionary = game.cells.duplicate(true)
 	var kingdoms: Dictionary = game.rules.kingdoms.duplicate(true)
 	await game.end_turn()
@@ -138,7 +140,7 @@ func run() -> void:
 	panel.start_match()
 	while app.transitioning: await process_frame
 	game = app.game
-	expect(game.rules.faction_count == 6 and not game.rules.is_modern() and game.cells.size() == 12,"Authored size and Classic rules bypass generated-map population limits")
+	expect(game.rules.faction_count == 6 and game.rules.is_modern() and game.cells.size() == 12,"Authored size bypasses generated-map population limits")
 	await app.return_to_main_menu()
 	app.queue_free()
 	await process_frame

@@ -41,7 +41,7 @@ func run() -> void:
 		bank["gold"] = 60
 	# Four value-1 provinces and four Scouts settle before any purchases.
 	# Read the current wage table so balance edits cannot stale this invariant.
-	var settled_gold: int = 120 + 4 - 4 * ai.Catalog.unit_upkeep(1, true)
+	var settled_gold: int = 120 + 4 - 4 * ai.Catalog.unit_upkeep(1)
 	ai.prepare_ai_turn(0)
 	expect(ai.kingdoms.size() == 1 and ai.is_bridge(Vector2i(-1, 0)), "AI can connect its separate kingdoms with a bridge")
 	var spent := 15
@@ -96,6 +96,9 @@ func run() -> void:
 	expect(finished.is_empty() and not game.view.is_animating and game.view.playback.preparation_tween == null, "Cancelling preparation stops its hold and prevents late completion callbacks")
 	game.view.action_finished.disconnect(completion_callback)
 	print("Review regression checks: %d passed, %d failed" % [checks - failures, failures])
+	game.shutdown()
+	game.queue_free()
+	await process_frame
 	root.get_node("Sound").stop_all()
-	await create_timer(0.1).timeout
+	await create_timer(1.2).timeout
 	quit(1 if failures else 0)

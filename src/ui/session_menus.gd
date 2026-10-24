@@ -7,19 +7,19 @@ signal continue_requested
 signal main_menu_requested
 signal quit_requested
 signal restart_requested
-signal rules_requested(mode: String)
 signal tutorial_requested(category: String)
 signal save_replay_requested
 signal show_map_requested
 signal results_requested
 signal editor_requested
 signal replays_requested
+signal onboarding_finished
 
 const Hud = preload("res://src/ui/game_hud.gd")
 const Options = preload("res://src/ui/options_view.gd")
 const MapSizes = preload("res://src/game/map_sizes.gd")
 const Catalog = preload("res://src/game/game_catalog.gd")
-enum Screen { HIDDEN, MAIN, PAUSE, OPTIONS, QUIT, CONFIRM, DEFEAT, SETUP, MULTIPLAYER, MAP, TUTORIAL }
+enum Screen { HIDDEN, MAIN, PAUSE, OPTIONS, QUIT, CONFIRM, DEFEAT, SETUP, MULTIPLAYER, MAP, TUTORIAL, ONLINE, COLLECTION, PROFILE, WELCOME }
 var screen := Screen.HIDDEN
 var options_origin := Screen.MAIN
 var quit_destination := ""
@@ -30,14 +30,22 @@ var setup_panel: Panel
 var size_choice: OptionButton
 var kingdom_choice: OptionButton
 var difficulty_choice: OptionButton
-var player_kingdom_choice: OptionButton
+var player_kingdom_choice
 var setup_hint: Label
 var multiplayer_panel
+var online_panel
+var collection_panel
+var collection_button: Button
 var tutorial_panel
 var defeat_title: Label
 var defeat_description: Label
 var setup_start_button: Button
 var pause_panel: Panel
+var pause_duration: Label
+var pause_seed: Label
+var pause_quit_button: Button
+var pause_clock
+var pause_seconds := -1
 var options_panel: Panel
 var quit_panel: Panel
 var confirm_panel: Panel
@@ -49,6 +57,7 @@ var replay_status: Label
 var result_values: Dictionary = {}
 var results_faction: OptionButton
 var results_totals: Dictionary = {}
+var results_xp
 var show_map_button: Button
 var return_results_button: Button
 var results_dim_tween: Tween
@@ -63,6 +72,14 @@ var options_back: Button
 var navigation_locked := false
 var menu_background
 var quit_menu_button: Button
+var campaign_button: Button
+var profile_button: Button
+var profile_badge
+var profile_name: Label
+var profile_caption: Label
+var profile_panel
+var welcome_panel: Panel
+var welcome_status: Label
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -75,13 +92,21 @@ func _ready() -> void:
 	backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	var theme := Hud.UiTheme.create_theme()
 	backdrop.theme = theme
-	main_panel = centered_panel(350)
+	main_panel = centered_panel(462)
 	side_panel(main_panel, 384)
 	Hud.label_at(main_panel, Loc.text("Slay & Reign"), Vector2(24, 21), 48)
 	button(main_panel, "Quick Play", 102, func(): show_screen(Screen.SETUP), true)
-	button(main_panel, "Multiplayer", 158, func(): show_screen(Screen.MULTIPLAYER))
-	button(main_panel, "Tutorial", 214, func(): show_screen(Screen.TUTORIAL))
+	campaign_button = button(main_panel, "Campaign", 158, func(): pass)
+	campaign_button.disabled = true
+	campaign_button.tooltip_text = Loc.text("Campaign is coming in a future update.")
+	button(main_panel, "Multiplayer", 214, func(): show_screen(Screen.MULTIPLAYER))
+	button(main_panel, "Tutorial", 270, func(): show_screen(Screen.TUTORIAL))
+	collection_button = button(main_panel, "Collection", 326, func(): show_screen(Screen.COLLECTION))
 	build_main_utilities()
+	build_profile_ui()
+	collection_panel = preload("res://src/ui/painting_collection.gd").new()
+	backdrop.add_child(collection_panel)
+	collection_panel.back_requested.connect(func(): show_screen(Screen.MAIN))
 	setup_panel = centered_panel(490)
 	side_panel(setup_panel, 480)
 	Hud.label_at(setup_panel, "Quick Play", Vector2(24, 22), 28)
@@ -100,7 +125,7 @@ func _ready() -> void:
 	kingdom_choice = preload("res://src/ui/tooltip_widgets.gd").Choice.new()
 	kingdom_choice.position = Vector2(24, 176)
 	kingdom_choice.size = Vector2(208, 44)
-	kingdom_choice.tooltip_text = Loc.text("Starting kingdoms · includes yours\nAll sizes: 2–6")
+	kingdom_choice.tooltip_text = Loc.text("Starting kingdoms Ă‚Â· includes yours\nAll sizes: 2Ă˘â‚¬â€ś6")
 	Sound.bind_button(kingdom_choice)
 	setup_panel.add_child(kingdom_choice)
 	refresh_kingdom_choices()
@@ -113,25 +138,16 @@ func _ready() -> void:
 		difficulty_choice.add_item(difficulty.capitalize())
 		difficulty_choice.set_item_metadata(difficulty_choice.item_count - 1, difficulty)
 	difficulty_choice.select(["easy", "normal", "hard"].find(Gameplay.difficulty))
-	difficulty_choice.tooltip_text = Loc.text("Easy: forgiving · Normal: coordinated\nHard: plans ahead · equal resources")
+	difficulty_choice.tooltip_text = Loc.text("Easy: forgiving Ă‚Â· Normal: coordinated\nHard: plans ahead Ă‚Â· equal resources")
 	Sound.bind_button(difficulty_choice)
 	setup_panel.add_child(difficulty_choice)
-	Hud.label_at(setup_panel, "Your kingdom", Vector2(24, 226), 15, Color("c5cdbb"))
-	player_kingdom_choice = preload("res://src/ui/tooltip_widgets.gd").Choice.new()
+	Hud.label_at(setup_panel, "Your country", Vector2(24, 226), 15, Color("c5cdbb"))
+	player_kingdom_choice = preload("res://src/ui/country_picker.gd").new()
 	player_kingdom_choice.position = Vector2(24, 251)
 	player_kingdom_choice.size = Vector2(432, 44)
-	player_kingdom_choice.add_item(Loc.text("Random"))
-	player_kingdom_choice.set_item_metadata(0,-1)
-	for color in range(Catalog.FACTIONS.size()):
-		var swatch := Image.create(16,16,false,Image.FORMAT_RGBA8)
-		swatch.fill(Catalog.UI_COLORS[color])
-		player_kingdom_choice.add_icon_item(ImageTexture.create_from_image(swatch),Catalog.FACTIONS[color])
-		player_kingdom_choice.set_item_metadata(color+1,color)
-	player_kingdom_choice.select(Gameplay.quick_play_kingdom+1)
-	player_kingdom_choice.get_popup().max_size.y = 360
-	player_kingdom_choice.tooltip_text = Loc.text("Choose your kingdom, or let each new match pick one at random.")
-	player_kingdom_choice.item_selected.connect(func(_index): Gameplay.set_quick_play_kingdom(player_kingdom_choice.get_selected_metadata()))
-	Sound.bind_button(player_kingdom_choice)
+	player_kingdom_choice.select(13 if PlayerProfile.exists() and Gameplay.quick_play_use_profile else Gameplay.quick_play_kingdom + 1)
+	player_kingdom_choice.tooltip_text = Loc.text("Choose your own country or a default country.")
+	player_kingdom_choice.item_selected.connect(func(_index): Gameplay.set_quick_play_country(player_kingdom_choice.get_selected_metadata()))
 	setup_panel.add_child(player_kingdom_choice)
 	setup_hint = Hud.label_at(setup_panel, "", Vector2(24,319),14,Color("adbdaf"))
 	setup_hint.size = Vector2(432,38)
@@ -139,33 +155,43 @@ func _ready() -> void:
 	refresh_kingdom_choices()
 	setup_start_button = button(setup_panel, "Start game", 362, func():
 		Gameplay.set_difficulty(difficulty_choice.get_selected_metadata())
-		Gameplay.set_quick_play_kingdom(player_kingdom_choice.get_selected_metadata())
+		Gameplay.set_quick_play_country(player_kingdom_choice.get_selected_metadata())
 		new_game_requested.emit(size_choice.get_selected_metadata(), kingdom_choice.get_selected_metadata()), true)
 	button(setup_panel, "Back", 426, func(): show_screen(Screen.MAIN))
 	multiplayer_panel = preload("res://src/ui/multiplayer_setup.gd").new()
 	backdrop.add_child(multiplayer_panel)
 	multiplayer_panel.start_requested.connect(func(config: Dictionary): multiplayer_requested.emit(config))
 	multiplayer_panel.back_requested.connect(func(): show_screen(Screen.MAIN))
+	multiplayer_panel.online_requested.connect(func():
+		show_screen(Screen.ONLINE)
+		online_panel.enter())
+	online_panel = preload("res://src/ui/steam_lobby.gd").new()
+	backdrop.add_child(online_panel)
+	online_panel.back_requested.connect(func(): show_screen(Screen.MULTIPLAYER))
 	tutorial_panel = preload("res://src/ui/tutorial_selection.gd").new()
 	backdrop.add_child(tutorial_panel)
 	tutorial_panel.selected.connect(func(category: String):
 		if not navigation_locked: tutorial_requested.emit(category))
 	tutorial_panel.back_requested.connect(func(): show_screen(Screen.MAIN))
-	pause_panel = centered_panel(410)
+	pause_panel = centered_panel(370)
 	Hud.label_at(pause_panel, "Paused", Vector2(24, 22), 30)
-	button(pause_panel, "Continue", 94, resume, true)
-	restart_button = button(pause_panel, "Restart", 158, confirm_restart)
+	pause_duration = Hud.label_at(pause_panel, "", Vector2(24, 66), 14, Color("c5cdbb"))
+	pause_duration.size = Vector2(208, 24)
+	pause_seed = Hud.label_at(pause_panel, "", Vector2(248, 66), 14, Color("c5cdbb"))
+	pause_seed.size = Vector2(208, 24)
+	pause_seed.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	button(pause_panel, "Continue", 106, resume, true)
+	restart_button = button(pause_panel, "Restart", 170, confirm_restart)
 	restart_button.tooltip_text = Loc.text("Restart level\nSame island and starting state")
-	var pause_options := button(pause_panel, "Options", 222, func(): open_options(Screen.PAUSE))
-	pause_options.tooltip_text = Loc.text("Options — Audio, Video, Gameplay and Controls")
-	button(pause_panel, "Quit", 286, func(): show_screen(Screen.QUIT))
+	var pause_options := button(pause_panel, "Options", 234, func(): open_options(Screen.PAUSE))
+	pause_options.tooltip_text = Loc.text("Options Ă˘â‚¬â€ť Audio, Video, Gameplay and Controls")
+	pause_quit_button = button(pause_panel, "Quit", 298, func(): show_screen(Screen.QUIT))
 	options_panel = centered_panel(600)
 	Hud.label_at(options_panel, "Options", Vector2(24, 18), 28)
 	options_view = Options.new()
 	options_view.position = Vector2(24, 76)
 	options_view.size = Vector2(432, 444)
 	options_panel.add_child(options_view)
-	options_view.rules_requested.connect(func(mode: String): rules_requested.emit(mode))
 	options_back = button(options_panel, "Back", 524, close_options)
 	quit_panel = centered_panel(346)
 	Hud.label_at(quit_panel, "Leave game", Vector2(24, 22), 28)
@@ -205,6 +231,11 @@ func _ready() -> void:
 		value.size = Vector2(138, 28)
 		value.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 		result_values[keys[index]] = value
+	results_xp = preload("res://src/ui/account_xp_bar.gd").new()
+	results_xp.position = Vector2(24, 310)
+	results_xp.size = Vector2(432, 68)
+	defeat_panel.add_child(results_xp)
+	results_xp.hide()
 	replay_status = Hud.label_at(defeat_panel, "", Vector2(24, 312), 13, Color("c5cdbb"))
 	replay_status.size = Vector2(432, 28)
 	save_replay_button = button(defeat_panel, "Save replay", 346, func(): save_replay_requested.emit())
@@ -234,18 +265,25 @@ func _ready() -> void:
 	show_screen(Screen.HIDDEN)
 
 func show_results(game) -> void:
-	defeat_title.text = Loc.text("Match finished") if game.is_hotseat() else Loc.text("Victory") if game.rules.territory(game.player_faction) > 0 else Loc.text("Defeat")
+	defeat_title.text = Loc.text("Match finished") if game.is_hotseat() else Loc.text("Victory") if game.rules.has_capital(game.player_faction) else Loc.text("Defeat")
 	defeat_description.text = game.message
 	defeat_description.visible = true
 	# Hotseat needs a separate row for the outcome and the statistics selector.
 	var extra_height := 32 if game.is_hotseat() else 0
-	defeat_panel.panel_height = 548 + extra_height
+	var has_xp: bool = not game.profile_xp_award.is_empty()
+	var xp_height := 84 if has_xp else 0
+	results_xp.visible = has_xp
+	if has_xp:
+		results_xp.show_award(game.profile_xp_award, not game.profile_xp_award.get("presented", false))
+		game.profile_xp_award["presented"] = true
+	defeat_panel.panel_height = 548 + extra_height + xp_height
 	defeat_panel.rest_top = -defeat_panel.panel_height / 2.0
 	for child in defeat_panel.get_children():
 		if child is Control:
 			if not child.has_meta("results_base_y"): child.set_meta("results_base_y", child.position.y)
 			var base_y: float = child.get_meta("results_base_y")
-			if base_y >= 100 or child == results_faction: child.position.y = base_y + extra_height
+			if base_y >= 100 or child == results_faction:
+				child.position.y = base_y + extra_height + (xp_height if base_y >= 312 else 0)
 	results_faction.visible = game.is_hotseat()
 	results_faction.clear()
 	for faction in game.rules.human_factions:
@@ -293,7 +331,7 @@ func build_main_utilities() -> void:
 		["Quit game", icons.quit(), func(): quit_requested.emit()]]
 	for index in range(actions.size()):
 		var action: Array = actions[index]
-		var control := button(main_panel, action[0], 286, action[2])
+		var control := button(main_panel, action[0], 398, action[2])
 		control.name = action[0].replace(" ", "")
 		control.text = ""
 		control.tooltip_text = Loc.text(action[0])
@@ -302,6 +340,79 @@ func build_main_utilities() -> void:
 		control.position.x = 24 + index * 86
 		control.size = Vector2(78, 48)
 		main_utilities.append(control)
+
+func build_profile_ui() -> void:
+	profile_button = Button.new()
+	profile_button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	profile_button.offset_left = -304
+	profile_button.offset_right = -24
+	profile_button.offset_top = -100
+	profile_button.offset_bottom = -24
+	Hud.UiTheme.style_button(profile_button)
+	backdrop.add_child(profile_button)
+	Sound.bind_button(profile_button)
+	profile_button.pressed.connect(func(): open_profile(false))
+	profile_button.tooltip_text = Loc.text("Your kingdom, flag and match record")
+	profile_badge = preload("res://src/ui/kingdom_flag.gd").new()
+	profile_badge.position = Vector2(12, 14)
+	profile_badge.size = Vector2(72, 48)
+	profile_button.add_child(profile_badge)
+	profile_caption = Hud.label_at(profile_button, "", Vector2(98, 12), 12, Color("9eb2a7"))
+	profile_caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	profile_name = Hud.label_at(profile_button, "", Vector2(98, 32), 16)
+	profile_name.size = Vector2(166, 28)
+	profile_name.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	profile_name.clip_text = true
+	profile_name.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	profile_panel = preload("res://src/ui/player_profile_panel.gd").new()
+	backdrop.add_child(profile_panel)
+	profile_panel.saved.connect(func():
+		if profile_panel.required: begin_onboarding()
+		else: show_screen(Screen.MAIN))
+	profile_panel.deleted.connect(begin_onboarding)
+	profile_panel.cancelled.connect(func():
+		if profile_panel.required: quit_requested.emit()
+		else: show_screen(Screen.MAIN))
+	welcome_panel = centered_panel(394)
+	Hud.label_at(welcome_panel, "Start with the tutorial", Vector2(24, 24), 26)
+	var advice := Hud.label_at(welcome_panel, "", Vector2(24, 80), 16)
+	advice.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	advice.text = Loc.text("We strongly recommend playing the tutorial before your first match. Learn how kingdoms, armies and the economy work through short, playable lessons.\n\nYou can revisit every lesson from the main menu.")
+	advice.size = Vector2(432, 132)
+	button(welcome_panel, "Play tutorial", 258, func(): finish_welcome(true), true)
+	button(welcome_panel, "Skip for now", 322, func(): finish_welcome(false))
+	welcome_status = Hud.label_at(welcome_panel, "", Vector2(24, 228), 12, Color("dfa08b"))
+	SteamOnline.changed.connect(refresh_profile_badge)
+	PlayerProfile.changed.connect(refresh_profile_badge)
+	refresh_profile_badge()
+
+func refresh_profile_badge() -> void:
+	profile_caption.text = SteamOnline.player_display_name()
+	profile_caption.size = Vector2(166, 22)
+	profile_caption.clip_text = true
+	profile_caption.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	var value: Dictionary = PlayerProfile.data if PlayerProfile.exists() else preload("res://src/settings/player_profile.gd").default_identity()
+	profile_name.text = value.name if PlayerProfile.exists() else Loc.text("Create kingdom")
+	profile_badge.set_design(value.flag)
+
+func open_profile(required := false) -> void:
+	show_screen(Screen.PROFILE)
+	profile_panel.open(required)
+
+func begin_onboarding() -> void:
+	if not PlayerProfile.exists(): open_profile(true)
+	elif not PlayerProfile.tutorial_prompt_seen:
+		welcome_status.text = ""
+		show_screen(Screen.WELCOME)
+	else: show_screen(Screen.MAIN)
+
+func finish_welcome(play_tutorial: bool) -> void:
+	if PlayerProfile.acknowledge_tutorial() != OK:
+		welcome_status.text = Loc.text("Your preference could not be saved. Please try again.")
+		return
+	show_screen(Screen.MAIN)
+	if play_tutorial: tutorial_requested.emit("armies")
+	onboarding_finished.emit()
 
 func centered_panel(height: float) -> Panel:
 	var node := Hud.panel(backdrop, Rect2(0, 0, 480, height))
@@ -329,13 +440,33 @@ func button(parent: Panel, text_value: String, y: float, callback: Callable, pri
 	parent.add_child(node)
 	return node
 
+func set_pause_details(clock, seed_value: int) -> void:
+	pause_clock = clock
+	pause_seconds = -1
+	pause_seed.text = Loc.text("Seed: %s") % str(seed_value)
+	refresh_pause_time()
+
+func refresh_pause_time() -> void:
+	if pause_clock == null: return
+	var seconds: int = pause_clock.seconds()
+	if seconds == pause_seconds: return
+	pause_seconds = seconds
+	pause_duration.text = Loc.text("Time played: %s") % preload("res://src/game/match_clock.gd").display(seconds)
+
+func _process(_delta: float) -> void:
+	if screen == Screen.PAUSE: refresh_pause_time()
+
 func show_screen(next: Screen) -> void:
 	if next == Screen.DEFEAT and screen == Screen.DEFEAT: return
 	var entering_results := next == Screen.DEFEAT and screen != Screen.DEFEAT
 	if results_dim_tween != null and results_dim_tween.is_valid(): results_dim_tween.kill()
 	if next != Screen.DEFEAT: defeat_panel.close()
 	screen = next
-	var decorative := next in [Screen.MAIN, Screen.SETUP, Screen.MULTIPLAYER, Screen.TUTORIAL] or (next == Screen.OPTIONS and options_origin == Screen.MAIN)
+	if next == Screen.SETUP:
+		player_kingdom_choice.select(13 if PlayerProfile.exists() and Gameplay.quick_play_use_profile else Gameplay.quick_play_kingdom + 1)
+	if next == Screen.PAUSE: refresh_pause_time()
+	if next == Screen.MAIN: pause_clock = null
+	var decorative := next in [Screen.MAIN, Screen.SETUP, Screen.MULTIPLAYER, Screen.TUTORIAL, Screen.PROFILE, Screen.WELCOME] or (next == Screen.OPTIONS and options_origin == Screen.MAIN)
 	menu_background.set_active(decorative)
 	if next == Screen.OPTIONS:
 		if decorative:
@@ -351,8 +482,14 @@ func show_screen(next: Screen) -> void:
 	main_panel.visible = next == Screen.MAIN
 	setup_panel.visible = next == Screen.SETUP
 	multiplayer_panel.visible = next == Screen.MULTIPLAYER
+	online_panel.visible = next == Screen.ONLINE
+	collection_panel.visible = next == Screen.COLLECTION
+	if next == Screen.COLLECTION: collection_panel.open_album()
 	tutorial_panel.visible = next == Screen.TUTORIAL
 	pause_panel.visible = next == Screen.PAUSE
+	profile_button.visible = next == Screen.MAIN
+	profile_panel.visible = next == Screen.PROFILE
+	welcome_panel.visible = next == Screen.WELCOME
 	options_panel.visible = next == Screen.OPTIONS
 	quit_panel.visible = next == Screen.QUIT
 	confirm_panel.visible = next == Screen.CONFIRM
@@ -423,7 +560,14 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	Sound.play(&"ui_close")
 	match screen:
+		Screen.PROFILE:
+			profile_panel.back()
+		Screen.WELCOME: finish_welcome(false)
 		Screen.MAP: results_requested.emit()
+		Screen.ONLINE: online_panel.exit_lobby()
+		Screen.COLLECTION:
+			if collection_panel.viewer.visible: collection_panel.close_viewer()
+			else: show_screen(Screen.MAIN)
 		Screen.SETUP, Screen.MULTIPLAYER, Screen.TUTORIAL: show_screen(Screen.MAIN)
 		Screen.PAUSE: resume()
 		Screen.OPTIONS: close_options()
@@ -440,3 +584,4 @@ func lock_navigation(locked: bool) -> void:
 	multiplayer_panel.seed_input.editable = not locked
 	if not locked:
 		multiplayer_panel.refresh_map_controls()
+	campaign_button.disabled = true

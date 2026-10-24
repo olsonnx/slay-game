@@ -103,7 +103,7 @@ func start(model, metadata: Dictionary = {}, target_path := "") -> bool:
 		"created_utc":Time.get_datetime_string_from_system(true), "seed":model.level_seed,
 		"rules":model.rule_mode, "map_size":model.map_size, "factions":model.faction_count,
 		"humans":model.human_factions.duplicate(), "names":model.faction_names.duplicate(), "metadata":metadata.duplicate(true),
-		"balance":{"prices":model.Catalog.UNIT_PRICES, "wages":model.Catalog.MODERN_UPKEEP if model.is_modern() else model.Catalog.UPKEEP},
+		"balance":{"prices":model.Catalog.UNIT_PRICES, "wages":model.Catalog.UPKEEP},
 		"initial":initial, "economy":economics(model)})
 	return error == ""
 

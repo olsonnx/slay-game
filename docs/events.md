@@ -4,29 +4,35 @@ Encounter markers are generated on neutral Modern land or painted with the edito
 
 | Event | Requirements | Outcomes |
 | --- | --- | --- |
-| Comet sighted! | Connected kingdom | Permanent +1 or +2 income, randomly; or a free, ready Scout with normal upkeep. Only recruitment is disabled when no clear, empty province is available. |
+| Comet sighted! | Connected kingdom | Landmark with +1 or +2 local kingdom income, randomly; or a free, ready Scout with normal upkeep. Only recruitment is disabled when no clear, empty province is available. |
 | Innkeeper's Offer | Army in a connected kingdom | Both named drinks independently offer 50% death / 50% +4G |
 | Lumberjack's Offer | This connected kingdom has trees | One event with a story and choice selected by current forest coverage. Clear local trees; +1G per tree when at most half of potential income is blocked, otherwise no gold. |
 | Regroup! | Faction has at least two units | Disband only your faction's armies and refund full purchase prices to their home treasuries, including bridge units; stranded units refund the encounter kingdom. Or reject. |
-| Cartographer's blunder | Connected kingdom | Event province and adjacent player-owned land become neutral; their units, capitals and buildings are lost. Enemy land is unchanged. |
+| Cartographer's blunder | Connected kingdom | Event province and adjacent player-owned land become neutral; their units, capitals and ordinary buildings are lost; landmarks remain neutral. Enemy land is unchanged. |
 | A noble ransom | Another faction is alive | +20G locally, or +1 mana if below capacity |
-| A crisis of confidence | Connected kingdom with income to sell or at least 10G to invest; no deficit required | Permanent −1 income / +10G locally, or −10G locally / permanent +1 income. Selling is disabled when the income treasury earns zero; investing is disabled below 10G. |
+| A crisis of confidence | Connected kingdom with income to sell or at least 10G to invest; no deficit required | Landmark with −1 local income / +10G locally, or −10G locally / landmark with +1 local income. Selling is disabled when the local kingdom earns zero; investing is disabled below 10G. |
 | The Pitchfork Parliament | Spare nonhuman kingdom identity and adjacent passable land | Independent AI kingdom seizes event province and adjacent passable land, with garrisons; or pay the entire local treasury |
-| Invention of stainless steel | Faction owns a Knight and lacks this discovery | Permanent −2G upkeep per Knight, faction-wide; does not stack |
+| Invention of stainless steel | Faction owns a Knight and does not control a steel landmark | Landmark granting its current owner −2G upkeep per Knight, faction-wide; does not stack |
 
 Forest coverage is measured by income, not province count: blocked land values divided by all potential land income, including house income. Exactly half uses the paid lumberjack outcome. The catalog, weighted lottery and editor expose one `lumberjack` event. Its title and painting stay the same; story, choice caption and reward adapt to current coverage. Older authored `lumberjack_overgrown` markers migrate to `lumberjack` on load. A treeless kingdom draws a different eligible event instead of spending its encounter on an empty forest-clearance joke. Other connected kingdoms of the same faction are unaffected by either lumberjack. Mana sources remain, but clearing source-bearing trees can reduce mana capacity under the normal rules.
 
 Replacements happen only before reveal. A valid Comet keeps its identity and effects; forest coverage changes the story and reward within the single lumberjack event. Generated encounters exclude bridges as well as mountains. AI choices are checked against the same availability shown to players and fall back to an enabled choice when their preferred option is unavailable.
 
-Permanent income is a faction benefit applied to one treasury, anchored to the capital where it was first awarded. If that capital is lost or relocated, a deterministic surviving treasury receives it. Splits never duplicate it and a captor never inherits it. Additional income events add to the same faction total; income cannot fall below zero. Permanent means for this match: restarting restores the authored or generated starting position.
+Persistent encounter rewards construct a conquerable landmark on the encounter province. Comet and economist landmarks contribute signed income to their own connected kingdom, not another treasury of the same faction. A successful altar leaves a landmark and a mana source. A stainless steel landmark reduces its current owner's Knight upkeep by 2G across the faction; multiple steel sites do not stack. Capturing a site transfers its benefit or penalty immediately. An isolated income site pays nothing until reconnected to a kingdom; total kingdom income remains floored at zero.
 
-Modifiers use the existing authoritative effects state, so AI simulations, tutorial checkpoints and replays retain them. Replays also record changes to faction count. Newly spawned rebels use an available identity with its own palette and join the normal AI turn order. Mountains and bridges are excluded from rebellion and cartographer regions.
+All sites currently share one stone monument model. Occupied monuments shift back-left and their garrisons stand front-right, using the same positions for movement arrivals and settled actors. They survive conquest, Shatter, wildlife raids, cartographer neutralization and replacement-capital selection. Neutral sites grant nobody a reward. Boar rewards and other immediate payouts occur only once, and temporary effects such as the next free spell remain consumable faction effects.
+
+Reward identity and amounts live in the authoritative cell records, so simulations, tutorial checkpoints and replays retain them together with ownership. Legacy recordings can still read their original faction modifiers. Newly spawned rebels use an available identity with its own palette and join the normal AI turn order. Mountains and bridges are excluded from rebellion and cartographer regions.
+
+Buildings and capitals connect within each kingdom through a shared branching road network. Each new branch takes a shortest route from the existing network to an unconnected structure. Stable coordinate ordering resolves equal-length choices, and branches never create loops, so connected structures have exactly one road path between them. Disconnected land keeps separate networks. Neutral bridge decks can connect kingdom land. Roads are flat ground paint, 0.30 world units wide, lit by the scene and receiving shadows, have no collision, defense or movement effect, and ignore temporary unit occupancy. Their network refreshes after construction and territorial changes; ordinary animation does not recalculate paths. Road geometry moves with its terrain during island transitions.
 
 The catalog contains presentation text and reusable requirement tags; `encounter_rules.gd` owns eligibility, dynamic choice availability and the new effects. Invalid choices do not consume the encounter, advance RNG or change state. The editor lists all catalog entries and the requirements for their main outcomes, explaining that unmet conditions draw a useful weighted replacement.
 
 ## Relative frequency
 
-Weights are tuning values, not fixed percentages: an eligible event's chance is its weight divided by the total weight of the eligible pool. Generated markers use these weights, and unavailable events are replaced using the same weights with unmet requirements excluded. Eligibility is checked after arrival, capture and terrain clearing. Every nonempty draw consumes one seeded RNG roll; empty pools consume none. Restart, cancellation, snapshots and replay retain deterministic results.
+Weights are tuning values, not fixed percentages: an eligible event's chance is its weight divided by the total weight of the current pool. Generated maps select weighted event types without replacement until all positive-weight types have been used. Remaining markers use the full weighted pool, allowing repeats. Thus small maps favor common types, while maps with enough markers include every type, even rare ones. Event weights can be edited separately from outcome weights in the Event Editor.
+
+Unavailable events are replaced using the same weights with unmet requirements excluded. Replacements prefer types that are neither reserved by another marker nor already revealed on this map; if none are eligible, they allow repeats. Explicitly painted markers keep their chosen type when eligible. Revealed types are retained with their cells and survive snapshots and replay. Eligibility is checked after arrival, capture and terrain clearing. Every nonempty draw consumes one seeded RNG roll; empty pools consume none. Restart, cancellation, snapshots and replay retain deterministic results.
 
 | Event | Weight |
 | --- | ---: |
@@ -64,3 +70,8 @@ All event text stays plain in the catalog and translations. `src/ui/event_text.g
 - Formatting preserves the original wording and punctuation. Literal brackets are escaped, and labels/tooltips account for bold text when measuring wrapping and height.
 
 Event option tooltips put separate effects on separate lines, including semicolon-separated text from older language packs. Their widths are measured from the actual normal and bold text runs, with wrapping fixed before fitting the box; short effects do not inherit a minimum text width. The native tooltip frame supplies matching left/right padding (12 px) and top/bottom padding (8 px).
+
+
+## Authoring events
+
+Use **Event Editor.cmd** or the level editor's **Events → Create events…** button. All built-in encounters are available as editable templates; custom packs load at game startup and can be reloaded explicitly in the map editor. The shared validator and runtime support weighted and conditional outcomes, costs, requirements, alternate stories, temporary effects and permanent landmarks. See [Event Editor](event-editor.md) for the complete workflow and effect reference.

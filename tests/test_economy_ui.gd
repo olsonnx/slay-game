@@ -17,28 +17,30 @@ func run() -> void:
 	video_preferences.set_preference(&"level_transitions", false, false)
 	var gameplay = root.get_node("Gameplay")
 	var original_mode: String = gameplay.rule_mode
-	gameplay.set_rules("classic", false)
+	gameplay.set_rules("modern", false)
 	var app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	await app.start_new_game(42)
 	var game = app.game
 	var original_cells: Dictionary = game.cells.duplicate(true)
 	var original_kingdoms: Dictionary = game.rules.kingdoms.duplicate(true)
 	var original_random_state: int = game.rules.rng.state
 	expect(game.pause_button.text == "" and game.pause_button.icon != null, "In-game menu button is an icon-only cogwheel")
-	for menu in [app.menus.main_panel, app.menus.pause_panel]:
-		var options_found := false
-		for node in menu.find_children("*", "Button", true, false):
-			if node.text == "Options":
-				options_found = node.icon == null
-		expect(options_found, "Main and pause menu Options buttons have text and no cogwheel")
+	var main_options: Button = app.menus.main_panel.get_node("Options")
+	expect(main_options.text == "" and main_options.icon != null, "Main-menu Options uses an icon")
+	var pause_options_found := false
+	for node in app.menus.pause_panel.find_children("*", "Button", true, false):
+		if node.text == "Options": pause_options_found = node.icon == null
+	expect(pause_options_found, "Pause-menu Options uses text without an icon")
 	game.toggle_stats()
 	var restart_found := false
 	for node in game.stats_panel.find_children("*", "Button", true, false):
 		restart_found = restart_found or node.text == "New island"
 	expect(not restart_found, "Stats contains no New island action")
 	game.toggle_stats()
-	expect(game.money_label.text == "16 G" and game.income_label.text == "+6 G", "Current gold and next-turn net income include currency units")
+	expect(game.money_label.text == "10 G" and game.income_label.text == "+7 G", "Current gold and next-turn net income include currency units")
 	expect(game.money_label.position.y == game.income_label.position.y and game.money_label.get_theme_font_size("font_size") == game.income_label.get_theme_font_size("font_size"), "Gold and expected income share a visual baseline and font size")
 	for amount in [3, 16, 1234]:
 		game.update_gold(amount, 7, game.active_kingdom()["capital"])
@@ -58,25 +60,32 @@ func run() -> void:
 			destination = coord
 			break
 	game.click_hex(destination)
-	var ripple: MeshInstance3D = game.view.animation_root.get_node("ActionRipple")
-	expect(ripple.material_override.albedo_color == game.view.PLACEMENT_COLOR and ripple.position.x == game.view.coord_position(destination).x, "Player recruitment uses the same tile ripple and color as enemy recruitment")
-	expect(game.money_label.text == "6 G" and game.gold_delta_label.text == "-10 G" and game.gold_tween.is_running(), "Buying a unit updates gold immediately and triggers spending feedback")
+	var effect: Node3D = game.view.unit_spawn_effects.get_child(0) if game.view.unit_spawn_effects.get_child_count() == 1 else null
+	expect(effect != null, "Player recruitment creates one spawn effect")
+	if effect != null:
+		var ripple: MeshInstance3D = effect.get_node_or_null("SpawnRipple")
+		expect(effect.get_meta("hex") == destination and effect.get_meta("tier") == 1 and effect.position.x == game.view.coord_position(destination).x, "Recruitment effect matches the recruited tile and rank")
+		expect(ripple != null and ripple.material_override.albedo_color.is_equal_approx(Color(game.view.PLACEMENT_COLOR,0)), "Player recruitment uses the shared placement ripple color")
+	expect(game.money_label.text == "0 G" and game.gold_delta_label.text == "-10 G" and game.gold_tween.is_running(), "Buying a unit updates gold immediately and triggers spending feedback")
 	game.rules.begin_turn(0)
 	game.refresh_ui()
-	expect(game.money_label.text == "11 G" and game.gold_delta_label.text == "+5 G", "New-turn income triggers positive gold feedback")
+	expect(game.money_label.text == "3 G" and game.gold_delta_label.text == "+3 G", "New-turn income triggers positive gold feedback")
 	await create_timer(0.75).timeout
 	expect(game.money_label.scale.is_equal_approx(Vector2.ONE) and game.gold_delta_label.modulate.a < 0.01, "Gold pulse and floating delta settle automatically")
-	expect(not game.view.animation_root.has_node("ActionRipple"), "Recruitment ripple clears itself after fading")
+	expect(game.view.unit_spawn_effects.get_child_count() == 0, "Recruitment effect clears itself after fading")
 	game.active_kingdom()["gold"] = 100
 	game.refresh_ui()
 	game.choose_unit(2)
 	game.click_hex(destination)
-	expect(game.view.animation_root.has_node("ActionRipple") and game.cells[destination]["unit"] == 2 and not game.busy, "Player upgrade produces the ripple without blocking movement")
-	var upgrade_ripple: Node = game.view.animation_root.get_node("ActionRipple")
+	var upgrade_effect: Node3D = game.view.unit_spawn_effects.get_child(0) if game.view.unit_spawn_effects.get_child_count() == 1 else null
+	expect(upgrade_effect != null and game.cells[destination]["unit"] == 2 and not game.busy, "Player upgrade produces a spawn effect without blocking movement")
+	if upgrade_effect != null:
+		expect(upgrade_effect.get_meta("tier") == 2 and upgrade_effect.get_meta("hex") == destination, "Upgrade effect matches the upgraded rank and tile")
 	game.cells[destination]["moved"] = true
+	game.active_kingdom()["gold"] = 19
 	game.choose_unit(3)
 	game.click_hex(destination)
-	expect(game.view.animation_root.get_node("ActionRipple") == upgrade_ripple, "Failed upgrade does not create another ripple")
+	expect(game.view.unit_spawn_effects.get_child_count() == 1 and game.view.unit_spawn_effects.get_child(0) == upgrade_effect, "Failed upgrade does not create another effect")
 	app.pause_game()
 	expect(app.menus.restart_button.get_parent() == app.menus.pause_panel and app.menus.restart_button.is_visible_in_tree(), "Pause menu exposes Restart")
 	app.menus.open_options(app.menus.Screen.PAUSE)
@@ -137,13 +146,16 @@ func run() -> void:
 	var rules = load("res://src/game/kingdom_rules.gd").new()
 	for coord in [source, target, next]:
 		rules.cells[coord] = rules.make_cell(1)
+		rules.cells[coord]["value"] = 6
 	# Give the merged Soldier a useful defended target rather than expecting
 	# the new holding policy to reposition on an entirely friendly island.
 	rules.cells[Vector2i(3, 0)] = rules.make_cell(0)
+	rules.cells[Vector2i(3, 0)]["value"] = 6
 	rules.cells[Vector2i(4, 0)] = rules.make_cell(0)
 	rules.rebuild_kingdoms()
 	rules.cells[source]["unit"] = 1
 	rules.cells[target]["unit"] = 1
+	rules.cells[next]["unit"] = 1
 	var first_wave: Array = rules.ai_movements(1)
 	expect(first_wave.size() == 1 and first_wave[0]["kind"] == "merge", "AI merges are isolated from their dependent movement in the same batch")
 	var second_wave: Array = rules.ai_movements(1)

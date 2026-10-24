@@ -43,7 +43,7 @@ static func read_preview(path: String) -> Dictionary:
 	var source := FileAccess.open(path, FileAccess.READ)
 	if source == null: return {"preview_error":true}
 	var first := read_line(source, HEADER_BYTES)
-	var header = JSON.parse_string(first)
+	var header = parse_record(first)
 	if not header is Dictionary or header.get("format") != "slay-replay": return {"preview_error":true}
 	if header.get("summary") is Dictionary:
 		var summary: Dictionary = header["summary"].duplicate(true)
@@ -61,7 +61,7 @@ static func read_preview(path: String) -> Dictionary:
 		var line := read_line(source, 16384)
 		if line == "": break
 		if not line.contains('"result"'): continue
-		var object = JSON.parse_string(line)
+		var object = parse_record(line)
 		if not object is Dictionary: continue
 		if header.get("version") == 1 and object.get("action") == "result": append_result(result_rows, object.get("args"), object.get("round"))
 		elif object.get("result") is Array and object["result"].size() == 4 and object["result"][3] is Dictionary:
@@ -70,6 +70,11 @@ static func read_preview(path: String) -> Dictionary:
 	if not valid_preview(summary): return {"preview_error":true}
 	summary["details_available"] = header.get("version") == 1
 	return summary
+
+static func parse_record(text: String):
+	# Broken user recordings are expected input, not engine errors.
+	var parser := JSON.new()
+	return parser.data if parser.parse(text) == OK else null
 
 static func append_result(rows: Array, args, round_value) -> void:
 	if not args is Dictionary or not (round_value is int or round_value is float): return

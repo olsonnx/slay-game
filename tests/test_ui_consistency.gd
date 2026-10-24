@@ -25,6 +25,15 @@ func geometry(box: StyleBox) -> Array:
 func check_buttons(parent: Node) -> void:
 	for node in parent.find_children("*","Button",true,false):
 		if node is CheckButton: continue
+		# Godot owns ColorPicker's hidden RGB/HSV mode controls and their styles.
+		var ancestor: Node = node.get_parent()
+		var native_picker := false
+		while ancestor != null and ancestor != parent:
+			if ancestor is ColorPicker:
+				native_picker = true
+				break
+			ancestor = ancestor.get_parent()
+		if native_picker and not node.is_visible_in_tree(): continue
 		var normal: StyleBox = node.get_theme_stylebox("normal")
 		for state in ["hover","pressed","hover_pressed","disabled"]:
 			expect(geometry(node.get_theme_stylebox(state)) == geometry(normal),"Button shape and padding stay fixed for %s: %s" % [state,node.text])
@@ -83,7 +92,9 @@ func run() -> void:
 	root.size = Vector2i(960,620)
 	root.get_node("Video").set_preference(&"level_transitions",false,false)
 	var app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	await process_frame
 	check_buttons(app.menus.backdrop)
 	var quick: Button

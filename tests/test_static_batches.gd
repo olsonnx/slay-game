@@ -57,6 +57,9 @@ func run() -> void:
 	verify_uploaded_instances(manager)
 	for record in manager.suppressed.values():
 		expect(record[0].layers == 0 and record[0].is_visible_in_tree(), "Source scene visibility remains intact while duplicate rendering is suppressed")
+	for kind in ["bark", "foliage", "rock", "snow"]:
+		var finish: StandardMaterial3D = game.view.scenery_material(Color.WHITE, kind)
+		expect(finish.albedo_texture == null and not finish.normal_enabled, "Scenery finishes have no grain or surface noise")
 	var rebuilds: int = manager.rebuild_count
 	game.view.refresh_static_batches()
 	expect(manager.rebuild_count == rebuilds, "Unchanged sync retains all chunk geometry")
@@ -125,6 +128,8 @@ func run() -> void:
 	var cached_materials: int = manager.source_material_keys.size()
 	var muted_materials: int = game.view.value_heatmap.prop_materials.size()
 	var render_nodes: int = manager.get_child_count(true)
+	var warmed_rebuilds: int = manager.rebuild_count
+	var warmed_syncs: int = manager.sync_count
 	var toggle_key := InputEventKey.new()
 	toggle_key.keycode = root.get_node("Keys").bindings["heatmap"]
 	toggle_key.pressed = true
@@ -134,6 +139,7 @@ func run() -> void:
 		game._unhandled_input(toggle_key)
 		expect(not game.view.value_heatmap.active and surface.material_override == original and manager.instance_count == source_count, "Repeated shortcut restores the original materials and instances")
 	expect(manager.material_scan_count == scans, "Spamming the heatmap shortcut reuses material features without rescanning")
+	expect(manager.rebuild_count == warmed_rebuilds and manager.sync_count == warmed_syncs and manager.presentation_banks.size() == 1, "Unchanged switches reuse exactly two prepared views without rescanning or rebuilding")
 	expect(manager.source_material_keys.size() == cached_materials and game.view.value_heatmap.prop_materials.size() == muted_materials, "Repeated filter switches keep material caches bounded")
 	expect(manager.get_child_count(true) == render_nodes and batch_instances(manager) == source_count, "Repeated filter switches retain chunks without duplicate instances")
 	# Cached feature keys must not own a discarded material resource.

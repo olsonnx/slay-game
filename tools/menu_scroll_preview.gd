@@ -8,7 +8,9 @@ func capture() -> void:
 	root.size = Vector2i(960, 620)
 	root.get_node("Video").set_preference(&"background", "water", false)
 	var app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	var background = app.menus.menu_background
 	background.set_process(false)
 	app.menus.set_process_unhandled_input(false)

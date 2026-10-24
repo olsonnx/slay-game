@@ -36,6 +36,53 @@ var last_tiles_scanned := 0
 var profile_samples: Array = []
 var sync_count := 0
 var material_scan_count := 0
+# Keep exactly one inactive view beside the current uploads. Each owns its
+# indexes/meshes; tile invalidations reach both before either view is shown.
+const PRESENTATION_FIELDS := ["chunks", "tile_records", "chunk_tiles", "source_cache"]
+var presentation_mode := false
+var presentation_banks: Dictionary = {}
+var presentation_dirty: Dictionary = {}
+var presentation_full_dirty := false
+var presentation_mutation := false
+
+func begin_presentation(filtered: bool) -> void:
+	if presentation_mode == filtered: return
+	var state := {"dirty":presentation_dirty, "full":presentation_full_dirty}
+	for field in PRESENTATION_FIELDS: state[field] = get(field)
+	for chunk in chunks.values(): chunk.root.hide()
+	presentation_banks[presentation_mode] = state
+	var next: Dictionary = presentation_banks.get(filtered, {})
+	presentation_banks.erase(filtered)
+	for field in PRESENTATION_FIELDS: set(field, next.get(field, {}))
+	presentation_dirty = next.get("dirty", {})
+	presentation_full_dirty = next.get("full", next.is_empty())
+	presentation_mode = filtered
+	detail_sources.clear()
+	source_fade_materials.clear()
+
+func finish_presentation(tiles: Dictionary, budget_usec := 0) -> void:
+	if presentation_full_dirty or not presentation_dirty.is_empty() or chunks.is_empty():
+		if presentation_full_dirty: source_cache.clear()
+		await sync_tiles(tiles, presentation_dirty, presentation_full_dirty, {}, budget_usec)
+	else:
+		suppress_cached_sources()
+	presentation_dirty = {}
+	presentation_full_dirty = false
+	for chunk in chunks.values(): chunk.root.show()
+
+func invalidate_other_presentations() -> void:
+	for state in presentation_banks.values(): state.full = true
+
+func invalidate_cached_tiles(tiles: Dictionary, coords: Dictionary) -> void:
+	for state in presentation_banks.values():
+		if coords.is_empty(): state.full = true
+		for coord in coords:
+			if not tiles.has(coord):
+				state.full = true
+				continue
+			var id: int = tiles[coord].get_instance_id()
+			state.source_cache.erase(id)
+			state.dirty[id] = true
 
 func _ready() -> void:
 	set_process(false)
@@ -131,6 +178,10 @@ func collect(node: Node, output: Array) -> void:
 
 func invalidate_tile(tile: Node3D) -> void:
 	source_cache.erase(tile.get_instance_id())
+	if not presentation_mutation:
+		for state in presentation_banks.values():
+			state.source_cache.erase(tile.get_instance_id())
+			state.dirty[tile.get_instance_id()] = true
 
 func refresh_cached_mesh(tile: Node3D, node: MeshInstance3D) -> void:
 	var id := tile.get_instance_id()
@@ -235,16 +286,37 @@ func restore_source(record: Array) -> void:
 func suppress_cached_sources() -> void:
 	# Transition completion reuses existing uploads. Restore suppression without
 	# rescanning source geometry or rebuilding the merged terrain meshes.
+	var seen := {}
 	for tile in tile_records.values():
 		for record in tile["records"]:
 			var node: MeshInstance3D = record[Records.Source.NODE]
 			if not is_instance_valid(node) or node.is_queued_for_deletion(): continue
 			var id: int = record[Records.Source.ID]
+			seen[id] = true
+			if node.get_meta("lod_detail", false): register_detail(node)
 			if suppressed.has(id): continue
 			var notification: int = int(node.is_transform_notification_enabled()) if mute_source_notifications else -1
 			suppressed[id] = [node, record[Records.Source.LAYERS], notification]
 			preload("res://src/rendering/batch_source_lifetime.gd").set_layers(node, 0)
 			if mute_source_notifications: node.set_notify_transform(false)
+	for id in suppressed.keys():
+		if seen.has(id): continue
+		var saved: Array = suppressed[id]
+		if is_instance_valid(saved[Records.Suppressed.NODE]) and not saved[Records.Suppressed.NODE].is_queued_for_deletion(): restore_source(saved)
+		suppressed.erase(id)
+	# A source's animation slot must point at the rendering being shown now.
+	for chunk in chunks.values():
+		for key in chunk.batches:
+			if key.begins_with("terrain:"): continue
+			var render: MultiMeshInstance3D = chunk.batches[key]
+			var signature: Array = render.get_meta("batch_signature", [])
+			for index in range(signature.size()):
+				var saved: Array = suppressed.get(signature[index][Records.Signature.ID], [])
+				if saved.is_empty(): continue
+				var source: MeshInstance3D = saved[Records.Suppressed.NODE]
+				if source.has_meta("visual_transform"):
+					source.set_meta("visual_batch_slot", [weakref(render), index])
+					render.multimesh.set_instance_transform(index, render.global_transform.affine_inverse()*source.get_meta("visual_transform"))
 	instance_count = suppressed.size()
 	apply_lod()
 
@@ -261,6 +333,11 @@ func set_enabled(value: bool) -> void:
 		restore_layers()
 
 func clear_chunks() -> void:
+	for state in presentation_banks.values():
+		for chunk in state.chunks.values(): chunk.root.free()
+	presentation_banks.clear()
+	presentation_dirty.clear()
+	presentation_full_dirty = true
 	for chunk in chunks.values():
 		chunk["root"].free()
 	chunks.clear()
@@ -419,6 +496,8 @@ func publish_chunk(coord: Vector2i, records: Array, tiles: Dictionary, startup_b
 		var geometry: Array = [record[Records.Source.NODE].mesh.get_rid()]
 		if record[Records.Source.KEY].begins_with("terrain:"):
 			var tile: Node3D = record[Records.Source.NODE].get_parent()
+			geometry.append(tile.get_meta("joined_mask", 0))
+			geometry.append(tile.get_meta("border_visibility", 1.0))
 			var tile_coord: Vector2i = tile.get_meta("hex")
 			for direction in preload("res://src/game/hex_grid.gd").DIRECTIONS:
 				var neighbor: Node3D = tiles.get(tile_coord + direction)

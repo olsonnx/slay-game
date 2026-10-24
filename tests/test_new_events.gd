@@ -334,7 +334,7 @@ func run() -> void:
 	choose(r, "comet", 0)
 	choose(r, "revolt", 0)
 	var replay: Dictionary = Replay.read_records(r.replay_log.records)
-	expect(replay["error"] == "" and replay["position"]["faction_count"] == 3 and replay["position"]["effects"][0].has("income_bonus"), "Replay reconstructs new factions and permanent effects")
+	expect(replay["error"] == "" and replay["position"]["faction_count"] == 3 and replay["position"]["cells"][C].get("site_income",0) > 0, "Replay reconstructs new factions and permanent effects")
 	await ui_and_playback_checks()
 	print("New event checks: %d passed, %d failed" % [passed, failed])
 	quit(1 if failed else 0)
@@ -397,9 +397,10 @@ func ui_and_playback_checks() -> void:
 		var expected_title: String = Rules.Events.EVENTS[id]["title"]
 		expect(game.event_panel.get_node("EventTitle").text == expected_title, "Reused dialog shows the current event title: " + id)
 		var income_before := income_total(game.rules, 0)
+		var previous_site_income: int = game.cells[C].get("site_income",0)
 		game.resolve_shown_event(0)
 		if id == "comet":
-			expect(income_total(game.rules, 0) > income_before, "Comet dialog applies income after switching event types")
+			expect(income_total(game.rules, 0) == income_before-previous_site_income+int(game.cells[C].get("site_income",0)) and int(game.cells[C].get("site_income",0)) > 0, "Comet dialog applies income after switching event types")
 			if game.cells[Vector2i(1, 0)]["tree"]:
 				expect(game.rules.kingdom_at(C)["gold"] == 30, "Comet leaves forest and tree payments alone")
 	# AI area effects must reach visible playback as well as the authoritative board.

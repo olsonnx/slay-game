@@ -94,7 +94,7 @@ func run() -> void:
 	# A pure tint must preserve the merged terrain mesh and vertex geometry.
 	var surface: MeshInstance3D = tile.get_meta("surface")
 	var builds: int = board.static_batches.terrain_rebuild_count
-	surface.material_override = board.material(Color(0.17, 0.31, 0.53))
+	surface.material_override = board.tile_material(Color(0.17, 0.31, 0.53))
 	board.mark_batch_dirty(coord)
 	board.notify_visible_board_changed()
 	board.flush_batch_update()

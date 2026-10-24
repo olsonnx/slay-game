@@ -41,6 +41,12 @@ func frame_limit_checks() -> void:
 	video.set_preference(&"vsync", original_vsync, false)
 
 func summary_checks() -> void:
+	var broken_path := "res://artifacts/replay-preview-broken.jsonl"
+	var broken := FileAccess.open(broken_path, FileAccess.WRITE)
+	broken.store_string("not JSON\n")
+	broken.close()
+	expect(Summary.read_preview(broken_path).get("preview_error",false), "Malformed library headers are recoverable without emitting engine errors")
+	DirAccess.remove_absolute(broken_path)
 	var model = Rules.new()
 	model.rule_mode = "modern"
 	model.generate(42, "very_small", 2)
@@ -492,7 +498,9 @@ func run() -> void:
 	await create_timer(0.2).timeout
 	viewer = null
 	var app = load("res://scenes/app.tscn").instantiate()
+	app.onboarding_enabled = false
 	root.add_child(app)
+	await app.startup_finished
 	app.open_replays()
 	expect(is_instance_valid(app.replay_viewer) and app.game == null and app.menus.screen == app.menus.Screen.HIDDEN, "Main menu opens the spectator without creating a live match")
 	expect(app.replay_viewer.library_backdrop == app.menus.menu_background.viewport.get_texture() and app.menus.menu_background.viewport.render_target_update_mode == SubViewport.UPDATE_DISABLED, "Replay browser reuses the menu backdrop without rendering its decorative 3D scene")

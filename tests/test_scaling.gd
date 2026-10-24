@@ -24,12 +24,17 @@ func digest(rules) -> String:
 	return JSON.stringify(state).sha256_text()
 
 func run() -> void:
+	# Pin the event lottery that produced these v13 generator baselines.
+	# The editable event pack has separate distribution/runtime coverage.
+	var event_weights: Dictionary = Rules.Events.WEIGHTS.duplicate()
+	Rules.Events.WEIGHTS.assign(Rules.Events.BUILTIN_WEIGHTS)
 	var golden: Array = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/generation_golden.json"))
 	for sample in golden:
 		var rules = Rules.new()
 		rules.rule_mode = sample["mode"]
 		rules.generate(int(sample["seed"]), sample["size"], int(sample["count"]))
 		expect(sample.get("generation_version") == Rules.MapGenerator.GENERATION_VERSION and digest(rules) == sample["digest"], "Current generation preserves its recorded seeded state and RNG")
+	Rules.Events.WEIGHTS.assign(event_weights)
 	var game = load("res://scenes/main.tscn").instantiate()
 	game.initial_seed = 42
 	game.initial_rule_mode = "modern"
@@ -142,5 +147,8 @@ func run() -> void:
 	board.refresh_static_batches()
 	game.queue_free()
 	await process_frame
+	root.get_node("Sound").stop_all()
+	# Stopped Ogg playbacks release their decoder on the audio mixing thread.
+	await create_timer(1.1).timeout
 	print("Map scaling checks: %d passed, %d failed" % [checks - failures, failures])
 	quit(1 if failures else 0)

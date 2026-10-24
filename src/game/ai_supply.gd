@@ -9,7 +9,7 @@ static func resources(model, coord: Vector2i, owner: int) -> Array:
 	var land := int(cell["owner"] == owner)
 	var income := 0
 	if land:
-		income = (cell["value"] if model.is_modern() else 1) if not cell["tree"] and not cell["grave"] else 0
+		income = cell["value"] if not cell["tree"] and not cell["grave"] else 0
 		if cell["building"] == "house": income += model.HOUSE_INCOME
 	var rank: int = cell["unit"] if model.unit_faction(coord) == owner else 0
 	var capital_recovery: int = cell["value"] if land and (cell["tree"] or cell["grave"]) else 0
@@ -32,7 +32,7 @@ static func bank_cuts(model, bank: Dictionary, queries) -> Dictionary:
 		if node["head"] < adjacent.size():
 			var next: Vector2i = adjacent[node["head"]]
 			node["head"] += 1
-			if model.is_mountain(next) or not (model.cells[next]["kingdom"] == root or model.is_modern() and model.is_bridge(next)): continue
+			if model.is_mountain(next) or not (model.cells[next]["kingdom"] == root or model.is_bridge(next)): continue
 			if next == node["parent"]: continue
 			if nodes.has(next):
 				node["low"] = mini(node["low"], nodes[next]["index"])

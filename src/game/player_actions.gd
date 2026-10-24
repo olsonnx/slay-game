@@ -35,7 +35,7 @@ func click_hex(game, coord: Vector2i, hit_kind := "auto") -> void:
 	if unit_clicked or animal_clicked:
 		game.close_province()
 	if game.busy or game.game_over:
-		if game.rules.is_modern() and not unit_clicked and not animal_clicked:
+		if not unit_clicked and not animal_clicked:
 			game.inspect_province(coord)
 		return
 	game.hud.shop_panel.close()
@@ -65,7 +65,8 @@ func click_hex(game, coord: Vector2i, hit_kind := "auto") -> void:
 			Sound.play(&"action_place")
 			game.session.selection.selected = coord
 			game.session.selection.action_mode = ""
-			game.announce(Loc.text("%s ready to move.") % Loc.text(game.UNIT_NAMES[game.cells[coord]["unit"]]))
+			var message: String = Loc.text("%s upgraded. Ready next turn.") if game.cells[coord]["moved"] else Loc.text("%s ready to move.")
+			game.announce(message % Loc.text(game.UNIT_NAMES[game.cells[coord]["unit"]]))
 		else:
 			game.announce(Loc.text("Choose a valid hex with enough gold in its kingdom."))
 	elif game.session.selection.action_mode in ["tower", "house"]:
@@ -123,7 +124,8 @@ func click_hex(game, coord: Vector2i, hit_kind := "auto") -> void:
 		game.session.selection.selected = game.NONE
 		game.session.selection.inspected_animal = coord
 	elif game.cells[coord]["owner"] == game.player_faction or game.cells[coord]["unit"] > 0 and game.rules.unit_faction(coord) == game.player_faction:
-		if unit_clicked or not game.rules.is_modern():
+		game.report_tutorial_action("kingdom",coord)
+		if unit_clicked:
 			Sound.play(&"ui_click")
 		game.session.selection.selected = coord if unit_clicked and game.cells[coord]["unit"] > 0 else game.NONE
 		if game.rules.unit_kingdom(coord).is_empty() and game.cells[coord]["kingdom"] == game.NONE:
@@ -131,7 +133,7 @@ func click_hex(game, coord: Vector2i, hit_kind := "auto") -> void:
 		elif unit_clicked and game.cells[coord]["unit"] > 0 and game.cells[coord]["moved"]:
 			game.announce(Loc.text("This unit has already moved."))
 	else:
-		if unit_clicked or not game.rules.is_modern():
+		if unit_clicked:
 			Sound.play(&"ui_click")
 		game.session.selection.selected = game.NONE
 		if unit_clicked and game.session.selection.action_mode == "" and game.cells[coord]["unit"] > 0:
@@ -144,12 +146,11 @@ func click_hex(game, coord: Vector2i, hit_kind := "auto") -> void:
 			game.view.spawn_unit_effect(coord, game.cells[coord]["unit"])
 		elif cast:
 			game.view.action_marker(coord, Color("bda2fa"))
-	if game.rules.is_modern() and not unit_clicked and not animal_clicked and not changed and game.session.selection.action_mode == "":
+	if not unit_clicked and not animal_clicked and not changed and game.session.selection.action_mode == "":
 		game.inspect_province(coord)
-	elif not game.rules.is_modern() and not unit_clicked and not animal_clicked and not changed and game.session.selection.action_mode == "":
-		game.session.selection.inspected_hex = coord if game.cells[coord].building == "tower" else game.NONE
 	game.check_winner()
 	game.refresh_ui()
+	if animal_clicked and game.cells[coord].get("animal","") != "": game.report_tutorial_action("animal",coord)
 	if changed:
 		if completed_mode == "recruit": game.report_tutorial_action("recruit",coord,{"tier":completed_tier})
 		elif completed_mode == "spell": game.report_tutorial_action("spell",coord,{"spell":completed_spell})
