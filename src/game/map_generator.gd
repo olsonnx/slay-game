@@ -7,7 +7,7 @@ const StartingTerritories = preload("res://src/game/starting_territories.gd")
 const Archipelago = preload("res://src/game/archipelago.gd")
 const DIRECTIONS = Grid.DIRECTIONS
 const NONE = Grid.NONE
-const GENERATION_VERSION := 13
+const GENERATION_VERSION := 14
 var state
 var adjacency: Dictionary = {}
 var protected_landings: Dictionary = {}

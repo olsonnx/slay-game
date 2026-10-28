@@ -187,7 +187,7 @@ func dress_kingdoms(rules) -> void:
 		# Sparse settlement: one tower and one or two houses per kingdom.
 		for index in range(mini(sites.size(), rules.rng.randi_range(2, 3))):
 			var cell: Dictionary = rules.cells[sites[index]]
-			cell["building"] = "tower" if index == 0 else "house"
+			cell["building"] = "tower" if index == 0 else "city"
 			cell["tree"] = false
 
 func cell_for(column: int, row: int) -> Dictionary:

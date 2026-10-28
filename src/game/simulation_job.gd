@@ -37,6 +37,7 @@ func run() -> void:
 		model = packet["script"].new()
 		opponent = model.KingdomAI.new(model)
 	opponent.worker_cancel = is_cancelled
+	opponent.planning_samples.clear()
 	Snapshots.update_worker(model, packet)
 	model.replay_log = recorder
 	match operation:

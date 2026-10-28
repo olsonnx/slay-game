@@ -77,9 +77,11 @@ var profile_button: Button
 var profile_badge
 var profile_name: Label
 var profile_caption: Label
+var profile_xp
 var profile_panel
 var welcome_panel: Panel
 var welcome_status: Label
+var version_label: Label
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -104,6 +106,17 @@ func _ready() -> void:
 	collection_button = button(main_panel, "Collection", 326, func(): show_screen(Screen.COLLECTION))
 	build_main_utilities()
 	build_profile_ui()
+	version_label = Label.new()
+	version_label.text = "v" + str(ProjectSettings.get_setting("application/config/version", ""))
+	version_label.add_theme_font_size_override("font_size", 14)
+	version_label.add_theme_color_override("font_color", Color("9eb2a7"))
+	version_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	backdrop.add_child(version_label)
+	version_label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
+	version_label.offset_left = 24
+	version_label.offset_right = 204
+	version_label.offset_top = -44
+	version_label.offset_bottom = -24
 	collection_panel = preload("res://src/ui/painting_collection.gd").new()
 	backdrop.add_child(collection_panel)
 	collection_panel.back_requested.connect(func(): show_screen(Screen.MAIN))
@@ -193,12 +206,12 @@ func _ready() -> void:
 	options_view.size = Vector2(432, 444)
 	options_panel.add_child(options_view)
 	options_back = button(options_panel, "Back", 524, close_options)
-	quit_panel = centered_panel(346)
+	quit_panel = centered_panel(294)
 	Hud.label_at(quit_panel, "Leave game", Vector2(24, 22), 28)
 	quit_menu_button = button(quit_panel, "Main menu", 94, func(): confirm_quit("main"))
 	button(quit_panel, "Quit game", 158, func(): confirm_quit("desktop"))
 	button(quit_panel, "Back", 222, func(): show_screen(Screen.PAUSE))
-	confirm_panel = centered_panel(320)
+	confirm_panel = centered_panel(264)
 	confirm_label = Hud.label_at(confirm_panel, "", Vector2(24, 24), 25)
 	confirm_description = Hud.label_at(confirm_panel, Loc.text("The current game will be discarded."), Vector2(24, 75), 15, Color("c5cdbb"))
 	confirm_action_button = button(confirm_panel, "Leave game", 128, confirm_leave)
@@ -255,13 +268,17 @@ func _ready() -> void:
 	show_map_button = button(defeat_panel, "Show map", 410, func(): show_map_requested.emit())
 	defeat_menu_button = button(defeat_panel, "Main menu", 474, func(): main_menu_requested.emit())
 	return_results_button = button(defeat_panel, "Back to results", 0, func(): results_requested.emit())
+	return_results_button.text = ""
+	return_results_button.icon = preload("res://src/ui/result_icons.gd").results()
+	return_results_button.tooltip_text = Loc.text("Back to results")
+	return_results_button.accessibility_name = Loc.text("Back to results")
 	defeat_panel.remove_child(return_results_button)
 	add_child(return_results_button)
 	return_results_button.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	return_results_button.offset_left = -216
-	return_results_button.offset_right = -24
+	return_results_button.offset_left = -134
+	return_results_button.offset_right = -84
 	return_results_button.offset_top = 24
-	return_results_button.offset_bottom = 72
+	return_results_button.offset_bottom = 64
 	show_screen(Screen.HIDDEN)
 
 func show_results(game) -> void:
@@ -344,26 +361,45 @@ func build_main_utilities() -> void:
 func build_profile_ui() -> void:
 	profile_button = Button.new()
 	profile_button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
-	profile_button.offset_left = -304
+	profile_button.offset_left = -328
 	profile_button.offset_right = -24
 	profile_button.offset_top = -100
 	profile_button.offset_bottom = -24
 	Hud.UiTheme.style_button(profile_button)
+	var panel_style: StyleBoxFlat = main_panel.get_theme_stylebox("panel")
+	for state in Hud.UiTheme.BUTTON_STATES:
+		var card_style: StyleBoxFlat = panel_style.duplicate()
+		if state in ["hover", "hover_pressed"]: card_style.bg_color = card_style.bg_color.lightened(0.06)
+		elif state == "pressed": card_style.bg_color = card_style.bg_color.darkened(0.06)
+		profile_button.add_theme_stylebox_override(state, card_style)
+	var focus := Hud.UiTheme.focus_style()
+	focus.set_corner_radius_all(panel_style.corner_radius_top_left)
+	profile_button.add_theme_stylebox_override("focus", focus)
 	backdrop.add_child(profile_button)
 	Sound.bind_button(profile_button)
 	profile_button.pressed.connect(func(): open_profile(false))
 	profile_button.tooltip_text = Loc.text("Your kingdom, flag and match record")
 	profile_badge = preload("res://src/ui/kingdom_flag.gd").new()
-	profile_badge.position = Vector2(12, 14)
+	profile_badge.position = Vector2(16, 14)
 	profile_badge.size = Vector2(72, 48)
 	profile_button.add_child(profile_badge)
-	profile_caption = Hud.label_at(profile_button, "", Vector2(98, 12), 12, Color("9eb2a7"))
+	profile_caption = Hud.label_at(profile_button, "", Vector2(104, 12), 12, Color("9eb2a7"))
 	profile_caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	profile_name = Hud.label_at(profile_button, "", Vector2(98, 32), 16)
-	profile_name.size = Vector2(166, 28)
+	profile_name = Hud.label_at(profile_button, "", Vector2(104, 32), 16)
+	profile_name.size = Vector2(184, 28)
 	profile_name.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	profile_name.clip_text = true
 	profile_name.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	profile_xp = preload("res://src/ui/account_xp_bar.gd").new()
+	profile_xp.position = Vector2(16, 76)
+	profile_xp.size = Vector2(272, 24)
+	profile_button.add_child(profile_xp)
+	profile_xp.award_label.hide()
+	profile_xp.amount_label.hide()
+	profile_xp.level_label.add_theme_font_size_override("font_size", 14)
+	profile_xp.bar.offset_left = 80
+	profile_xp.bar.offset_top = 8
+	profile_xp.bar.offset_bottom = 14
 	profile_panel = preload("res://src/ui/player_profile_panel.gd").new()
 	backdrop.add_child(profile_panel)
 	profile_panel.saved.connect(func():
@@ -388,12 +424,15 @@ func build_profile_ui() -> void:
 
 func refresh_profile_badge() -> void:
 	profile_caption.text = SteamOnline.player_display_name()
-	profile_caption.size = Vector2(166, 22)
+	profile_caption.size = Vector2(184, 22)
 	profile_caption.clip_text = true
 	profile_caption.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	var value: Dictionary = PlayerProfile.data if PlayerProfile.exists() else preload("res://src/settings/player_profile.gd").default_identity()
 	profile_name.text = value.name if PlayerProfile.exists() else Loc.text("Create kingdom")
 	profile_badge.set_design(value.flag)
+	profile_xp.visible = PlayerProfile.exists()
+	profile_button.offset_top = -140 if PlayerProfile.exists() else -100
+	if PlayerProfile.exists(): profile_xp.show_profile(PlayerProfile.statistics.xp)
 
 func open_profile(required := false) -> void:
 	show_screen(Screen.PROFILE)
@@ -480,6 +519,7 @@ func show_screen(next: Screen) -> void:
 	backdrop.material = results_shade if next == Screen.DEFEAT else null
 	backdrop.color = Color(0, 0, 0, 0) if decorative else Color(0.05, 0.10, 0.13, 0.88)
 	main_panel.visible = next == Screen.MAIN
+	version_label.visible = next == Screen.MAIN
 	setup_panel.visible = next == Screen.SETUP
 	multiplayer_panel.visible = next == Screen.MULTIPLAYER
 	online_panel.visible = next == Screen.ONLINE

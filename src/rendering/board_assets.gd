@@ -267,17 +267,46 @@ func add_tower(parent: Node3D, offset: Vector3, flag_color: Color) -> void:
 	add_flag(parent, offset + Vector3(0, 1.06, 0), flag_color)
 
 func add_capital(parent: Node3D, offset: Vector3, flag_color: Color) -> void:
-	shadow(parent, offset, 1.3)
-	box(parent, offset + Vector3(0, 0.07, 0), Vector3(0.90, 0.13, 0.76), Color("a5a18c"))
-	box(parent, offset + Vector3(0, 0.37, 0), Vector3(0.61, 0.55, 0.49), Color("e5dabd"))
-	var roof := piece(parent, roof_mesh(0.68, 0.60, 0.24), offset + Vector3(0, 0.66, 0), Color("4b6667"))
-	roof.material_override = material(Color("4b6667"), false, true)
-	for x in [-0.33, 0.33]:
-		cylinder(parent, offset + Vector3(x, 0.42, 0.22), 0.13, 0.15, 0.76, Color("d2c9b0"), 8)
-		cylinder(parent, offset + Vector3(x, 0.88, 0.22), 0, 0.19, 0.25, Color("526b69"), 8)
-	box(parent, offset + Vector3(0, 0.25, 0.25), Vector3(0.16, 0.31, 0.035), Color("76604c"))
-	register_lighting_material(box(parent, offset + Vector3(0.19, 0.50, 0.25), Vector3(0.09, 0.12, 0.035), Color("f9d892")).material_override,"window")
-	add_flag(parent, offset + Vector3(0, 0.83, -0.08), flag_color)
+	var castle := Node3D.new()
+	castle.name = "CapitalCastle"
+	castle.position = offset
+	castle.scale = Vector3.ONE * (0.78 if offset != Vector3.ZERO else 1.0)
+	parent.add_child(castle)
+	shadow(castle, Vector3.ZERO, 1.65)
+	box(castle, Vector3(0, 0.07, 0), Vector3(1.25, 0.14, 1.10), Color("9e9c8a"))
+	box(castle, Vector3(0, 0.52, -0.10), Vector3(0.66, 0.90, 0.61), Color("e5dabd"))
+	piece(castle, roof_mesh(0.80, 0.75, 0.36), Vector3(0, 1.10, -0.10), Color("4b6667"))
+	for x in [-0.48, 0.48]:
+		for z in [-0.38, 0.38]:
+			cylinder(castle, Vector3(x, 0.53, z), 0.16, 0.19, 0.98, Color("d2c9b0"), 8)
+			cylinder(castle, Vector3(x, 1.10, z), 0, 0.23, 0.32, Color("526b69"), 8)
+		box(castle, Vector3(x, 0.27, 0), Vector3(0.12, 0.42, 0.80), Color("c5bea7"))
+	box(castle, Vector3(0, 0.24, 0.41), Vector3(0.80, 0.35, 0.12), Color("c5bea7"))
+	box(castle, Vector3(0, 0.20, 0.48), Vector3(0.23, 0.30, 0.045), Color("76604c"))
+	for x in [-0.20, 0.20]:
+		register_lighting_material(box(castle, Vector3(x, 0.72, 0.21), Vector3(0.10, 0.20, 0.025), Color("f9d892")).material_override, "window")
+	for x in [-0.43, 0.43]: add_flag(castle, Vector3(x, 0.85, 0.39), flag_color)
+	add_flag(castle, Vector3(0, 1.28, -0.10), flag_color)
+
+func add_city(parent: Node3D, offset: Vector3) -> void:
+	var town := Node3D.new()
+	town.name = "City"
+	town.position = offset
+	town.scale = Vector3.ONE * (0.76 if offset != Vector3.ZERO else 0.94)
+	parent.add_child(town)
+	shadow(town, Vector3.ZERO, 1.15)
+	# A small town hall and two cottages leave a readable central square.
+	for data in [[Vector3(0, 0, -0.20), Vector3(0.48, 0.55, 0.40)], [Vector3(-0.38, 0, 0.25), Vector3(0.32, 0.32, 0.32)], [Vector3(0.38, 0, 0.25), Vector3(0.32, 0.32, 0.32)]]:
+		var at: Vector3 = data[0]
+		var size: Vector3 = data[1]
+		box(town, at + Vector3(0, size.y * 0.5, 0), size, Color("e2cfaa"))
+		piece(town, roof_mesh(size.x + 0.10, size.z + 0.10, 0.22), at + Vector3(0, size.y, 0), Color("88584b"))
+		register_lighting_material(box(town, at + Vector3(0, size.y * 0.55, size.z * 0.5 + 0.01), Vector3(0.09, 0.12, 0.015), Color("f5d090")).material_override, "window")
+	box(town, Vector3(0, 0.70, -0.20), Vector3(0.16, 0.30, 0.16), Color("d2c9b0"))
+	piece(town, roof_mesh(0.24, 0.24, 0.16), Vector3(0, 0.86, -0.20), Color("88584b"))
+
+func add_road_preview(parent: Node3D) -> void:
+	box(parent, Vector3(0, 0.025, 0), Vector3(1.7, 0.025, 0.30), Color("8d826a"))
 
 func add_treasure(parent: Node3D) -> void:
 	var chest := Node3D.new()
@@ -376,6 +405,18 @@ func building_icon(kind: String) -> Texture2D:
 			image.fill_rect(Rect2i(6, 10 + row * 5, 28, 4), Color("b78d57"))
 		for x in [6, 30]:
 			image.fill_rect(Rect2i(x, 7, 4, 29), Color("835f3e"))
+	elif kind == "city":
+		image.fill_rect(Rect2i(14, 13, 12, 21), stone)
+		image.fill_rect(Rect2i(17, 5, 6, 9), Color("b6a98c"))
+		for x in [2, 28]:
+			image.fill_rect(Rect2i(x, 25, 10, 11), stone)
+			for y in range(19, 26):
+				var width := (y - 18) * 2
+				image.fill_rect(Rect2i(x + 5 - width / 2, y, width, 1), Color("a56e55"))
+		image.fill_rect(Rect2i(18, 25, 5, 9), dark)
+	elif kind == "road":
+		image.fill_rect(Rect2i(3, 17, 34, 7), Color("9a8b71"))
+		for x in range(4, 38, 6): image.fill_rect(Rect2i(x, 18, 3, 5), Color("cabfa2"))
 	elif kind == "tower":
 		image.fill_rect(Rect2i(9, 10, 22, 26), dark)
 		image.fill_rect(Rect2i(11, 12, 18, 22), stone)
@@ -427,6 +468,33 @@ func refresh_lighting_materials(rich: bool) -> void:
 		var value: StandardMaterial3D = lighting_materials[id].get_ref()
 		if value == null: lighting_materials.erase(id)
 		else: preload("res://src/rendering/lighting_style.gd").apply_material(value,rich,shadow_texture)
+
+func add_event_landmark(parent: Node3D, flag_color: Color, offset: Vector3, source: String) -> void:
+	if source not in ["builders_guild", "barracks", "scout_lodge", "watchtower"]:
+		add_monument(parent, flag_color, offset)
+		return
+	var model := Node3D.new()
+	model.name = "Landmark"
+	model.position = offset
+	parent.add_child(model)
+	if source == "watchtower":
+		add_tower(model, Vector3.ZERO, flag_color)
+		cylinder(model, Vector3(0, 1.18, 0), 0.12, 0.16, 0.18, Color("eac97d"), 6)
+		return
+	add_house(model, Vector3.ZERO)
+	match source:
+		"builders_guild":
+			box(model, Vector3(-0.38, 0.57, 0), Vector3(0.07, 1.0, 0.07), Color("92704b"))
+			box(model, Vector3(-0.14, 1.04, 0), Vector3(0.55, 0.07, 0.07), Color("92704b"))
+			box(model, Vector3(0.12, 0.70, 0), Vector3(0.04, 0.64, 0.04), Color("c3b28e"))
+		"barracks":
+			for x in [-0.32, 0.32]:
+				cylinder(model, Vector3(x, 0.34, 0.40), 0.025, 0.025, 0.56, Color("66543c"), 5)
+				box(model, Vector3(x, 0.43, 0.42), Vector3(0.20, 0.25, 0.045), flag_color)
+		"scout_lodge":
+			piece(model, roof_mesh(0.91, 0.81, 0.36), Vector3(0, 0.64, 0), Color("526d52"))
+			for index in range(3):
+				cylinder(model, Vector3(-0.34 + index * 0.14, 0.15, 0.40), 0.065, 0.065, 0.33, Color("96764b"), 6).rotation.z = PI / 2
 
 func add_monument(parent: Node3D, flag_color: Color, offset := Vector3.ZERO) -> void:
 	var model := Node3D.new()

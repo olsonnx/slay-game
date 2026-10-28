@@ -74,6 +74,9 @@ func query_checks(model) -> void:
 			expect(action["priority"] <= previous_priority, "Diverse candidates retain descending priority")
 			previous_priority = action["priority"]
 func run() -> void:
+	if "--render-only" in OS.get_cmdline_user_args():
+		await render_checks()
+		return
 	var a := {"priority":2.0, "coord":Vector2i.ZERO}
 	var b := {"priority":2.0, "coord":Vector2i.ONE}
 	var c := {"priority":1.0, "coord":Vector2i(2, 0)}
@@ -105,6 +108,9 @@ func run() -> void:
 	crossings.cells[Vector2i(4, 0)]["unit_owner"] = 0
 	crossings.cells[Vector2i(2, 0)]["barrier_by"] = 0
 	query_checks(crossings)
+	await render_checks()
+
+func render_checks() -> void:
 	var video = root.get_node("Video")
 	var transitions: bool = video.level_transitions
 	video.set_preference(&"level_transitions", false, false)
@@ -150,7 +156,7 @@ func run() -> void:
 	game.cells[coord]["unit"] = 2
 	board.render_cells(game.cells)
 	await process_frame
-	expect(board.tile_nodes[coord] == tile and board.unit_actors[coord] == actor and actor.get_node("Pips").get_child_count() == 2, "Upgrade updates the existing actor and rank markers")
+	expect(board.tile_nodes[coord] == tile and board.unit_actors[coord] == actor and actor.get_node("UnitAnimation").tier == 2, "Upgrade updates the existing actor and its unit appearance")
 	expect(board.static_batches.terrain_rebuild_count == terrain_count, "Rank upgrades do not rebuild merged terrain")
 	var sprite: Sprite3D
 	for child in actor.get_children():

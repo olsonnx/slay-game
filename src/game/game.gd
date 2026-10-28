@@ -134,6 +134,9 @@ func _ready() -> void:
 	province_view.develop_requested.connect(develop_province)
 	province_view.entrench_requested.connect(entrench_province)
 	province_view.relocate_requested.connect(relocate_province_capital)
+	province_view.dismantle_requested.connect(dismantle_province)
+	province_view.road_requested.connect(begin_road)
+	province_view.rename_requested.connect(rename_province)
 	province_view.close_requested.connect(close_province)
 	session.rules.rule_mode = initial_rule_mode
 	session.rules.ai_difficulty = initial_difficulty
@@ -313,15 +316,18 @@ func _process(delta: float) -> void:
 	var coord: Vector2i = hit["coord"]
 	view.value_heatmap.set_hovered(coord)
 	view.set_unit_hover(coord if hit["kind"] in ["unit", "wildlife"] else NONE, hit["kind"])
+	update_hover(coord, delta)
+
+func update_hover(coord: Vector2i, delta: float) -> void:
 	if coord != session.selection.hovered:
 		session.selection.hovered = coord
 		hover_time = 0
 		hud.world_tip.hide()
-		session.selection.preview_path = session.rules.movement_path(session.selection.selected, session.selection.hovered, session.selection.valid_targets) if session.selection.valid_targets.has(session.selection.hovered) and session.selection.action_mode == "" else []
+		refresh_preview_path()
 		refresh_overlays()
 	else:
 		hover_time += delta
-	if cells.has(session.selection.hovered) and hover_time > 0.65:
+	if cells.has(session.selection.hovered) and (hover_time > 0.65 or session.selection.action_mode == "road" and session.selection.valid_targets.has(coord)):
 		show_world_tip()
 
 func _input(event: InputEvent) -> void:
@@ -381,6 +387,25 @@ func develop_province() -> void:
 		Sound.play(&"gold_develop")
 		refresh_ui()
 		report_tutorial_action("develop",session.selection.inspected_hex)
+
+func dismantle_province() -> void:
+	if network_match != null and not network_match.executing:
+		network_match.submit({"kind":"dismantle", "coord":session.selection.inspected_hex})
+		return
+	if commands_locked() or not tutorial_permits("dismantle", session.selection.inspected_hex): return
+	if session.rules.dismantle(session.selection.inspected_hex, session.player_faction):
+		view.render_cells(cells)
+		refresh_ui()
+		report_tutorial_action("dismantle", session.selection.inspected_hex)
+
+func rename_province(coord: Vector2i, text: String) -> void:
+	if network_match != null and not network_match.executing:
+		network_match.submit({"kind":"rename", "coord":coord, "name":text})
+		return
+	if commands_locked(): return
+	if session.rules.rename_settlement(coord, session.player_faction, text):
+		presenter.invalidate_tip()
+		if cells[coord].get("settlement_name", "") != "": report_tutorial_action("rename_settlement", coord)
 
 func entrench_province() -> void:
 	if network_match != null and not network_match.executing:
@@ -463,6 +488,18 @@ func choose_building(kind: String) -> void:
 	close_province()
 	session.selection.selected = NONE
 	hud.shop_panel.close()
+	refresh_ui()
+
+func begin_road() -> void:
+	if commands_locked(): return
+	var source: Vector2i = session.selection.inspected_hex
+	if not preload("res://src/game/road_construction.gd").endpoint(session.rules, source, session.player_faction): return
+	close_province()
+	session.selection.action_mode = "road"
+	session.selection.selected = source
+	session.selection.active_hex = source
+	hud.shop_panel.close()
+	announce(Loc.text("Choose a highlighted structure or road tile to connect."))
 	refresh_ui()
 
 func can_place_unit(coord: Vector2i) -> bool:
@@ -728,11 +765,20 @@ func refresh_targets() -> void:
 			"": session.selection.valid_targets = session.rules.reachable_targets(session.selection.selected)
 			"spell": session.selection.valid_targets = session.rules.spell_targets(session.selection.chosen_spell, session.player_faction, capital)
 			"bridge": session.selection.valid_targets = session.rules.bridge_targets(session.player_faction, capital)
-			"recruit", "tower", "house":
+			"road": session.selection.valid_targets = session.rules.road_targets(session.selection.selected, session.player_faction)
+			"recruit", "tower", "city":
 				for coord in cells:
 					if can_place_unit(coord) if session.selection.action_mode == "recruit" else session.rules.can_build(coord, session.player_faction, session.selection.action_mode, capital):
 						session.selection.valid_targets[coord] = true
-	session.selection.preview_path = session.rules.movement_path(session.selection.selected, session.selection.hovered, session.selection.valid_targets) if session.selection.valid_targets.has(session.selection.hovered) and session.selection.action_mode == "" else []
+	refresh_preview_path()
+
+func refresh_preview_path() -> void:
+	session.selection.preview_path = []
+	if not session.selection.valid_targets.has(session.selection.hovered): return
+	if session.selection.action_mode == "":
+		session.selection.preview_path = session.rules.movement_path(session.selection.selected, session.selection.hovered, session.selection.valid_targets)
+	elif session.selection.action_mode == "road":
+		session.selection.preview_path = session.selection.valid_targets[session.selection.hovered].path
 
 func refresh_overlays() -> void:
 	presenter.refresh_overlays()

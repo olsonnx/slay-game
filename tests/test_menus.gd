@@ -37,12 +37,13 @@ func run() -> void:
 	await app.startup_finished
 	await process_frame
 	var topics = app.menus.tutorial_panel
-	expect(is_equal_approx(topics.size.x,480) and is_equal_approx(topics.size.y,500),"Tutorial selector uses a compact panel")
+	expect(is_equal_approx(topics.size.x,480) and topics.size.y <= 620 and topics.category_buttons.size() == 8,"Eight-topic tutorial selector fits the minimum window height")
 	for category in topics.category_buttons:
 		var row: Button = topics.category_buttons[category]
-		expect(row.get_child_count() == 2 and row.get_child(0) is CheckBox and row.get_child(1) is Label and row.tooltip_text == "","Topic rows contain only a checkbox and title")
+		expect(row.get_child_count() == 2 and row.get_child(0) is CheckBox and row.get_child(1) is Label and not row.tooltip_text.is_empty(),"Topic rows contain a checkbox and title, with help available on hover")
 		expect(topics.completion_checks[category].mouse_filter == Control.MOUSE_FILTER_IGNORE and topics.completion_checks[category].focus_mode == Control.FOCUS_NONE,"Completion marks cannot be changed by clicking or keyboard focus")
 	expect(app.game == null and app.menus.screen == app.menus.Screen.MAIN and not paused, "Application starts in a basic main menu")
+	expect(app.menus.version_label.visible and app.menus.version_label.text == "v" + ProjectSettings.get_setting("application/config/version"), "Main menu identifies the current game version")
 	expect(app.menus.main_panel.size.y == 462 and app.menus.main_utilities.size() == 4 and app.menus.collection_button.text == "Collection", "Main menu fits Campaign, Collection and its four-icon utility row")
 	for index in range(app.menus.main_utilities.size()):
 		var control: Button = app.menus.main_utilities[index]
@@ -52,13 +53,13 @@ func run() -> void:
 	app.menus.main_utilities[2].pressed.emit()
 	expect(app.menus.options_panel.visible, "Options is accessible before a game exists")
 	var option_tabs = app.menus.options_view.get_child(0)
-	expect(option_tabs.tab_count == 4, "Options tabs exclude Replays")
+	expect(option_tabs.tab_count == 5, "Options includes a dedicated Interface tab")
 	await process_frame
 	for index in range(option_tabs.tab_count):
 		var rect: Rect2 = option_tabs.get_tab_rect(index)
 		expect(rect.position.x >= 0 and rect.end.x <= option_tabs.size.x and rect.position.y == 0, "Every options tab fits the same aligned row without scrolling")
 		expect(is_equal_approx(rect.size.x, option_tabs.get_tab_rect(0).size.x), "Options tabs have equal widths")
-	expect(option_tabs.get_tab_rect(0).position.x == 0 and option_tabs.get_tab_rect(3).end.x == option_tabs.size.x, "Options tabs span exactly the settings content width")
+	expect(option_tabs.get_tab_rect(0).position.x == 0 and option_tabs.get_tab_rect(option_tabs.tab_count - 1).end.x == option_tabs.size.x, "Options tabs span exactly the settings content width")
 	option_tabs.get_child(1).pressed.emit()
 	expect(app.menus.options_view.video_page.visible and not app.menus.options_view.audio_page.visible, "Clicking an options tab switches to its page")
 	var tab_arrow := InputEventKey.new()
@@ -71,6 +72,7 @@ func run() -> void:
 	await app.start_new_game()
 	var game = app.game
 	expect(is_instance_valid(game) and not app.menus.backdrop.visible, "New Game creates a gameplay session and hides the main menu")
+	expect(not app.menus.version_label.visible, "Version footer stays out of gameplay")
 	game.choose_unit(1)
 	escape(game)
 	expect(game.action_mode == "" and not paused, "Escape cancels placement before opening pause")
@@ -85,6 +87,11 @@ func run() -> void:
 	expect(app.menus.pause_duration.text == "Time played: %s" % preload("res://src/game/match_clock.gd").display(game.match_clock.seconds()), "Pause displays the existing active-play clock")
 	expect(app.menus.pause_seed.text == "Seed: %s" % str(game.rules.level_seed), "Pause displays the actual generated level seed")
 	expect(is_equal_approx(app.menus.pause_panel.size.y - app.menus.pause_quit_button.get_rect().end.y, 24.0), "Pause has a compact 24-pixel bottom margin below Quit")
+	for panel in [app.menus.quit_panel, app.menus.confirm_panel]:
+		var last_button_bottom := 0.0
+		for child in panel.get_children():
+			if child is Button: last_button_bottom = maxf(last_button_bottom, child.get_rect().end.y)
+		expect(is_equal_approx(panel.size.y - last_button_bottom, 24.0), "Quit and confirmation screens keep the same compact bottom margin as Pause")
 	expect(app.menus.pause_duration.get_rect().end.x < app.menus.pause_seed.position.x and app.menus.pause_seed.get_rect().end.x <= app.menus.pause_panel.size.x - 24.0, "Time and seed fit side by side inside the pause panel")
 	var paused_time: String = app.menus.pause_duration.text
 	var camera_before: Vector3 = game.view.camera.position
@@ -148,15 +155,14 @@ func run() -> void:
 	app.menus.open_options(app.menus.Screen.PAUSE)
 	var background_choice: OptionButton = app.menus.options_view.background_choice
 	var borders: HSlider = app.menus.options_view.internal_borders_slider
-	var water_toggle: CheckButton = app.menus.options_view.stylized_water_toggle
 	var water_factory = load("res://src/rendering/water_surface.gd")
-	water_toggle.button_pressed = true
+	video.set_preference(&"stylized_water", true, false)
 	expect(video.stylized_water and game.view.water.material_override.shader == water_factory.ShaderSource, "Stylized water applies immediately while paused")
 	expect(app.menus.menu_background.map.water.material_override.shader == water_factory.ShaderSource, "Water style also updates the menu background")
-	water_toggle.button_pressed = false
+	video.set_preference(&"stylized_water", false, false)
 	expect(not video.stylized_water and game.view.water.material_override.shader == water_factory.OriginalShader, "Disabling stylized water restores the original shader")
-	water_toggle.button_pressed = true
-	borders.value = 75
+	video.set_preference(&"stylized_water", true, false)
+	borders.value = 0.75
 	expect(paused and is_equal_approx(video.internal_borders, 0.75) and is_equal_approx(game.view.internal_border_visibility, 0.75), "Internal-border slider applies immediately while paused")
 	expect(app.menus.options_view.internal_borders_value.text == "75%", "Internal-border slider shows its current percentage")
 	expect(game.cells == board_before and game.view.focus == camera_focus and game.view.zoom == camera_zoom, "Border changes preserve gameplay and camera framing")

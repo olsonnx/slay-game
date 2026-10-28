@@ -4,16 +4,16 @@ extends RefCounted
 const Catalog = preload("res://src/game/game_catalog.gd")
 const VALUES := [0.0, 10.0, 21.0, 38.0]
 
-static func resources(model, coord: Vector2i, owner: int) -> Array:
+static func resources(model, coord: Vector2i, owner: int, queries = null) -> Array:
 	var cell: Dictionary = model.cells[coord]
 	var land := int(cell["owner"] == owner)
 	var income := 0
 	if land:
 		income = cell["value"] if not cell["tree"] and not cell["grave"] else 0
-		if cell["building"] == "house": income += model.HOUSE_INCOME
+		if cell["building"] == "city": income += model.CITY_INCOME
 	var rank: int = cell["unit"] if model.unit_faction(coord) == owner else 0
 	var capital_recovery: int = cell["value"] if land and (cell["tree"] or cell["grave"]) else 0
-	return [land, income, model.unit_upkeep(rank, owner), VALUES[rank], capital_recovery]
+	return [land, income, (queries.unit_upkeep(rank, owner) if queries != null else model.unit_upkeep(rank, owner)) + (Catalog.TOWER_UPKEEP if land and cell["building"] == "tower" else 0), VALUES[rank], capital_recovery]
 
 static func add_into(a: Array, b: Array) -> void:
 	for i in range(4): a[i] += b[i]
@@ -24,7 +24,7 @@ static func bank_cuts(model, bank: Dictionary, queries) -> Dictionary:
 	var owner: int = bank["owner"]
 	var nodes := {}
 	var stack := [root]
-	nodes[root] = {"index": 0, "low": 0, "parent": model.NONE, "head": 0, "sum": resources(model,root,owner), "detached": [0,0,0,0.0,0], "score": 0.0, "ranges": [], "doomed": []}
+	nodes[root] = {"index": 0, "low": 0, "parent": model.NONE, "head": 0, "sum": resources(model,root,owner,queries), "detached": [0,0,0,0.0,0], "score": 0.0, "ranges": [], "doomed": []}
 	while not stack.is_empty():
 		var coord: Vector2i = stack.back()
 		var node: Dictionary = nodes[coord]
@@ -37,7 +37,7 @@ static func bank_cuts(model, bank: Dictionary, queries) -> Dictionary:
 			if nodes.has(next):
 				node["low"] = mini(node["low"], nodes[next]["index"])
 			else:
-				nodes[next] = {"index": nodes.size(), "low": nodes.size(), "parent": coord, "head": 0, "sum": resources(model,next,owner), "detached": [0,0,0,0.0,0], "score": 0.0, "ranges": [], "doomed": []}
+				nodes[next] = {"index": nodes.size(), "low": nodes.size(), "parent": coord, "head": 0, "sum": resources(model,next,owner,queries), "detached": [0,0,0,0.0,0], "score": 0.0, "ranges": [], "doomed": []}
 				stack.append(next)
 			continue
 		stack.pop_back()
@@ -60,7 +60,7 @@ static func bank_cuts(model, bank: Dictionary, queries) -> Dictionary:
 	for coord in nodes:
 		if coord == root or nodes[coord]["detached"][0] == 0: continue
 		var node: Dictionary = nodes[coord]
-		var own := resources(model,coord,owner)
+		var own := resources(model,coord,owner,queries)
 		var detached: Array = node["detached"]
 		var retained_net: float = total[1]-detached[1]-own[1] - (total[2]-detached[2]-own[2])
 		var score: float = node["score"]

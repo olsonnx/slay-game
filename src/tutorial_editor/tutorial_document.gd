@@ -2,11 +2,11 @@ extends RefCounted
 ## Serializable authoring document; vectors are encoded as [q, r] in files.
 const Level = preload("res://src/editor/level_document.gd")
 const NONE := Vector2i(999,999)
-const ACTIONS := ["continue","any","recruit","move","build","spell","end_turn","select","inspect","develop","entrench","relocate_capital","event","view","heatmap","stats","finance","status","kingdom","animal"]
+const ACTIONS := ["continue","any","recruit","move","build","spell","end_turn","select","inspect","develop","entrench","relocate_capital","dismantle","road","rename_settlement","event","view","heatmap","stats","finance","status","kingdom","animal"]
 const PREDICATES := ["owner","unit","building","gold","mana","round","victory","value","clear","entrenched","territory","income"]
 const ORDERS := ["move","recruit","build","spell","entrench","develop"]
 const MAX_BYTES := 8000000
-const CATEGORIES := ["armies","economy","construction","conquest","magic","exploration","practice"]
+const CATEGORIES := ["armies","economy","construction","logistics","conquest","magic","exploration","practice"]
 var data: Dictionary = {}
 var path := ""
 var saved := ""
@@ -79,7 +79,7 @@ static func validate(value: Variant) -> String:
 				"plain":
 					if not expected is bool: return prefix + "Plain land must be a checkbox."
 				"building":
-					if expected not in ["house","tower","bridge","monument",""]: return prefix + "Invalid objective building."
+					if expected not in ["city","tower","bridge","road","monument",""]: return prefix + "Invalid objective building."
 				_: return prefix + "Unknown objective criterion."
 		ids[step.id] = true
 		if step.get("kind") not in ACTIONS or not valid_coord(step.get("target")): return prefix + "Invalid action or target coordinates."
@@ -89,14 +89,14 @@ static func validate(value: Variant) -> String:
 		if not valid_coord(step.get("details",{}).get("source")): return prefix + "Invalid source coordinates."
 		if step.get("condition_mode","all") not in ["all","any"] or not step.get("restrict_actions",true) is bool: return prefix + "Invalid condition options."
 		if not step.get("confirm",false) is bool: return prefix + "Continue confirmation must be a checkbox."
-		if step.get("confirm",false) and step.kind not in ["inspect","stats"]: return prefix + "Continue confirmation is available for inspection and Stats."
+		if step.get("confirm",false) and step.kind not in ["inspect","stats","finance"]: return prefix + "Continue confirmation is available for inspection, Stats and finance."
 		if not step.get("conditions",[]) is Array or step.get("conditions",[]).size() > 30: return prefix + "Too many conditions."
 		for condition in step.get("conditions",[]):
 			if not condition is Dictionary or condition.get("type") not in PREDICATES or not valid_coord(condition.get("target")): return prefix + "Invalid board condition."
 			if condition.type in ["owner","unit","building","value","clear","entrenched"] and condition.get("target") == null: return prefix + "This board condition needs a tile."
 			if not integer(condition.get("faction",0),-1 if condition.type == "victory" else 0,rules.faction_count-1): return prefix + "Invalid condition faction."
 			if condition.type == "building":
-				if condition.get("value") not in ["","house","tower","bridge"]: return prefix + "Unknown condition building."
+				if condition.get("value") not in ["","city","tower","bridge","road"]: return prefix + "Unknown condition building."
 			elif not integer(condition.get("value",0),-1,99999): return prefix + "Condition value must be a whole number."
 			if condition.type == "unit" and not integer(condition.get("value"),1,3): return prefix + "A unit condition needs tier 1, 2 or 3."
 			if condition.type == "owner" and not integer(condition.get("value"),-1,rules.faction_count-1): return prefix + "An owner condition needs faction -1 through 5."
@@ -117,8 +117,9 @@ static func integer(value: Variant, minimum: int, maximum: int) -> bool:
 	return (value is int or value is float) and is_finite(value) and value == int(value) and value >= minimum and value <= maximum
 
 static func validate_options(options: Dictionary) -> String:
+	if options.has("name") and (not options.name is String or options.name.length() > 40): return "Settlement names must be text up to 40 characters."
 	if options.has("tier") and not integer(options.tier,1,3): return "Unit tier must be 1, 2 or 3."
-	if options.has("building") and options.building not in ["house","tower","bridge"]: return "Unknown building."
+	if options.has("building") and options.building not in ["city","tower","bridge","road"]: return "Unknown building."
 	if options.has("spell") and options.spell not in ["trailblaze","summon","shatter"]: return "Unknown spell."
 	if options.has("outcome") and options.outcome not in ["move","attack","merge","blocked_attack","knight_duel"]: return "Unknown movement outcome."
 	if options.has("open") and not options.open is bool: return "Open/active must be a checkbox."

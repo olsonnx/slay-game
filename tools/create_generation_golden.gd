@@ -12,8 +12,8 @@ static func digest(rules) -> String:
 	return JSON.stringify(state).sha256_text()
 func _initialize() -> void: call_deferred("run")
 func run() -> void:
-	if "--update-generation-v13" not in OS.get_cmdline_user_args():
-		print("Pass -- --update-generation-v13 to replace the intentional v13 baseline.")
+	if "--update-generation-v14" not in OS.get_cmdline_user_args():
+		print("Pass -- --update-generation-v14 to replace the intentional v14 baseline.")
 		quit(1)
 		return
 	var samples: Array = []
@@ -29,5 +29,5 @@ func run() -> void:
 					samples.append({"generation_version":Rules.MapGenerator.GENERATION_VERSION, "mode":mode, "size":size_id, "count":count, "seed":seed_value, "digest":digest(rules)})
 	var file := FileAccess.open("res://tests/fixtures/generation_golden.json", FileAccess.WRITE)
 	file.store_string(JSON.stringify(samples, "\t") + "\n")
-	print("Recorded generation v13 fixtures: ", samples.size())
+	print("Recorded generation v14 fixtures: ", samples.size())
 	quit()

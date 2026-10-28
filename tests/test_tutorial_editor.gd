@@ -57,14 +57,17 @@ func run() -> void:
 	var document = template("armies")
 	var result := Simulator.run(document,0)
 	var rules = result.rules
-	var at := Vector2i(-2,0)
-	expect(Conditions.check(rules,1,{"type":"owner","target":[-2,0],"value":0}),"Owner predicate reads the prepared position")
-	expect(Conditions.check(rules,1,{"type":"unit","target":[-2,0],"value":1,"faction":0}),"Unit predicate reads the real army")
-	expect(not Conditions.check(rules,1,{"type":"unit","target":[-2,0],"value":2,"faction":0}),"Unit predicate rejects weaker armies")
+	var at := Vector2i.ZERO
+	expect(Conditions.check(rules,1,{"type":"owner","target":[0,0],"value":0}),"Owner predicate reads the prepared position")
+	expect(Conditions.check(rules,1,{"type":"unit","target":[0,0],"value":1,"faction":0}),"Unit predicate reads the real army")
+	expect(not Conditions.check(rules,1,{"type":"unit","target":[0,0],"value":2,"faction":0}),"Unit predicate rejects weaker armies")
 	expect(not Conditions.check(rules,1,{"type":"owner","target":[90,90],"value":0}),"Missing tiles do not satisfy tile conditions")
 	var conditions := [{"type":"round","value":2},{"type":"owner","target":[-2,0],"value":0}]
 	expect(not Conditions.matches(rules,1,conditions,"all") and Conditions.matches(rules,1,conditions,"any"),"All/any combine conditions correctly")
 	expect(not Conditions.victory(rules),"Surviving enemies prevent victory")
+	rules.cells[at].road = true
+	expect(Conditions.check(rules,1,{"type":"building","target":[0,0],"value":"road"}),"Road conditions read pavement independently of the tile's structure")
+	rules.cells[at].erase("road")
 	for change in [
 		{"conditions":[{"type":"unit","target":null,"value":1}]},
 		{"target":[1.5,0]},
@@ -204,14 +207,14 @@ func run() -> void:
 	editor.new_document()
 	editor.document.data.steps = [Doc.new_step()]
 	editor.document.data.steps[0].kind = "recruit"
-	editor.document.data.steps[0].target = [-1,0]
+	editor.document.data.steps[0].target = [-3,0]
 	editor.document.data.steps[0].details = {"tier":1}
-	editor.document.data.steps[0].conditions = [{"type":"unit","target":[-1,0],"value":1,"faction":0},{"type":"gold","target":[-3,0],"value":0,"faction":0}]
+	editor.document.data.steps[0].conditions = [{"type":"unit","target":[-3,0],"value":1,"faction":0},{"type":"gold","target":[-3,0],"value":0,"faction":0}]
 	editor.refresh(true)
 	await editor.playtest(false)
 	game = editor.app.game
 	game.choose_unit(1)
-	await game.click_hex(Vector2i(-1,0))
+	await game.click_hex(Vector2i(-3,0))
 	expect(game.tutorial.completed,"Committed recruitment and all authored board predicates advance together")
 	await editor.stop_playtest()
 	editor.new_document()
@@ -229,10 +232,10 @@ func run() -> void:
 	await editor.stop_playtest()
 	# Start at a simulated checkpoint and verify state is real in the game.
 	editor.load_template()
-	var rank_start := Lessons.builtin_lessons("armies").find_custom(func(step): return step.id == "soldier")
+	var rank_start := Lessons.builtin_lessons("armies").find_custom(func(step): return step.id == "upgrade_soldier")
 	editor.select_step(rank_start)
 	await editor.playtest(true)
-	expect(editor.app.game.tutorial.index == rank_start and editor.app.game.cells[Vector2i(0,-1)].unit == 1 and editor.app.game.rules.territory(0) == 12,"Play this step restores the simulated match checkpoint")
+	expect(editor.app.game.tutorial.index == rank_start and editor.app.game.cells[Vector2i(-3,0)].unit == 2 and editor.app.game.cells[Vector2i(-3,0)].moved and editor.app.game.rules.territory(0) == 16,"Play this step restores the merged Soldier and simulated match checkpoint")
 	await editor.stop_playtest()
 	editor.select_step(1)
 	await editor.playtest(true)
@@ -244,6 +247,16 @@ func run() -> void:
 	for frame in range(3): await process_frame
 	expect(surface.get_visible_rect().encloses(editor.inspector.get_global_rect()) and surface.get_visible_rect().encloses(editor.canvas.get_global_rect()),"Map and inspector fit the tool's minimum window")
 	await capture("small-window")
+	editor.template.select(Lessons.IDS.find("logistics"))
+	editor.load_template()
+	var road_index: int = editor.document.data.steps.find_custom(func(step): return step.id == "supply_road")
+	editor.select_step(road_index)
+	editor.inspector.collect()
+	expect(editor.document.data.steps[road_index].target == [3,0] and editor.document.data.steps[road_index].details.source == [-4,0],"Editing a road objective retains both connection endpoints")
+	var name_index: int = editor.document.data.steps.find_custom(func(step): return step.id == "name_city")
+	editor.select_step(name_index)
+	editor.inspector.collect()
+	expect(editor.document.data.steps[name_index].target == [3,0] and Doc.validate(editor.document.data) == "","City-naming objectives retain their target in valid portable tutorials")
 	editor.queue_free()
 	await process_frame
 	root.get_node("Sound").stop_all()

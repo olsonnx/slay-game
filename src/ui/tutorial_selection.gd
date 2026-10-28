@@ -24,6 +24,7 @@ func _ready() -> void:
 		var button := preload("res://src/ui/tooltip_button.gd").new()
 		button.position = Vector2(24,72+index*50)
 		button.size = Vector2(432,44)
+		button.tooltip_text = course.description
 		Ui.style_button(button,index == 0)
 		Sound.bind_button(button)
 		var category: String = course.id
@@ -49,12 +50,15 @@ func _ready() -> void:
 		index += 1
 	var back := preload("res://src/ui/tooltip_button.gd").new()
 	back.text = Loc.text("Back")
-	back.position = Vector2(24,436)
+	back.position = Vector2(24,86 + index * 50)
 	back.size = Vector2(432,40)
 	Ui.style_button(back)
 	Sound.bind_button(back)
 	back.pressed.connect(func(): back_requested.emit())
 	add_child(back)
+	var height := back.position.y + 64
+	offset_top = -height * 0.5
+	offset_bottom = height * 0.5
 	Gameplay.changed.connect(refresh_completion)
 	refresh_completion()
 

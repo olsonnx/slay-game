@@ -12,7 +12,7 @@ func _ready() -> void:
 	set_note(NOTE)
 	var scroll := ScrollContainer.new()
 	scroll.position = Vector2(0, 58)
-	scroll.size = Vector2(432, 250)
+	scroll.size = Vector2(432, 220)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	add_child(scroll)
 	var rows := VBoxContainer.new()
@@ -39,7 +39,7 @@ func _ready() -> void:
 	var reset := Button.new()
 	Ui.style_button(reset)
 	reset.text = "Restore defaults"
-	reset.position = Vector2(0, 320)
+	reset.position = Vector2(0, 288)
 	reset.size = Vector2(200, 36)
 	reset.focus_mode = Control.FOCUS_NONE
 	reset.pressed.connect(func(): cancel_capture(); Keys.reset_defaults())

@@ -133,6 +133,9 @@ func run() -> void:
 		var final_sequence: int = replay.sequence
 		app.menus.show_map_button.pressed.emit()
 		expect(not paused and game.game_over and game.inspecting_results_map and app.menus.return_results_button.visible and not app.menus.backdrop.visible, "Show map reveals the finished board and a return control")
+		var return_button: Button = app.menus.return_results_button
+		expect(return_button.text == "" and return_button.icon != null and return_button.tooltip_text == "Back to results", "Finished-map return uses an accessible results icon")
+		expect(not return_button.get_global_rect().intersects(app.music_controls.toggle.get_global_rect()) and return_button.get_global_rect().position.y == app.music_controls.toggle.get_global_rect().position.y, "Results and music buttons share a row without overlapping")
 		var yaw: float = game.view.yaw
 		var right := InputEventMouseButton.new()
 		right.button_index = MOUSE_BUTTON_RIGHT
@@ -217,10 +220,10 @@ func run() -> void:
 	expect(not FileAccess.file_exists(unsaved_path), "Leaving results without saving creates no replay file")
 	app.menus.open_options(app.menus.Screen.MAIN)
 	var tabs = app.menus.options_view.get_child(0)
-	expect(tabs.tab_count == 4, "Options only contains audio, video, gameplay and controls")
+	expect(tabs.tab_count == 5, "Options includes the dedicated Interface tab")
 	tabs.current_tab = 3
 	await process_frame
-	expect(app.menus.options_view.controls_page.visible and not app.menus.options_view.audio_page.visible, "The final options tab still opens Controls after removing Replays")
+	expect(app.menus.options_view.controls_page.visible and not app.menus.options_view.audio_page.visible, "The Controls tab keeps its keyboard navigation order")
 	for button in app.menus.pause_panel.find_children("*", "Button", true, false):
 		expect(not button.text.contains("Replay"), "Pause menu has no replay folder shortcut")
 	await capture("options")

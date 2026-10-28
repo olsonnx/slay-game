@@ -12,8 +12,13 @@ const MODERN_START_VALUE := 11
 const UNIT_COST := 10
 const UNIT_PRICES := [0, 10, 20, 40]
 const TOWER_COST := 15
-const HOUSE_COST := 20
-const HOUSE_INCOME := 4
+const CITY_COST := 25
+const CITY_INCOME := 0
+const ROAD_COST := 1
+const TOWER_INCREMENT := 5
+const TOWER_UPKEEP := 2
+const BRIDGE_UPKEEP := 2
+const MOVEMENT := [0, 5, 4, 3]
 const BRIDGE_COST := 15
 
 static func unit_upkeep(tier: int, _legacy_mode := true) -> int:
@@ -23,11 +28,13 @@ static func unit_price(tier: int) -> int:
 	return UNIT_PRICES[tier]
 
 static func unit_tooltip(tier: int, wages := -1) -> String:
-	return Loc.text("%s · strength %d\nCost %d G · upkeep −%d G / turn\n%s\nUpgrade: pay the difference") % [Loc.text(UNIT_NAMES[tier]), tier, unit_price(tier), unit_upkeep(tier) if wages < 0 else wages, ["", Loc.text("Captures neutral land; clears trees / graves"), Loc.text("Defeats Scouts and capitals"), Loc.text("Defeats Soldiers and towers; protects adjacent friendly land at strength 2")][tier]]
+	return Loc.text("%s · strength %d\nCost %d G · upkeep −%d G / turn\n%s\nMove %d hexes · roads cost half\nRecruit on or beside cities / capitals; ready immediately") % [Loc.text(UNIT_NAMES[tier]), tier, unit_price(tier), unit_upkeep(tier) if wages < 0 else wages, ["", Loc.text("Captures neutral land; clears trees / graves"), Loc.text("Defeats Scouts and capitals"), Loc.text("Defeats Soldiers and towers; protects adjacent friendly land at strength 2")][tier], MOVEMENT[tier]]
 
-static func building_tooltip(kind: String) -> String:
+static func building_tooltip(kind: String, price := -1) -> String:
 	if kind == "bridge":
-		return Loc.text("Bridge · cost %d G\nSpans water beside your kingdom / bridges\nNeutral crossing · no income") % BRIDGE_COST
+		return Loc.text("Bridge · cost %d G\nNeutral crossing · upkeep 2 G / turn per segment\nBuilder pays; dismantle in province details") % BRIDGE_COST
 	if kind == "tower":
-		return Loc.text("Tower · cost %d G\nProtects self + adjacent friendly land\nNeeds clear land · no upkeep") % TOWER_COST
-	return Loc.text("House · cost %d G\nIncome +%d G / turn · no upkeep\nNeeds clear land · lost on capture") % [HOUSE_COST, HOUSE_INCOME]
+		return Loc.text("Tower · cost %d G\nProtects self + adjacent friendly land\nUpkeep 2 G / turn · next tower costs 5 G more") % (TOWER_COST if price < 0 else price)
+	if kind == "road":
+		return Loc.text("Road · %d G per newly paved tile · no upkeep\nConnect friendly structures using the province road icon\nConnected road steps cost ½ movement") % ROAD_COST
+	return Loc.text("City · cost %d G · no upkeep\nRecruit here or next door · ready immediately · no bonus income\nCaptured cities survive and change ownership") % CITY_COST

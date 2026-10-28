@@ -65,6 +65,11 @@ static func evaluate(model, faction: int, queries = null) -> float:
 		if cell["unit"] > 0:
 			if model.unit_faction(coord) == faction:
 				score += UNIT_VALUE[cell["unit"]]
+				var bank: Dictionary = queries.support(coord)
+				if not bank.is_empty():
+					var distance_to_front := 12
+					for target in queries.frontier(bank["capital"]): distance_to_front = mini(distance_to_front, model.distance(coord, target))
+					score -= distance_to_front * 0.6
 				if queries.support(coord).is_empty():
 					score -= UNIT_VALUE[cell["unit"]] + 5.0
 			else:

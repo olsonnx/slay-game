@@ -78,5 +78,8 @@ static func template(id: String) -> Dictionary:
 			data.choices[0].outcomes = [outcome("A new kingdom declares independence.",[effect("revolt")])]
 			data.choices[1].outcomes = [outcome("The treasury is empty.",[effect("gold_percent")])]
 			data.choices[1].ai_score = 10
-		"stainless_steel": data.choices[0].outcomes = [outcome("The landmark's owner pays 2 gold less per Knight.",[effect("landmark",{"income_min":0,"income_max":0,"steel":true})])]
+		"stainless_steel": data.choices[0].outcomes = [outcome("The landmark's owner pays 25% lower Knight wages.",[effect("landmark",{"income_min":0,"income_max":0,"steel":true})])]
+		"builders_guild", "barracks", "scout_lodge", "watchtower":
+			var bonus: String = {"builders_guild":"development_discount", "barracks":"soldier_discount", "scout_lodge":"scout_discount", "watchtower":"defense_aura"}[id]
+			data.choices[0].outcomes = [outcome(base.choices[0][1], [effect("landmark", {"income_min":0,"income_max":0,bonus:true})])]
 	return data

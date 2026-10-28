@@ -31,14 +31,14 @@ func run() -> void:
 	var manifest_path := dir + "/languages.json"
 	var settings_path := dir + "/settings.cfg"
 	# Synthetic markers exercise translation; these are not a shipped language.
-	var unit_template := "%s · strength %d\nCost %d G · upkeep −%d G / turn\n%s\nUpgrade: pay the difference"
+	var unit_template := "%s · strength %d\nCost %d G · upkeep −%d G / turn\n%s\nMove %d hexes · roads cost half\nRecruit on or beside cities / capitals; ready immediately"
 	write_json(pack_path, {"locale":"eo", "name":"TEST LANGUAGE Ω", "messages":{
 		"Quick Play":"TEST::PLAY Ω", "Language":"TEST::LANGUAGE", "Knight":"TEST::KNIGHT",
-		"House":"TEST::HOUSE",
+		"City":"TEST::CITY",
 		"Save":"TEST::SAVE", "Space":"TEST::SPACE",
 		"Level %d":"TEST::LEVEL %d", "Tiny":"TEST::TINY", "%s · ~%s tiles":"TEST::MAP %s %s",
 		"Build":"", "Recruit":42, "Income %+d G / turn":"TEST::BROKEN %s", "UNKNOWN_TEST_KEY":"TEST::UNKNOWN",
-		unit_template:"TEST::UNIT %s %d %d %d %s"}})
+		unit_template:"TEST::UNIT %s %d %d %d %s %d"}})
 	write_json(manifest_path, [pack_path])
 	languages.settings_path = settings_path
 	languages.reload_languages(manifest_path)
@@ -81,8 +81,8 @@ func run() -> void:
 	native_dialog.queue_free()
 	var document = load("res://src/editor/level_document.gd").new()
 	document.paint(Vector2i.ZERO, "Land", 0, 2)
-	document.paint(Vector2i.ZERO, "House", 0, 2)
-	expect(Loc.text("House") == "TEST::HOUSE" and document.cells[Vector2i.ZERO]["building"] == "house", "Translated tool captions do not change editor command IDs or saved data")
+	document.paint(Vector2i.ZERO, "City", 0, 2)
+	expect(Loc.text("City") == "TEST::CITY" and document.cells[Vector2i.ZERO]["building"] == "city", "Translated tool captions do not change editor command IDs or saved data")
 	expect(not languages.source_messages.has("choice_%d"), "Keyboard action IDs are excluded from the translation catalogue")
 	var export_script = load("res://addons/localization_export/export_plugin.gd")
 	var export_files: PackedStringArray = export_script.files_to_export()

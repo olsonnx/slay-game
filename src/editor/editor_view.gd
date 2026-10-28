@@ -6,7 +6,7 @@ const Hud = preload("res://src/ui/game_hud.gd")
 const EventText = preload("res://src/ui/event_text.gd")
 const Events = preload("res://src/game/event_catalog.gd")
 const Catalog = preload("res://src/game/game_catalog.gd")
-const TOOL_GROUPS := {"Tiles": ["Land", "Mountain", "Bridge", "Water"], "Units": ["Capital", "Scout", "Soldier", "Knight"], "Build": ["House", "Tower", "Bear cave", "Wolf den", "Boar burrow"], "Paint": ["Owner", "Value", "Tree", "Grave", "Mana source", "Clear objects"]}
+const TOOL_GROUPS := {"Tiles": ["Land", "Mountain", "Bridge", "Water"], "Units": ["Capital", "Scout", "Soldier", "Knight"], "Build": ["City", "Road", "Tower", "Bear cave", "Wolf den", "Boar burrow"], "Paint": ["Owner", "Value", "Tree", "Grave", "Mana source", "Clear objects"]}
 signal action_requested(action: StringName, arguments: Array)
 signal focus_release_requested
 signal title_changed(value: String)
@@ -148,8 +148,8 @@ func build_toolbar() -> Control:
 	ui_root.add_child(controls)
 	controls.anchor_left = 1
 	controls.anchor_right = 1
-	controls.offset_left = -402
-	controls.offset_right = -24
+	controls.offset_left = -462
+	controls.offset_right = -84
 	controls.offset_top = 24
 	controls.offset_bottom = 64
 	controls.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -371,7 +371,8 @@ func render_context(tool: String, restart := false) -> void:
 		"Scout": "Place a Scout on owned land. Keeps capitals and mana sources; replaces other objects.",
 		"Soldier": "Place a Soldier on owned land. Keeps capitals and mana sources; replaces other objects.",
 		"Knight": "Place a Knight on owned land. Keeps capitals and mana sources; replaces other objects.",
-		"House": "Place a house on owned land. Uses that province's owner and keeps mana sources.",
+		"Road": "Place a road on owned land. Connected friendly road steps cost half movement.",
+		"City": "Place a city on owned land. Uses that province's owner and keeps mana sources.",
 		"Tower": "Place a tower on owned land. Uses that province's owner and keeps mana sources.",
 		"Bear cave": "Place a bear cave on neutral land. Replaces other objects. Its bear emerges on the first World turn.",
 		"Wolf den": "Place a wolf den on neutral land. Replaces other objects. Its wolf emerges on the first World turn.",
@@ -533,7 +534,7 @@ func render_tools(group: String, rule_mode: String, active_tool: String, texture
 			image.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			button.add_child(image)
 		else:
-			var symbols := {"Land": "⬡", "Mountain": "▲", "Tree": "♣", "Grave": "†", "Mana source": "◆", "Capital": "♜", "House": "⌂", "Tower": "♜", "Bridge": "═", "Owner": "⚑", "Value": "123", "Water": "≈", "Clear objects": "×"}
+			var symbols := {"Land": "⬡", "Mountain": "▲", "Tree": "♣", "Grave": "†", "Mana source": "◆", "Capital": "♜", "City": "⌂", "Road": "═", "Tower": "♜", "Bridge": "═", "Owner": "⚑", "Value": "123", "Water": "≈", "Clear objects": "×"}
 			var icon := Hud.label_at(button, symbols[tool], Vector2(0, 10), 38, Color("c8d3a1"))
 			icon.size = Vector2(124, 58)
 			icon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

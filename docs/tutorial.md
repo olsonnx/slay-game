@@ -1,41 +1,40 @@
 # Learn by playing
 
-Tutorial offers seven immediately accessible topics, with 84 checkbox objectives across 23 exercises. Its compact selector shows only titles and read-only completion checkboxes. Finishing a whole topic saves its completion across launches; individual exercises and editor playtests do not mark a topic complete. Every prepared exercise demonstrates a consequence; the final practice uses a normal small match and Easy AI.
+The tutorial offers eight independently accessible topics. Guided chapters use prepared positions and waiting opponents; **Your first match** uses a normal small map and active Easy AI. Only completing a whole topic records its completion. Progress survives restarting the game; editor playtests do not change it.
 
-| Topic | What the exercises demonstrate |
+| Topic | What the player actually does |
 | --- | --- |
-| Armies and expansion | Capture plain neutral land; read finances by hovering gold; recruit and move a second Scout; explicitly end turns to ready armies; upgrade and defeat Scouts, Soldiers and a Tower; merge and survive a real Knight attack with entrenchment; see equal Knights die without capture. |
-| Kingdoms and money | Read treasury, income, wages and net forecast in the normal gold tooltip; clear a forest and compare the forecast; spend from separate banks and reconnect them; use a Scout's ordinary neutral capture to pay for an expensive army. |
-| Buildings and development | Develop cheap value-1 land; build a House; inspect a Tower's actual coverage; watch a Soldier take a route outside it; cross a Bridge directly onto shore; compare an 8-gold development with a 20-gold House when all land is already value 2. |
-| Taking enemy territory | Approach a defended capital, upgrade only when required, and take its neighboring Tower intact through surrender; cut off one Scout; bankrupt a three-Soldier pocket; relocate a capital that is actually threatened, then see the old capital tile attacked. |
-| Mana and spells | Learn shared mana, source capacity and regeneration; use Trailblaze for an extra capture, Summon for useful reinforcements and Shatter to remove a public crossing. |
-| Exploration and rewards | Collect immediate treasure; choose either encounter reward; discover a stainless steel landmark and read its status effect; watch a Bear emerge and raid a House, kill it, destroy its cave before respawn, and check the lasting income status. |
+| Armies and expansion | Capture with a Scout, recruit at a capital, move a fresh recruit, merge two Scouts, upgrade the resulting spent Soldier, end turn, and march the Knight three hexes. |
+| Kingdoms and money | Read the gold forecast, develop a value-2 province for 8 G, clear a forest for 1 G and restored income, then spend from a separate friendly kingdom's treasury. |
+| Defences and upkeep | Build towers for 15 G and 20 G, build two bridge segments for 15 G each, remove an empty sponsored bridge, and read the remaining upkeep. |
+| Cities and supply lines | Build and name a forward city, recruit a Knight beside the capital, preview and build an eight-tile road for 8 G, march six road steps, recruit and move at the city, and connect a tower to existing pavement. |
+| Taking enemy territory | Defeat a Scout with a Soldier, use the captured city's adjacent recruitment area, wait for the spent Soldier, and capture the enemy capital. |
+| Mana and spells | Gain mana and Summon a ready Scout; use Trailblaze for two neutral captures in one turn; use Shatter to remove an adjacent neutral bridge. Each spell has a separate prepared exercise. |
+| Exploration and rewards | Collect a 15 G treasure chest and distinguish it from recurring income; start a new position, choose either Comet reward, and inspect the result. |
 | Your first match | Choose purchases, routes and timing against an active Easy opponent. Remove enemy capitals to win. Retry is available after defeat. |
 
-## Teaching through normal controls
+## Instructions and rules
 
-Gold-hover objectives advance when the normal treasury tooltip opens. They teach where to read the game's finances rather than adding a second green economy readout to the coach. Status objectives likewise wait for the specified real status tooltip. The stainless steel tooltip states the wage reduction and its dependence on controlling the landmark.
+Blue rings identify the source of a move or road; gold rings identify its destination. Instructions name the normal controls: Recruit, Build, Spells, province details, the inline settlement title, and the road icon. No tutorial-only purchase or movement rules bypass the game.
 
-Required End turn actions are separate objectives. Buying a rank does not restore a spent action. Newly recruited armies are ready immediately. Bridges can be traversed as part of a direct move onto reachable shore; the tutorial does not instruct a needless bridge stop.
+Scouts, Soldiers and Knights move 5, 4 and 3 hexes. Normal movement or capture spends the action, even when some range remains. Fresh recruits and summoned units can move immediately. Merging preserves the destination unit's spent or ready state; buying an upgrade never refreshes it. Both purchases and upgrades require a capital or city recruitment area, including adjacent owned tiles connected to a treasury.
 
-Inspection is used when the panel or coverage overlay provides relevant information: Tower coverage, development cost, a wildlife threat or a neutral structure. It is not used merely to acknowledge an ordinary province or choose a treasury. Selecting a kingdom's land switches its budget.
+Cities cost 25 G and provide deployment sites rather than income bonuses. Roads start at a friendly structure and end at another friendly structure or existing pavement. They cost 1 G per newly paved tile, including endpoints. Connected friendly road steps cost half a movement point. Captures and bridge steps still cost a full point. Roads and towers cannot be dismantled.
 
-The deficit position has income 39, wages 40 and no savings. An existing Scout captures ordinary value-1 neutral land to make it sustainable while a Knight guards the border. It does not use an artificial value-4 neutral reward. The lesson explains that armies cannot be dismissed and that purchases need a sustainable local treasury.
+Tower construction costs rise by 5 G for each tower controlled across the faction; their upkeep remains 2 G each. Bridges have flat 15 G construction and 2 G upkeep per segment, paid by their sponsor. Empty sponsored bridges can be dismantled without a refund. Neutral crossings can be used by opponents.
 
-The player sees entrenchment absorb an actual stronger attack. The Tower exercise contains a genuine uncovered approach and two enemy moves. Capturing a capital surrenders its adjacent provinces with their Tower intact; directly attacking a Tower with a Knight destroys it. Both forms of capture use normal rules. Protection spreads only over land with the same owner.
+Each connected kingdom has a separate treasury. Selecting its land changes the budget used for purchases and the gold forecast. The money exercises demonstrate the exact changes: development adds 1 G income, clearing a value-2 forest restores 2 G income and pays 1 G immediately, and a chest pays 15 G once while its captured tile adds 1 G recurring income. Shared faction mana is taught separately from local gold.
 
-Scripted settlement plays real starvation deaths and leaves graves, including all three Soldiers in the separated pocket. Wildlife demonstrations use the normal predator decisions, raids and respawn timing. They run only on the specified End turn objectives so the teaching position stays reproducible.
+## Reading, checklists and retry
 
-## Checklists, retry and presentation
+Reading objectives wait for the actual province panel or gold tooltip to open, then require **Continue**. The explanation stays visible until acknowledged. Each exercise keeps its whole checklist, including completed objectives. **Next exercise** pauses before loading another prepared board. Resources are never silently replenished between objectives in the same exercise.
 
-Each exercise starts an explicit prepared position and displays its whole checklist. Completed objectives remain checked. Long checklists scroll with the active objective visible; the card and buttons fit the minimum 960 x 620 window. The coach hides while Stats is open. Bird ambience is synchronized before the player's first action, and old action notices are cleared when a new exercise starts.
-
-**Next exercise** pauses between prepared positions so the result can be read. Resources are not granted between objectives. **Retry exercise** restores the complete starting board, resources, RNG, pending events and relocation history. **Pause > Restart** restarts the selected topic. Completion offers **Choose topic** and, where applicable, **Next topic**.
+**Retry exercise** restores the starting board, resources, random state and pending interactions. **Pause > Restart** restarts the selected topic. After completing a chapter, the player can choose another topic. Long text and checklists scroll; the coach fits the minimum 960 × 620 window and hides while Stats is open.
 
 ## Authoring and verification
 
-Use **Tutorial Editor.cmd**, the seven templates or the examples under `tools/tutorial-editor/examples`. Override filenames are `armies`, `economy`, `construction`, `conquest`, `magic`, `exploration` and `practice`. See [the authoring guide](tutorial-editor.md).
+The Tutorial Editor supports all eight categories, with portable examples under `tools/tutorial-editor/examples`. Installed `tutorials/<category>.json` files override individual chapters. See [the authoring guide](tutorial-editor.md).
 
-`tests/test_tutorial.gd` performs the real UI actions and asserts consequences: forecast values, pooled treasuries, same-turn shore landing, absorbed attacks, destroyed and surrendered Towers, mass starvation with death playback, saved capitals, predator raids and actual status bonuses. Both comet choices are exercised. Practice AI and its terminal-state UI are checked separately; this does not claim an automated strategy beats the opponent.
+`tests/test_logistics_tutorial.gd` plays every guided objective using real game commands. `tests/test_tutorial.gd` additionally uses the actual shop cards and province buttons, checks reading acknowledgements, exact resource consequences, both Comet choices, menu completion, retry, cancellation, saved progress, and practice AI and victory/defeat handling. Practice terminal-state fixtures check the UI; they do not claim an automated strategy beats the opponent.
 
-With `-- --preview`, native rendering also checks real mouse hovers and saves screenshots under `artifacts/tutorial-new-*.png`. Editor tests cover portable templates, validation, manual-choice boundaries, authoring, import, autosave and real playtests.
+With `-- --preview`, native rendering checks mouse hover objectives and the minimum window layout, and saves screenshots under `artifacts/tutorial-new-*.png`. Editor tests validate templates, simulation, imports, saving and real playtests. `tools/export_tutorial_examples.gd` verifies that shipped examples match the live chapters; `-- --update-examples` refreshes them.

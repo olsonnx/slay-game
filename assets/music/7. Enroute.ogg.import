@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://dp42ps7dbhk6c"
+path="res://.godot/imported/7. Enroute.ogg-b1d50ff12688319bf015b7ae3775d61e.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/music/7. Enroute.ogg"
+dest_files=["res://.godot/imported/7. Enroute.ogg-b1d50ff12688319bf015b7ae3775d61e.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

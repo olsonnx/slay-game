@@ -1,0 +1,65 @@
+SLAY & REIGN - CLOSED PLAYTEST
+
+Thanks for trying the game. This build tests the new cities, recruitment and
+roads rules. The exact version and playtest label are in BUILD.txt.
+
+STARTING THE GAME
+1. Extract the entire ZIP into a normal folder before launching.
+2. Open "Slay and Reign.exe". Keep the other files beside it.
+3. Use a Windows x64 PC with a graphics driver supporting Direct3D 12.
+   Hardware compatibility is still being tested; no minimum spec is established.
+   You do not need Godot installed. Steam is optional for solo/local play.
+If Windows or your security software blocks the build, tell us the exact message.
+
+YOUR FIRST SESSION (ABOUT 30-45 MINUTES)
+Start with Tutorial: Armies and expansion, Kingdoms and money, then Cities and
+supply lines. Try Quick Play on Tiny with 2 kingdoms and Easy difficulty.
+Play at your own pace; you do not have to finish. Tell us where you needed help
+before looking for an explanation. Try other settings afterward if you want.
+
+WHAT WE WANT TO LEARN
+- Can you tell where you can move and recruit, and why an action is unavailable?
+- Do income, army wages and infrastructure upkeep make sense?
+- When do cities and roads feel useful? Which decision was most interesting?
+- Did you want another match? What made you stop?
+
+QUICK CONTROLS (CHANGE THEM IN OPTIONS > CONTROLS)
+Left click: select a province/unit, then a highlighted destination.
+Right click: cancel. Right mouse drag: rotate/tilt camera.
+Mouse wheel: zoom. Middle mouse drag or WASD: pan.
+Q / E / R: Recruit / Build / Spells; also choose cards in an open menu.
+Space: end turn. Tab: overhead/3D view. F: value heatmap.
+Escape: cancel or pause. Hold Ctrl: faster movement playback.
+The ? button shows help. F3 toggles the FPS display.
+The music-note button at the top right opens the track name, pause and next
+controls. Music volume is in Options > Audio.
+Options > Interface includes UI scale, reduced motion and hover-help timing.
+Options > Game includes camera sensitivity and movement playback speed.
+
+CURRENT LIMITATIONS
+- There is no mid-match save/load. Leaving or restarting loses that match.
+- Restart repeats the same starting map.
+- Replays can only be saved after a completed match, from the results screen.
+- Steam online is experimental and currently uses development App ID 480
+  (Spacewar). Start with solo play. A separate online test needs the same build
+  and different signed-in Steam accounts; reconnect is not supported.
+- Performance on other PCs and large maps still needs testing.
+
+FEEDBACK AND BUGS
+Post feedback in the playtest Discord. For a bug, please include:
+Build label from BUILD.txt:
+What you did (steps):
+What you expected / what actually happened:
+Does it happen again?:
+Screenshot/video, if useful:
+Windows version, GPU, and FPS if it is a performance problem:
+
+For a crash or error, copy this path into File Explorer:
+%APPDATA%\Godot\app_userdata\SlayGame\logs
+Attach godot.log, ideally before relaunching. Older logs may also be present.
+Saved replays are in:
+%APPDATA%\Godot\app_userdata\SlayGame\replays
+Attach a completed match replay if useful. These files may include player names;
+check what you share. You do not need to send your whole user-data folder.
+
+Please keep this build and its download link within the playtest group.

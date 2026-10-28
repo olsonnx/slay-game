@@ -96,7 +96,7 @@ func remove_unit(coord: Vector2i) -> void:
 		unit_actors.erase(coord)
 
 func settle_unit(actor: Node3D, source: Vector2i, target: Vector2i, cells: Dictionary) -> void:
-	# The traveler already owns its sprite, assets.shadow and rank markers. Retain them
+	# The traveler already owns its sprite and shadow. Retain them
 	# when it settles instead of allocating another complete actor after each move.
 	var previous: Node3D = unit_actors.get(target)
 	if is_instance_valid(previous) and previous != actor: remove_unit(target)
@@ -127,7 +127,7 @@ func refresh_unit(coord: Vector2i, cell: Dictionary) -> void:
 		return
 	var before: Array = actor.get_meta("unit_state", [])
 	if before.size() == 4 and before[0] == cell["unit"] and before[1] == owner:
-		# Movement/turn reset changes readiness, not the sprite, outline or pips.
+		# Movement/turn reset changes readiness, not the sprite or outline.
 		actor.set_meta("unit_state", state)
 		actor.position = position_wanted
 		var animator = actor.get_node("UnitAnimation")
@@ -145,13 +145,6 @@ func refresh_unit(coord: Vector2i, cell: Dictionary) -> void:
 			child.set_meta("base_modulate", child.modulate)
 			child.get_node("HoverOutline").texture = assets.soldier_hover_outline(cell["unit"], owner)
 			child.get_node("HoverOutline").pixel_size = child.pixel_size
-	var pips := actor.get_node("Pips")
-	if pips.get_child_count() != cell["unit"]:
-		for child in pips.get_children():
-			pips.remove_child(child)
-			child.queue_free()
-		for index in range(cell["unit"]):
-			assets.cylinder(pips, Vector3((index - (cell["unit"] - 1) * 0.5) * 0.11, 0.045, 0.40), 0.035, 0.035, 0.025, Color("f0dba3"), 8)
 	apply_readiness(actor, cell)
 
 func add_unit(parent: Node3D, tier: int, owner: int, moved: bool, on_capital: bool) -> Node3D:
@@ -192,11 +185,6 @@ func add_unit(parent: Node3D, tier: int, owner: int, moved: bool, on_capital: bo
 	animator.name = "UnitAnimation"
 	actor.add_child(animator)
 	animator.play("idle")
-	var pips := Node3D.new()
-	pips.name = "Pips"
-	actor.add_child(pips)
-	for index in range(tier):
-		assets.cylinder(pips, Vector3((index - (tier - 1) * 0.5) * 0.11, 0.045, 0.40), 0.035, 0.035, 0.025, Color("f0dba3"), 8)
 	apply_readiness(actor, {"unit":tier,"owner":owner,"moved":moved})
 	return actor
 

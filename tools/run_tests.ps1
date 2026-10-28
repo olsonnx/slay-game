@@ -3,6 +3,13 @@ param([string]$Godot = "godot", [string]$From = "", [string]$Python = "python")
 $projectPath = Split-Path -Parent $PSScriptRoot
 $pythonExecutable = (Get-Command $Python -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
 $suites = @("test_ai", "test_game", "test_animation", "test_input", "test_audio", "test_review", "test_menus", "test_economy_ui", "test_turn_feedback", "test_modern", "test_presentation", "test_expansion", "test_resources_terrain", "test_map_sizes", "test_events_spells", "test_performance", "test_menu_background", "test_startup", "test_ui_layout", "test_playback_speed", "test_keys", "test_heatmap")
+$suites += "test_logistics"
+$suites += "test_ai_optimization"
+$suites += "test_unified_ai"
+$suites += "test_video_display"
+$suites += "test_settings"
+$suites += "test_music"
+$suites += "test_logistics_tutorial"
 $suites += "test_single_rules"
 $suites += "test_painting_collection"
 $suites += "test_player_profile"
@@ -77,6 +84,8 @@ $testAppData = Join-Path $projectPath "artifacts/test-userdata"
 New-Item -ItemType Directory -Path $testAppData -Force | Out-Null
 $env:APPDATA = $testAppData
 try {
+& $pythonExecutable -B (Join-Path $projectPath "tools/version.py") --check
+if ($LASTEXITCODE -ne 0) { throw "Game and export versions do not match" }
 foreach ($suite in $suites) {
     # Bound failed scripts too: Godot can stay alive after a runtime error.
     $result = & $Godot --headless --path $projectPath --log-file "$projectPath/artifacts/$suite.log" --script "tests/$suite.gd" --quit-after 18000 2>&1

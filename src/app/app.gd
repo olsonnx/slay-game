@@ -14,10 +14,16 @@ var retiring_games := 0
 var transitioning := false
 var departure_cover: CanvasLayer
 var fps_counter
+var music_controls
 var editor
 var replay_viewer
 var custom_level: Dictionary = {}
 var onboarding_enabled := true
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and Gameplay.pause_on_focus_loss:
+		if startup_complete and is_instance_valid(game) and game.network_match == null and not get_tree().paused:
+			pause_game()
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -32,6 +38,8 @@ func _ready() -> void:
 	fps_counter = preload("res://src/ui/fps_counter.gd").new(menus.menu_background)
 	fps_counter.binding_capture_active = func(): return menus.options_view.controls_page.pending != ""
 	add_child(fps_counter)
+	music_controls = preload("res://src/ui/music_controls.gd").new()
+	add_child(music_controls)
 	menus.new_game_requested.connect(func(size_id: String, kingdom_count: int): start_new_game(-1, size_id, "", kingdom_count))
 	menus.multiplayer_requested.connect(start_multiplayer)
 	menus.continue_requested.connect(continue_game)
@@ -48,8 +56,9 @@ func _ready() -> void:
 	get_tree().paused = false
 	menus.lock_navigation(true)
 	menus.show_screen(Menus.Screen.HIDDEN)
-	await prepare_application()
+	var preparation = await prepare_application()
 	menus.show_screen(Menus.Screen.MAIN)
+	await preparation.reveal()
 	menus.lock_navigation(false)
 	if onboarding_enabled: menus.begin_onboarding()
 	startup_complete = true
@@ -95,7 +104,7 @@ func online_failed(_message: String) -> void:
 	elif is_instance_valid(game) or is_instance_valid(editor) or is_instance_valid(replay_viewer): return
 	menus.show_screen(Menus.Screen.ONLINE)
 
-func prepare_application() -> void:
+func prepare_application() -> CanvasLayer:
 	var preparation = preload("res://src/ui/preparation_screen.gd").new()
 	add_child(preparation)
 	preparation.caption.text = Loc.text("Loading...")
@@ -130,7 +139,7 @@ func prepare_application() -> void:
 	preparation.set_progress(1.0)
 	await get_tree().process_frame
 	if DisplayServer.get_name() != "headless": await RenderingServer.frame_post_draw
-	preparation.queue_free()
+	return preparation
 
 func open_replays() -> void:
 	if transitioning or is_instance_valid(game) or is_instance_valid(editor) or is_instance_valid(replay_viewer): return

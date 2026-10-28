@@ -9,8 +9,9 @@ var menu_fps := 0
 var app_frames := 0
 var previous_app_frames := 0
 var app_fps := 0
-var shown := true
+var shown := false
 var binding_capture_active: Callable
+var video
 
 func _init(background) -> void:
 	menu_background = background
@@ -33,6 +34,9 @@ func _ready() -> void:
 	readout.offset_top = 3
 	readout.offset_bottom = 38
 	RenderingServer.frame_post_draw.connect(_on_frame_drawn)
+	video = get_node("/root/Video")
+	video.changed.connect(func(): shown = video.show_fps; refresh())
+	shown = video.show_fps
 	refresh()
 
 func _on_frame_drawn() -> void:
@@ -50,6 +54,8 @@ func _process(delta: float) -> void:
 	refresh()
 
 func refresh() -> void:
+	# Leave the music button clear of the menu's second FPS line.
+	readout.offset_right = -84 if menu_background.active else -24
 	var fps := app_fps
 	readout.text = Loc.text("%d FPS · %.1f ms") % [fps, 1000.0 / fps] if fps > 0 else Loc.text("FPS · measuring…")
 	if menu_background.active:
@@ -61,5 +67,6 @@ func _input(event: InputEvent) -> void:
 	if binding_capture_active.is_valid() and binding_capture_active.call(): return
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F3:
 		shown = not shown
+		video.set_preference(&"show_fps", shown)
 		readout.visible = shown
 		get_viewport().set_input_as_handled()

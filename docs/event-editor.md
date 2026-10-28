@@ -75,3 +75,5 @@ Saving validates the complete pack, writes a temporary file, preserves the previ
 For a source-project launch, use `python tools/event-editor/launch.py --check` to check engine discovery, `--file path/to/pack.json` to import on opening, or `--godot path/to/Godot.exe` to select an engine explicitly. Exported game builds must include the event JSON pack and referenced artwork in their export settings; the editing tool is intended for the source project.
 
 The `tools/event-editor/examples/builtin-templates.json` pack contains independent copies of all existing events for import and inspection. Classic map generation continues to omit encounter markers; the Modern-only setting controls eligibility when a marker is actually encountered.
+
+Landmark rewards can now halve local development costs (friendly radius 1), halve owner-wide Soldier or Scout wages, reduce Knight wages by 25%, or grant defense +1 to the landmark province and adjacent friendly units. Each property is a checkbox and does not stack with copies of itself. The four new built-in encounters are also editable templates.

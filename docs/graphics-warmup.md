@@ -4,6 +4,8 @@ The application shows “Loading...” with a progress bar and percentage once a
 
 Loading progress follows completed work: cached animation frames and outlines, then rendering preparation. Match loading shows “Creating map...” and advances through background generation, session setup, tile construction, scenery publication and covered rendering. Percentages represent weighted stages, not remaining time; generation and scenery publication can hold at their current milestone until complete. Both bars reach 100% before the cover disappears, and late updates cannot move them backwards. Authored maps and restarts use the same progress path.
 
+Startup, map creation and editor replacement share a loading cover: a 19-tile miniature island assembles from the center out on a plain teal background as real progress increases. Gentle tile motion and traveling highlights keep held progress visually active without changing the percentage. Disabling level-transition animation also disables these flourishes. The artwork uses one lightweight canvas control, with no textures, shaders, match RNG, or additional 3D world. Once ready, the destination draws beneath the opaque cover before a gentle 0.38-second fade reveals it. Startup enables the main menu under the cover first; navigation remains locked until the fade finishes.
+
 `src/app/app.gd` creates an isolated startup viewport using the main viewport's MSAA level. `src/rendering/graphics_warmup.gd` prepares all twelve standard kingdom palettes and all three unit tiers: portraits, every animation frame and every idle hover outline. CPU preparation yields after approximately 4 ms of work; an individual operation may exceed that budget.
 
 The warmup renders representative sprites, fading sprites, outlines, scenery, protection effects, action-effect surfaces and building previews for three frames. The startup viewport then stops rendering and retains its hidden specimens for the application's lifetime, keeping their material variants alive. Color-keyed animation and outline caches are shared by board factories, so matches, restarts, replays and the editor reuse the prepared textures. Keys use actual colors rather than faction indices, preserving custom authored palettes. Custom colors not known at launch are generated on demand.
@@ -13,3 +15,10 @@ Actual draws also cover the Compatibility renderer, where invisible surfaces alo
 The tradeoff is additional launch time and retained texture/resource memory. `app.startup_warmup_ms` records preparation time. This targets first-use loading and compilation; it does not eliminate stalls from large board updates, simulation or subsequent video setting changes.
 
 Verification: `tests/test_startup.gd` checks the startup cover/navigation lock, completion before the main menu, cache reuse across scenes, stopped startup rendering, idempotence, restored preview/effect masks, native draw passes, exact seeded game state and authored restart parity. Run with `--headless`, the default native renderer, or `--rendering-method gl_compatibility`. Native validation does not establish a cold-driver performance improvement; that requires paired action traces on a cold cache.
+
+Road warmup uses `kingdom_roads.gd` directly: default-palette junction meshes and
+preview borders are prepared in bounded batches, and real road specimens exercise
+the shared lit vertex-color material. A generic box is insufficient for this
+pipeline. The static material and geometry caches survive across gameplay boards;
+preview and placement use those same resources. `tools/road_preview.gd` records
+native first-placement pipeline counters and an image of the real preview.

@@ -383,14 +383,7 @@ func finish_motion(actor: Node3D, defender: Node3D, action: Dictionary) -> void:
 			child.texture = board.soldier_texture(cell["unit"], faction)
 			child.set_meta("image", board.image_cache[Vector2i(cell["unit"], faction)])
 			child.modulate = Color("a8b2ae") if cell["moved"] else Color.WHITE
-	var pips: Node3D = actor.get_node("Pips")
 	actor.get_node("UnitAnimation").configure(cell["unit"], cell.get("unit_owner", -1) if cell["building"] == "bridge" else cell["owner"])
-	if pips.get_child_count() != cell["unit"]:
-		for child in pips.get_children():
-			pips.remove_child(child)
-			child.queue_free()
-		for index in range(cell["unit"]):
-			board.cylinder(pips, Vector3((index - (cell["unit"] - 1) * 0.5) * 0.11, 0.045, 0.40), 0.035, 0.035, 0.025, Color("f0dba3"), 8)
 	board.motion_stage.emit(action, "occupy")
 	if not action.get("annexed", {}).is_empty():
 		board.notify_visible_board_changed()

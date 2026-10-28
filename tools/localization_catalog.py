@@ -11,6 +11,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 EXTRA = {
     "src/game/replay_summary.gd",
+    "src/game/event_sites.gd",
+    "src/game/logistics_tutorial.gd",
     "src/game/wildlife.gd",
     "src/game/game.gd", "src/game/game_catalog.gd", "src/game/spell_catalog.gd",
     "src/game/authored_event_runtime.gd",

@@ -181,9 +181,6 @@ func sync(queued := false) -> void:
 				append(groups, seen, "sprite:" + key, chunk, child, sprite_meshes[key], lit_sprite_materials[key] if board.sprite_lighting != null and board.sprite_lighting.enabled else sprite_materials[key], inverse, child.modulate)
 			elif child is MeshInstance3D:
 				append(groups, seen, "shadow", chunk, child, shadow_mesh, shadow_material, inverse, Color.WHITE)
-			elif child.name == "Pips":
-				for pip in child.get_children():
-					append(groups, seen, "pip:" + str(pip.mesh.get_rid()), chunk, pip, pip.mesh, pip.material_override, inverse, Color.WHITE)
 	# Temporary protection still has scene nodes for playback/heatmap semantics.
 	# Equal panels and shields share spatial draw groups with retained materials.
 	for coord in coords_to_scan:

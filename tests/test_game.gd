@@ -362,7 +362,7 @@ func run() -> void:
 	expect(game.selected == scout and game.action_mode == "" and not game.valid_targets.is_empty(), "UI upgrade immediately selects the ready Soldier")
 	var before: int = game.rules.territory(0)
 	for target in game.valid_targets:
-		if game.cells[target]["owner"] == -1:
+		if game.cells[target]["owner"] == -1 and game.cells[target].get("event", "") == "":
 			await game.click_hex(target)
 			break
 	expect(game.rules.territory(0) == before + 1, "UI click captures neutral territory")

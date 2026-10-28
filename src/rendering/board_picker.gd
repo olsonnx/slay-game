@@ -55,7 +55,7 @@ static func pick_at_screen(board, screen: Vector2, include_water := false, exhau
 			size = Vector3(0.95, 1.35, 0.85)
 		elif cell["building"] == "tower":
 			size = Vector3(0.68, 1.48, 0.68)
-		elif cell["building"] == "house":
+		elif cell["building"] == "city":
 			size = Vector3(0.92, 1.10, 0.80)
 		elif cell.get("lair", "") != "":
 			var lair_scale := 1.0 if cell.lair == "bear" else 0.90 if cell.lair == "wolf" else 0.82

@@ -56,7 +56,7 @@ func update() -> void:
 		turn_held = false
 	var allowed: bool = not game.closing and not game.get_tree().paused and not game.view.level_transitioning and not game.event_shade.visible and not game.completion_started
 	var fast: bool = allowed and (game.busy or game.view.is_animating) and (speed_held or (turn_held and game.busy and game.active_faction != game.player_faction))
-	game.view.playback.set_speed_scale(FAST_SCALE if fast else 1.0)
+	game.view.playback.set_speed_scale(FAST_SCALE if fast else Gameplay.playback_speed)
 	if game.busy and game.active_faction != game.player_faction:
 		var text_value: String = game.NAMES[game.active_faction] + ("  »" if fast else "…")
 		if game.hud.end_button.text != text_value:

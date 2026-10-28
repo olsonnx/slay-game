@@ -105,13 +105,10 @@ func run() -> void:
 	for value in game.view.unit_actors.values():
 		actor = value
 		break
-	for child in actor.get_node("Pips").get_children():
-		expect(child.layers == 0 and not manager.suppressed.has(child.get_instance_id()), "Settled rank markers use the independent army batches")
+	expect(not actor.has_node("Pips"), "Settled units have no rank-dot decorations")
 	var actor_parent := actor.get_parent()
 	actor.reparent(game.view.animation_root, true)
 	game.view.unit_batches.sync()
-	for child in actor.get_node("Pips").get_children():
-		expect(child.layers != 0, "Moving rank markers restore their individual render layers")
 	actor.reparent(actor_parent, true)
 	game.view.unit_batches.sync()
 	var source_count: int = manager.instance_count

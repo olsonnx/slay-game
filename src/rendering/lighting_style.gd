@@ -19,7 +19,10 @@ static func apply(environment: Environment, sun: DirectionalLight3D, style: Stri
 	environment.adjustment_color_correction = color_grade() if atmosphere else null
 	environment.fog_enabled = false
 	# Contact shading complements the camera's separate depth of field.
-	environment.ssao_enabled = forward_plus and atmosphere and sun.shadow_enabled
+	var tree = Engine.get_main_loop()
+	var video = tree.root.get_node_or_null("Video") if tree is SceneTree else null
+	environment.ssao_enabled = forward_plus and atmosphere and sun.shadow_enabled and (video == null or video.ambient_occlusion)
+	environment.tonemap_exposure = video.brightness if video != null else 1.0
 	environment.ssao_radius = 0.55
 	environment.ssao_intensity = 0.46
 	environment.ssao_light_affect = 0.10

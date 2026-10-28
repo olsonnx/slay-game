@@ -14,10 +14,13 @@ static func apply(rules, order: Dictionary, faction: int) -> Dictionary:
 				moves.append(record)
 				if order.has("outcome"): ok = record.kind == order.outcome
 		"recruit": ok = rules.recruit(target,faction,int(order.get("tier",1)))
-		"build": ok = rules.build_structure(target,faction,order.get("building","house"))
+		"build": ok = rules.build_structure(target,faction,order.get("building","city"))
 		"spell": ok = rules.cast_spell(order.get("spell","trailblaze"),target,faction)
 		"entrench": ok = rules.entrench(target,faction)
 		"develop": ok = rules.develop(target,faction)
+		"dismantle": ok = rules.dismantle(target,faction)
+		"road": ok = rules.build_road(order.get("source",rules.NONE),target,faction)
+		"rename_settlement": ok = rules.rename_settlement(target,faction,order.get("name",""))
 		"relocate_capital": ok = rules.relocate_capital(target,faction)
 		"event":
 			if not rules.pending_events.is_empty(): ok = rules.resolve_event(rules.pending_events[0],int(order.get("choice",0))) != ""

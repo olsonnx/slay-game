@@ -3,6 +3,7 @@ const Rules = preload("res://src/game/kingdom_rules.gd")
 const Analysis = preload("res://src/game/ai_analysis.gd")
 const Candidates = preload("res://src/game/ai_candidates.gd")
 const Planner = preload("res://src/game/ai_planner.gd")
+const Strategy = preload("res://src/game/ai_strategist.gd")
 const Fixtures = preload("res://tests/test_fixtures.gd")
 var checks := 0
 var failures := 0
@@ -219,7 +220,7 @@ func scene_checks() -> void:
 	await create_timer(0.12, true).timeout
 	expect(game.cells == frozen and game.rules.kingdoms == frozen_banks, "Pause freezes planner commits as well as animation")
 	await app.return_to_main_menu()
-	expect(app.game == null and not paused and not game.busy, "Leaving during planning cancels and unwinds the turn")
+	expect(app.game == null and not paused and not is_instance_valid(game), "Leaving during planning cancels and retires the old turn controller")
 	app.queue_free()
 	await process_frame
 	video.set_preference(&"level_transitions", transitions, false)
@@ -254,7 +255,7 @@ func worker_checks() -> void:
 	host.closing = false
 	for difficulty in ["easy", "normal", "hard"]:
 		model.ai_difficulty = difficulty
-		var expected = Planner.new(model, 0)
+		var expected = Strategy.new(model, 0)
 		expected.run()
 		var opponent = model.KingdomAI.new(model)
 		var actual = await opponent.search_async(host, 0)

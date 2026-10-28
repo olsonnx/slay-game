@@ -35,10 +35,10 @@ static func action(kind := "gold") -> Dictionary:
 		"clear_trees": result.merge({"gold_per_tree":1,"adaptive":true})
 		"disband": result["refund_percent"] = 100
 		"neutralize", "revolt": result["radius"] = 1
-		"landmark": result.merge({"income_min":1,"income_max":1,"mana_min":0,"mana_max":0,"steel":false})
+		"landmark": result.merge({"income_min":1,"income_max":1,"mana_min":0,"mana_max":0,"steel":false,"development_discount":false,"soldier_discount":false,"scout_discount":false,"defense_aura":false})
 		"mana_source": result["enabled"] = true
 		"temporary_effect": result.merge({"effect":"free_spell","enabled":true})
-		"building": result["building"] = "house"
+		"building": result["building"] = "city"
 		"tile_value": result["amount"] = 1
 	return result
 
@@ -142,7 +142,7 @@ static func choice_errors(items, path: String) -> PackedStringArray:
 				if kind in ["landmark","building"]: landmarks += 1
 				for field in effect:
 					if field in ["kind","effect","building"]: continue
-					if field in ["ready","adaptive","steel","enabled","use_reveal_roll"]:
+					if field in ["ready","adaptive","steel","enabled","use_reveal_roll","development_discount","soldier_discount","scout_discount","defense_aura"]:
 						if not effect[field] is bool: errors.append(label+": "+field+" must be a checkbox.")
 					elif not numeric(effect[field],-100000,100000): errors.append(label+": invalid numeric effect field "+field)
 				for prefix in ["","income_","mana_"]:
@@ -151,7 +151,7 @@ static func choice_errors(items, path: String) -> PackedStringArray:
 				if kind == "recruit" and not numeric(effect.get("tier",1),1,3): errors.append(label+": army rank must be 1–3.")
 				if kind in ["neutralize","revolt"] and not numeric(effect.get("radius",1),0,4): errors.append(label+": territory radius must be 0–4.")
 				if kind == "temporary_effect" and effect.get("effect","") not in TEMPORARY: errors.append(label+": invalid temporary effect.")
-				if kind == "building" and effect.get("building","") not in ["house","tower"]: errors.append(label+": ordinary building must be a house or tower.")
+				if kind == "building" and effect.get("building","") not in ["city","tower"]: errors.append(label+": ordinary building must be a city or tower.")
 				if kind == "disband" and not numeric(effect.get("refund_percent",100),0,100): errors.append(label+": refund must be 0–100 percent.")
 				if kind == "gold_percent" and not numeric(effect.get("percent",-100),-100,1000): errors.append(label+": treasury percent must be -100 to 1000.")
 			if landmarks > 1: errors.append(label+": use one structure effect per outcome.")

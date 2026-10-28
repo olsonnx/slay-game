@@ -4,7 +4,7 @@ const Loc = preload("res://src/localization/text.gd")
 const Events = preload("res://src/game/event_catalog.gd")
 const Authored = preload("res://src/game/authored_event_runtime.gd")
 const Sites = preload("res://src/game/event_sites.gd")
-const NEW_EVENTS := ["comet", "innkeeper", "lumberjack", "regroup", "cartographer", "ransom", "economist", "revolt", "stainless_steel"]
+const NEW_EVENTS := ["comet", "innkeeper", "lumberjack", "regroup", "cartographer", "ransom", "economist", "revolt", "stainless_steel", "builders_guild", "barracks", "scout_lodge", "watchtower"]
 
 static func primary_treasury(state, faction: int, preferred: Dictionary = {}) -> Dictionary:
 	var home: Vector2i = state.effects_by_faction.get(faction, {}).get("income_home", state.NONE)
@@ -50,7 +50,7 @@ static func forest(state, kingdom: Dictionary) -> Dictionary:
 	for coord in kingdom["hexes"]:
 		var cell: Dictionary = state.cells[coord]
 		var value: int = cell["value"]
-		result["potential"] += value + (state.HOUSE_INCOME if cell["building"] == "house" else 0)
+		result["potential"] += value + (state.CITY_INCOME if cell["building"] == "city" else 0)
 		if cell["tree"]:
 			result["trees"].append(coord)
 			result["blocked"] += value
@@ -60,7 +60,7 @@ static func recruit_site(state, kingdom: Dictionary) -> Vector2i:
 	if kingdom.is_empty(): return state.NONE
 	for coord in kingdom["hexes"]:
 		var cell: Dictionary = state.cells[coord]
-		if cell["unit"] == 0 and cell["building"] == "" and not cell["tree"] and not cell["grave"] and not state.is_barrier(coord): return coord
+		if cell["unit"] == 0 and preload("res://src/game/logistics.gd").recruitment_zone(state, coord, kingdom.owner) and not cell["tree"] and not cell["grave"] and not state.is_barrier(coord): return coord
 	return state.NONE
 
 static func rebel_faction(state) -> int:
@@ -292,5 +292,9 @@ static func resolve(state, event: Dictionary, choice: int) -> String:
 			return Loc.text("The %s kingdom declares independence. Its constitution is mostly pitchforks.") % state.faction_names[rebels]
 		"stainless_steel":
 			Sites.create(state,coord,"stainless_steel",0,0,true)
-			return Loc.text("A landmark is built: its owner pays 2 gold less upkeep per Knight.")
+			return Loc.text("A landmark is built: its owner's Knight wages are 25% lower.")
+		"builders_guild", "barracks", "scout_lodge", "watchtower":
+			var bonus: String = {"builders_guild":"development_discount", "barracks":"soldier_discount", "scout_lodge":"scout_discount", "watchtower":"defense_aura"}[id]
+			Sites.create(state, coord, id, 0, 0, false, {bonus:true})
+			return Loc.text(Events.EVENTS[id].choices[0][1])
 	return Loc.text("The journey continues.")

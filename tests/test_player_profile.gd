@@ -120,6 +120,10 @@ func run() -> void:
 	expect(profile.statistics.matches == 1 and profile.statistics.wins == 1 and profile.statistics.seconds == 120, "Completed match updates wins, completed matches and active play time")
 	var awarded_xp: int = profile.statistics.xp
 	expect(awarded_xp > 0 and game.profile_xp_award.earned == awarded_xp and app.menus.results_xp.visible, "Completed matches award XP and show it on the game-over screen")
+	expect(app.menus.profile_xp.visible and app.menus.profile_xp.bar.value == Store.Progress.progress(awarded_xp).current and app.menus.profile_xp.level_label.text == "Level %d" % Store.Progress.progress(awarded_xp).level, "Main menu profile updates its level and progress when a match awards XP")
+	var menu_style: StyleBoxFlat = app.menus.main_panel.get_theme_stylebox("panel")
+	var profile_style: StyleBoxFlat = app.menus.profile_button.get_theme_stylebox("normal")
+	expect(profile_style.bg_color == menu_style.bg_color and profile_style.border_color == menu_style.border_color and profile_style.border_width_left == menu_style.border_width_left and profile_style.corner_radius_top_left == menu_style.corner_radius_top_left, "Main menu profile matches the menu panel color, outline and corners")
 	app.menus.show_results(game)
 	expect(app.menus.results_xp.bar.value == Store.Progress.progress(awarded_xp).current and app.menus.results_xp.level_label.text == "Level %d" % Store.Progress.progress(awarded_xp).level, "Reopening results shows the final XP progress")
 	game.begin_completion_exit()

@@ -116,7 +116,8 @@ func run() -> void:
 	game.cells[b]["moved"] = true
 	game.view.render_cells(game.cells)
 	defender = game.view.unit_actors[b]
-	var merge: Dictionary = game.rules.perform_move(a, b)
+	# Recorded pre-0.2 games can still contain field merges.
+	var merge: Dictionary = game.rules.Movement.record_validated_move(game.rules, a, b, [a, b])
 	game.view.animate_moves([merge], game.cells)
 	await create_timer(0.06).timeout
 	expect(defender.visible, "Friendly merge destination remains visible during approach")

@@ -270,7 +270,7 @@ func run() -> void:
 	r = fixture()
 	prepare(r, "stainless_steel")
 	choose(r, "stainless_steel", 0)
-	expect(r.unit_upkeep(3, 0) == 34 and r.unit_upkeep(3, 1) == 36 and not Encounters.main_outcome_available(r, "stainless_steel", C, 0), "Steel discount is faction-wide and cannot stack")
+	expect(r.unit_upkeep(3, 0) == 27 and r.unit_upkeep(3, 1) == 36 and not Encounters.main_outcome_available(r, "stainless_steel", C, 0), "Steel discount is faction-wide and cannot stack")
 	expect(Snapshots.simulation(r).upkeep(r.kingdom_at(C)) == r.upkeep(r.kingdom_at(C)), "AI simulations use discounted wages")
 	var visible = preload("res://src/game/visible_economy.gd").project(r, r.cells, r.kingdoms, r.mana_by_faction, 0, C)
 	expect(visible.upkeep(visible.kingdom_at(C)) == r.upkeep(r.kingdom_at(C)), "Visible finances use discounted wages")
@@ -369,7 +369,7 @@ func ui_and_playback_checks() -> void:
 			expect(2 in game.turn_order and game.rules.faction_count == 3, "New AI kingdom joins the real turn order")
 		if id == "stainless_steel":
 			game.open_shop("recruit")
-			expect(game.hud.shop_items.get_child(2).tooltip_text.contains("34"), "Recruit card discloses discounted Knight upkeep")
+			expect(game.hud.shop_items.get_child(2).tooltip_text.contains("27"), "Recruit card discloses discounted Knight upkeep")
 			game.cancel_action()
 	game.rules = fixture()
 	game.configure_players()

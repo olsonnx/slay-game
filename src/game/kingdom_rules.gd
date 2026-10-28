@@ -6,8 +6,8 @@ const Catalog = preload("res://src/game/game_catalog.gd")
 const DIRECTIONS = Grid.DIRECTIONS
 const UNIT_COST = Catalog.UNIT_COST
 const TOWER_COST = Catalog.TOWER_COST
-const HOUSE_COST = Catalog.HOUSE_COST
-const HOUSE_INCOME = Catalog.HOUSE_INCOME
+const CITY_COST = Catalog.CITY_COST
+const CITY_INCOME = Catalog.CITY_INCOME
 const BRIDGE_COST = Catalog.BRIDGE_COST
 const NONE = Grid.NONE
 const Spells = preload("res://src/game/spell_catalog.gd")
@@ -34,7 +34,7 @@ var map_size := "small"
 var faction_count := 4
 var initial_kingdom_count := 0
 var ai_difficulty := "normal"
-var ai_algorithm := "auto"
+var ai_algorithm := "strategic"
 var incremental_kingdoms := true
 var ai_revision := 0
 var ai_last_decision: Dictionary = {}
@@ -66,9 +66,9 @@ func world_turn() -> Array[Dictionary]:
 	return actions
 
 func uses_strategic_ai() -> bool:
-	# Whole-board beam simulations already become costly in Large midgames.
-	# Use actual board size so editor maps receive the same protection too.
-	return ai_algorithm == "strategic" or (ai_algorithm == "auto" and cells.size() >= 200)
+	# One gameplay policy at every map size. Accept old "auto" configurations;
+	# only an explicit diagnostic override selects the retained reference search.
+	return ai_algorithm != "legacy"
 
 func make_cell(owner := -1) -> Dictionary:
 	return {"owner": owner, "unit": 0, "moved": false, "capital": -1,
@@ -319,15 +319,17 @@ func income(kingdom: Dictionary) -> int:
 		var cell: Dictionary = cells[coord]
 		if not cell["tree"] and not cell["grave"]:
 			total += cell.get("value", 1)
-		if cell["building"] == "house":
-			total += HOUSE_INCOME
+		if cell["building"] == "city":
+			total += CITY_INCOME
 	return maxi(0, total + magic.Encounters.income_adjustment(self, kingdom))
 
 func unit_upkeep(tier: int, faction: int) -> int:
-	return maxi(0, Catalog.unit_upkeep(tier) - (2 if tier == 3 and has_effect(faction, "stainless_steel") else 0))
+	var effect: String = {1:"scout_discount", 2:"soldier_discount", 3:"stainless_steel"}.get(tier, "")
+	var multiplier := (0.75 if tier == 3 else 0.5) if effect != "" and has_effect(faction, effect) else 1.0
+	return ceili(Catalog.unit_upkeep(tier) * multiplier)
 
 func upkeep(kingdom: Dictionary) -> int:
-	var total := 0
+	var total: int = preload("res://src/game/logistics.gd").infrastructure_upkeep(self, kingdom)
 	var wages := {}
 	for coord in kingdom["hexes"]:
 		var tier: int = cells[coord]["unit"]
@@ -400,7 +402,8 @@ func begin_turn(faction: int) -> int:
 	var mana := mana_summary(faction)
 	mana_by_faction[faction] = mini(mana["capacity"], mana["amount"] + mana["regeneration"])
 	# Graves left from a previous turn become trees. New deaths remain visible.
-	for cell in cells.values():
+	for coord in cells:
+		var cell: Dictionary = cells[coord]
 		if cell.get("entrenched_by", -1) == faction: cell.erase("entrenched_by")
 		if cell.get("barrier_by", -1) == faction:
 			cell["barrier_by"] = -1
@@ -408,7 +411,7 @@ func begin_turn(faction: int) -> int:
 			cell["moved"] = false
 			if cell["grave"]:
 				cell["grave"] = false
-				cell["tree"] = true
+				cell["tree"] = can_grow_tree(coord)
 		if cell.get("fortified_by", -1) == faction:
 			cell["fortified"] = false
 			cell["fortified_by"] = -1
@@ -434,6 +437,11 @@ func begin_turn(faction: int) -> int:
 	record_replay("turn_start", faction, {"starved":deaths})
 	return deaths
 
+func can_grow_tree(coord: Vector2i) -> bool:
+	if not cells.has(coord): return false
+	var cell: Dictionary = cells[coord]
+	return not is_mountain(coord) and not is_barrier(coord) and not has_wildlife(coord) and cell.unit == 0 and cell.capital < 0 and cell.building == "" and not cell.tree and not cell.grave and not cell.get("road", false) and cell.get("treasure", 0) == 0 and not cell.get("mana_source", false) and cell.get("event", "") == ""
+
 func spread_trees() -> int:
 	var growing: Dictionary = {}
 	# Snapshot sources so a new tree cannot spread again in the same round.
@@ -441,8 +449,7 @@ func spread_trees() -> int:
 		if not cells[coord]["tree"] or rng.randf() >= 0.16:
 			continue
 		for next in shuffled(neighbors(coord)):
-			var cell: Dictionary = cells[next]
-			if not is_mountain(next) and not is_barrier(next) and not has_wildlife(next) and cell["unit"] == 0 and cell["capital"] < 0 and cell["building"] == "" and not cell["tree"] and not cell["grave"]:
+			if can_grow_tree(next):
 				growing[next] = true
 				break
 	for coord in growing:
@@ -463,3 +470,41 @@ func ai_turn(faction: int) -> Array[Dictionary]:
 
 func starting_land_reachable() -> bool:
 	return preload("res://src/game/archipelago.gd").starting_land_reachable(self)
+
+func tower_cost(faction: int) -> int:
+	return preload("res://src/game/logistics.gd").tower_cost(self, faction)
+
+func can_rename_settlement(coord: Vector2i, faction: int) -> bool:
+	return cells.has(coord) and cells[coord].owner == faction and preload("res://src/game/logistics.gd").recruitment_hub(cells[coord])
+
+func rename_settlement(coord: Vector2i, faction: int, text: String) -> bool:
+	if not can_rename_settlement(coord, faction) or text.length() > 40: return false
+	for index in range(text.length()):
+		if text.unicode_at(index) < 32 or text.unicode_at(index) == 127: return false
+	var name_value := text.strip_edges()
+	if name_value == "": cells[coord].erase("settlement_name")
+	else: cells[coord]["settlement_name"] = name_value
+	record_replay("rename_settlement", faction, {"coord":coord, "name":name_value})
+	return true
+
+func infrastructure_upkeep(kingdom: Dictionary) -> int:
+	return preload("res://src/game/logistics.gd").infrastructure_upkeep(self, kingdom)
+
+func can_dismantle(coord: Vector2i, faction: int) -> bool:
+	if not cells.has(coord): return false
+	var cell: Dictionary = cells[coord]
+	if cell["building"] == "bridge": return cell.get("bridge_owner", -1) == faction and cell["unit"] == 0
+	return false
+
+func dismantle(coord: Vector2i, faction: int) -> bool:
+	if not can_dismantle(coord, faction): return false
+	cells.erase(coord)
+	rebuild_kingdoms()
+	record_replay("dismantle", faction, {"coord":coord})
+	return true
+
+func road_targets(source: Vector2i, faction: int) -> Dictionary:
+	return preload("res://src/game/road_construction.gd").options(self, source, faction)
+
+func build_road(source: Vector2i, target: Vector2i, faction: int) -> bool:
+	return preload("res://src/game/road_construction.gd").build(self, source, target, faction)

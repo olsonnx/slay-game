@@ -76,7 +76,7 @@ var camera_pan_tween: Tween:
 	get: return navigation.camera_pan_tween
 	set(value): navigation.camera_pan_tween = value
 const VISUAL_FIELDS := ["owner", "unit", "moved", "capital", "tree", "grave", "building", "mana_source", "unit_owner", "fortified", "entrenched_by", "mountain", "barrier_by", "event", "treasure", "animal", "animal_home", "animal_target", "lair"]
-const PROP_FIELDS := ["capital", "tree", "grave", "building", "mana_source", "fortified", "entrenched_by", "barrier_by", "event", "treasure", "lair"]
+const PROP_FIELDS := ["capital", "tree", "grave", "building", "mana_source", "fortified", "entrenched_by", "barrier_by", "event", "treasure", "lair", "site_source"]
 var cells: Dictionary = {}
 var focus: Vector3:
 	get: return navigation.focus
@@ -465,9 +465,9 @@ func _apply_video_settings() -> void:
 	sun.shadow_enabled = Video.shadows
 	if lighting != null: lighting.apply_style("atmospheric" if Video.atmospheric_lighting else "simple")
 	_apply_background()
-	if not Video.follow_turn_camera:
+	if not Video.follow_turn_camera or Video.reduced_motion:
 		stop_camera_pan()
-	if not Video.level_transitions and level_transitioning:
+	if (not Video.level_transitions or Video.reduced_motion) and level_transitioning:
 		island_transition.finish()
 
 func _apply_background() -> void:
@@ -664,7 +664,7 @@ func scenery_state(cell: Dictionary) -> Array:
 	# Store the drawn state because playback updates cells before settling actors.
 	var result: Array = [cell["owner"], cell.get("land", true)]
 	for field in PROP_FIELDS: result.append(cell.get(field))
-	result.append((cell["capital"] >= 0 or cell["building"] in ["monument","house","tower"]) and cell["unit"] > 0)
+	result.append((cell["capital"] >= 0 or cell["building"] in ["monument","city","tower"]) and cell["unit"] > 0)
 	return result
 
 func populate_tile_decorations(tile: Node3D, cell: Dictionary) -> void:
@@ -718,8 +718,8 @@ func cancel_motion(restored_cells: Dictionary) -> void:
 func outline(coord: Vector2i, color: Color) -> void:
 	overlays.outline(coord, color)
 
-func show_overlays(selected: Vector2i, hovered: Vector2i, valid: Dictionary, path: Array, active_capital: Vector2i, intent: Dictionary = {}, protector: Vector2i = NONE, inspected: Vector2i = NONE) -> void:
-	overlays.show_overlays(selected, hovered, valid, path, active_capital, intent, protector, inspected)
+func show_overlays(selected: Vector2i, hovered: Vector2i, valid: Dictionary, path: Array, active_capital: Vector2i, intent: Dictionary = {}, protector: Vector2i = NONE, inspected: Vector2i = NONE, recruitment := false) -> void:
+	overlays.show_overlays(selected, hovered, valid, path, active_capital, intent, protector, inspected, recruitment)
 
 func intent_color(intent: Dictionary) -> Color:
 	return overlays.intent_color(intent)
@@ -735,6 +735,7 @@ func record_capture_sample(sample: Dictionary) -> void:
 	capture_samples.append(sample)
 
 func _on_camera_changed() -> void:
+	if island_transition != null: island_transition.camera_changed()
 	if lighting != null: lighting.update_camera()
 	update_upgrade_indicator()
 

@@ -1,6 +1,5 @@
 {
 	"category": "construction",
-	"description": "Learn what to build, where, and when it pays off.",
 	"format": "slay-tutorial",
 	"map": {
 		"cells": [
@@ -14,23 +13,25 @@
 				"owner": 0,
 				"q": -4,
 				"r": -1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
 				"capital": 0,
 				"event": "",
 				"grave": false,
-				"mana_source": false,
+				"mana_source": true,
 				"mountain": false,
 				"owner": 0,
 				"q": -4,
 				"r": 0,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -42,9 +43,10 @@
 				"owner": 0,
 				"q": -4,
 				"r": 1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -56,9 +58,10 @@
 				"owner": 0,
 				"q": -3,
 				"r": -1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -70,9 +73,10 @@
 				"owner": 0,
 				"q": -3,
 				"r": 0,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -84,9 +88,10 @@
 				"owner": 0,
 				"q": -3,
 				"r": 1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -98,9 +103,10 @@
 				"owner": 0,
 				"q": -2,
 				"r": -1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -112,9 +118,10 @@
 				"owner": 0,
 				"q": -2,
 				"r": 0,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -126,9 +133,10 @@
 				"owner": 0,
 				"q": -2,
 				"r": 1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -140,9 +148,10 @@
 				"owner": 0,
 				"q": -1,
 				"r": -1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -154,9 +163,10 @@
 				"owner": 0,
 				"q": -1,
 				"r": 0,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -168,9 +178,10 @@
 				"owner": 0,
 				"q": -1,
 				"r": 1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -179,12 +190,13 @@
 				"grave": false,
 				"mana_source": false,
 				"mountain": false,
-				"owner": -1,
+				"owner": 0,
 				"q": 0,
 				"r": -1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -193,12 +205,28 @@
 				"grave": false,
 				"mana_source": false,
 				"mountain": false,
-				"owner": -1,
+				"owner": 0,
 				"q": 0,
 				"r": 0,
+				"road": false,
+				"tree": false,
+				"unit": 1,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": 0,
+				"r": 1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -208,8 +236,9 @@
 				"mana_source": false,
 				"mountain": false,
 				"owner": -1,
-				"q": 0,
-				"r": 1,
+				"q": 1,
+				"r": -1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
 				"value": 1
@@ -223,21 +252,8 @@
 				"mountain": false,
 				"owner": -1,
 				"q": 1,
-				"r": -1,
-				"tree": false,
-				"unit": 0,
-				"value": 1
-			},
-			{
-				"building": "",
-				"capital": -1,
-				"event": "",
-				"grave": false,
-				"mana_source": false,
-				"mountain": false,
-				"owner": -1,
-				"q": 1,
 				"r": 0,
+				"road": false,
 				"tree": false,
 				"unit": 0,
 				"value": 1
@@ -252,6 +268,7 @@
 				"owner": -1,
 				"q": 1,
 				"r": 1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
 				"value": 1
@@ -266,37 +283,10 @@
 				"owner": 1,
 				"q": 2,
 				"r": -1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
-			},
-			{
-				"building": "",
-				"capital": -1,
-				"event": "",
-				"grave": false,
-				"mana_source": false,
-				"mountain": false,
-				"owner": 1,
-				"q": 2,
-				"r": 0,
-				"tree": false,
-				"unit": 0,
-				"value": 2
-			},
-			{
-				"building": "",
-				"capital": -1,
-				"event": "",
-				"grave": false,
-				"mana_source": false,
-				"mountain": false,
-				"owner": 1,
-				"q": 3,
-				"r": -1,
-				"tree": false,
-				"unit": 0,
-				"value": 2
+				"value": 1
 			},
 			{
 				"building": "",
@@ -306,11 +296,27 @@
 				"mana_source": false,
 				"mountain": false,
 				"owner": 1,
-				"q": 3,
+				"q": 2,
 				"r": 0,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 1
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 1,
+				"q": 3,
+				"r": 0,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 1
 			}
 		],
 		"factions": [
@@ -376,27 +382,27 @@
 			}
 		],
 		"format": "slay-level",
-		"gold": 30,
-		"player_start": null,
+		"gold": 100,
+		"player_start": [
+			-4,
+			0
+		],
 		"rules": "modern",
-		"seed": 73021,
+		"seed": 1,
 		"size": "small",
-		"title": "Practice: House",
+		"title": "Cities and logistics",
 		"version": 1
 	},
 	"opponent_mode": "scripted",
 	"require_victory": false,
 	"steps": [
 		{
-			"criteria": {
-				"value_before": 1
-			},
 			"details": {
-
+				"building": "tower"
 			},
-			"exercise": "house",
-			"id": "develop",
-			"kind": "develop",
+			"exercise": "logistics",
+			"id": "first_tower",
+			"kind": "build",
 			"setup": {
 				"cells": [
 					{
@@ -409,23 +415,25 @@
 						"owner": 0,
 						"q": -4,
 						"r": -1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
 						"capital": 0,
 						"event": "",
 						"grave": false,
-						"mana_source": false,
+						"mana_source": true,
 						"mountain": false,
 						"owner": 0,
 						"q": -4,
 						"r": 0,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -437,9 +445,10 @@
 						"owner": 0,
 						"q": -4,
 						"r": 1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -451,9 +460,10 @@
 						"owner": 0,
 						"q": -3,
 						"r": -1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -465,9 +475,10 @@
 						"owner": 0,
 						"q": -3,
 						"r": 0,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -479,9 +490,10 @@
 						"owner": 0,
 						"q": -3,
 						"r": 1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -493,9 +505,10 @@
 						"owner": 0,
 						"q": -2,
 						"r": -1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -507,9 +520,10 @@
 						"owner": 0,
 						"q": -2,
 						"r": 0,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -521,9 +535,10 @@
 						"owner": 0,
 						"q": -2,
 						"r": 1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -535,9 +550,10 @@
 						"owner": 0,
 						"q": -1,
 						"r": -1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -549,9 +565,10 @@
 						"owner": 0,
 						"q": -1,
 						"r": 0,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -563,9 +580,10 @@
 						"owner": 0,
 						"q": -1,
 						"r": 1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -574,12 +592,13 @@
 						"grave": false,
 						"mana_source": false,
 						"mountain": false,
-						"owner": -1,
+						"owner": 0,
 						"q": 0,
 						"r": -1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -588,12 +607,28 @@
 						"grave": false,
 						"mana_source": false,
 						"mountain": false,
-						"owner": -1,
+						"owner": 0,
 						"q": 0,
 						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 1,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 0,
+						"r": 1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -603,8 +638,9 @@
 						"mana_source": false,
 						"mountain": false,
 						"owner": -1,
-						"q": 0,
-						"r": 1,
+						"q": 1,
+						"r": -1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
 						"value": 1
@@ -618,21 +654,8 @@
 						"mountain": false,
 						"owner": -1,
 						"q": 1,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 1,
 						"r": 0,
+						"road": false,
 						"tree": false,
 						"unit": 0,
 						"value": 1
@@ -647,6 +670,7 @@
 						"owner": -1,
 						"q": 1,
 						"r": 1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
 						"value": 1
@@ -661,37 +685,10 @@
 						"owner": 1,
 						"q": 2,
 						"r": -1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 2,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 3,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 2
+						"value": 1
 					},
 					{
 						"building": "",
@@ -701,11 +698,27 @@
 						"mana_source": false,
 						"mountain": false,
 						"owner": 1,
-						"q": 3,
+						"q": 2,
 						"r": 0,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 1
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 1,
+						"q": 3,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 1
 					}
 				],
 				"factions": [
@@ -771,1312 +784,99 @@
 					}
 				],
 				"format": "slay-level",
-				"gold": 30,
-				"player_start": null,
+				"gold": 100,
+				"player_start": [
+					-4,
+					0
+				],
 				"rules": "modern",
-				"seed": 73021,
+				"seed": 1,
 				"size": "small",
-				"title": "Practice: House",
+				"title": "Cities and logistics",
 				"version": 1
 			},
-			"target": null,
-			"task": "Develop a value-1 province",
-			"text": "Click any friendly value-1 province's ground and choose Develop. It costs 2 gold for +1 income per turn. No builder is required. The next development on that province will cost more.",
-			"title": "Cheap development first"
-		},
-		{
-			"details": {
-				"building": "house"
-			},
-			"exercise": "house",
-			"id": "house",
-			"kind": "build",
-			"target": null,
-			"task": "Build a House on clear friendly land",
-			"text": "Open Build and choose House. Use highlighted clear land without an army, building or capital. It costs 20 gold for +4 income per turn and no wages. When cheap development is available, that can be the better first investment.",
-			"title": "Cheap development first"
-		},
-		{
-			"details": {
-
-			},
-			"exercise": "house",
-			"id": "house_budget",
-			"kind": "finance",
-			"target": null,
-			"task": "Compare income in the gold tooltip",
-			"text": "Hover over gold. Development added 1 income and the House added 4. Neither pays its recurring income immediately. Houses occupy building space and are destroyed if their province is directly captured.",
-			"title": "Cheap development first"
+			"target": [
+				-2,
+				1
+			],
+			"task": "Build your first tower",
+			"text": "Open Build at the bottom left, choose Tower, then click the gold-ringed tile. It costs 15 G to build and 2 G per turn. Its strength-2 protection covers itself and neighboring friendly land, not neutral or enemy land. Towers cannot be dismantled.",
+			"title": "Build your first tower"
 		},
 		{
 			"details": {
 				"building": "tower"
 			},
-			"exercise": "tower",
-			"id": "tower",
+			"exercise": "logistics",
+			"id": "second_tower",
 			"kind": "build",
-			"setup": {
-				"cells": [
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -4,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": 0,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -4,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -4,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -3,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -3,
-						"r": 0,
-						"tree": false,
-						"unit": 1,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -3,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -2,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -2,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -2,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -1,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -1,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -1,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 0,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 0,
-						"r": 0,
-						"tree": false,
-						"unit": 2,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 0,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 1,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 1,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 1,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 2,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 2,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 3,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": 1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 3,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					}
-				],
-				"factions": [
-					{
-						"color": "86b998ff",
-						"name": "Fern",
-						"terrain": "80ad86ff"
-					},
-					{
-						"color": "d79879ff",
-						"name": "Ember",
-						"terrain": "c58768ff"
-					},
-					{
-						"color": "92acc9ff",
-						"name": "Tide",
-						"terrain": "6e8fb3ff"
-					},
-					{
-						"color": "c5b478ff",
-						"name": "Ochre",
-						"terrain": "b6a66dff"
-					},
-					{
-						"color": "b29acdff",
-						"name": "Aster",
-						"terrain": "a18ab9ff"
-					},
-					{
-						"color": "73b7b7ff",
-						"name": "Cove",
-						"terrain": "659f9eff"
-					},
-					{
-						"color": "d47985ff",
-						"name": "Ruby",
-						"terrain": "b75b67ff"
-					},
-					{
-						"color": "e8b4caff",
-						"name": "Dawn",
-						"terrain": "d5a0b7ff"
-					},
-					{
-						"color": "bfce78ff",
-						"name": "Moss",
-						"terrain": "a4b95cff"
-					},
-					{
-						"color": "9ac1c6ff",
-						"name": "Frost",
-						"terrain": "7cafb6ff"
-					},
-					{
-						"color": "99958eff",
-						"name": "Slate",
-						"terrain": "74716cff"
-					},
-					{
-						"color": "aa99c7ff",
-						"name": "Iris",
-						"terrain": "8875acff"
-					}
-				],
-				"format": "slay-level",
-				"gold": 20,
-				"player_start": null,
-				"rules": "modern",
-				"seed": 73021,
-				"size": "small",
-				"title": "Practice: Tower",
-				"version": 1
-			},
 			"target": [
-				-1,
-				-1
+				-3,
+				1
 			],
-			"task": "Build the border Tower",
-			"text": "Build a Tower on the marked border tile for 15 gold and no wages. It gives defense 2 to itself and adjacent FRIENDLY land. It never protects nearby neutral or enemy provinces.",
-			"title": "Towers protect your land"
-		},
-		{
-			"details": {
-
-			},
-			"exercise": "tower",
-			"id": "coverage",
-			"kind": "inspect",
-			"target": [
-				-1,
-				-1
-			],
-			"task": "Click the Tower to see its coverage",
-			"text": "Click the Tower itself. Its coverage highlights show which friendly provinces are defended. The Soldier cannot capture these defense-2 provinces, but the neutral route below the Tower is outside its protection.",
-			"title": "Towers protect your land"
-		},
-		{
-			"details": {
-
-			},
-			"exercise": "tower",
-			"id": "flank",
-			"kind": "end_turn",
-			"opponent": [
-				{
-					"kind": "move",
-					"source": [
-						0,
-						0
-					],
-					"target": [
-						0,
-						1
-					]
-				}
-			],
-			"target": null,
-			"task": "End turn: the enemy takes the neutral route",
-			"text": "End turn. The enemy Soldier cannot break the Tower, so it takes the neutral province below it. A neighboring Tower does not defend that neutral land.",
-			"title": "Towers protect your land"
-		},
-		{
-			"details": {
-
-			},
-			"exercise": "tower",
-			"id": "flank_attack",
-			"kind": "end_turn",
-			"opponent": [
-				{
-					"kind": "move",
-					"source": [
-						0,
-						1
-					],
-					"target": [
-						-1,
-						1
-					]
-				}
-			],
-			"target": null,
-			"task": "End turn: the enemy reaches an uncovered border",
-			"text": "The Soldier now borders your lower province, two steps from the Tower. End turn to see it capture that uncovered land. Coverage and approach routes matter more than simply owning a Tower.",
-			"title": "Towers protect your land"
+			"task": "Build a second tower",
+			"text": "Your next Tower costs 20 G. Each tower you control adds 5 G to the next one's price across all your kingdoms. Every tower still costs 2 G per turn.",
+			"title": "Build a second tower"
 		},
 		{
 			"details": {
 				"building": "bridge"
 			},
-			"exercise": "bridge",
-			"id": "bridge",
+			"exercise": "logistics",
+			"id": "first_bridge",
 			"kind": "build",
-			"setup": {
-				"cells": [
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -4,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": 0,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -4,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -4,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -3,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -3,
-						"r": 0,
-						"tree": false,
-						"unit": 1,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -3,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -2,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -2,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -2,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -1,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -1,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -1,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 1,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 1,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 1,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 2,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 2,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 3,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": 1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 3,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					}
-				],
-				"factions": [
-					{
-						"color": "86b998ff",
-						"name": "Fern",
-						"terrain": "80ad86ff"
-					},
-					{
-						"color": "d79879ff",
-						"name": "Ember",
-						"terrain": "c58768ff"
-					},
-					{
-						"color": "92acc9ff",
-						"name": "Tide",
-						"terrain": "6e8fb3ff"
-					},
-					{
-						"color": "c5b478ff",
-						"name": "Ochre",
-						"terrain": "b6a66dff"
-					},
-					{
-						"color": "b29acdff",
-						"name": "Aster",
-						"terrain": "a18ab9ff"
-					},
-					{
-						"color": "73b7b7ff",
-						"name": "Cove",
-						"terrain": "659f9eff"
-					},
-					{
-						"color": "d47985ff",
-						"name": "Ruby",
-						"terrain": "b75b67ff"
-					},
-					{
-						"color": "e8b4caff",
-						"name": "Dawn",
-						"terrain": "d5a0b7ff"
-					},
-					{
-						"color": "bfce78ff",
-						"name": "Moss",
-						"terrain": "a4b95cff"
-					},
-					{
-						"color": "9ac1c6ff",
-						"name": "Frost",
-						"terrain": "7cafb6ff"
-					},
-					{
-						"color": "99958eff",
-						"name": "Slate",
-						"terrain": "74716cff"
-					},
-					{
-						"color": "aa99c7ff",
-						"name": "Iris",
-						"terrain": "8875acff"
-					}
-				],
-				"format": "slay-level",
-				"gold": 20,
-				"player_start": null,
-				"rules": "modern",
-				"seed": 73021,
-				"size": "small",
-				"title": "Practice: Bridge",
-				"version": 1
-			},
 			"target": [
-				0,
-				0
+				-1,
+				2
 			],
-			"task": "Build a Bridge across the channel",
-			"text": "Open Build and choose Bridge. This water crossing costs 15 gold. Bridges earn no income and stay neutral: every kingdom can use the route, including your opponents.",
-			"title": "Bridges open public routes"
+			"task": "Build a bridge",
+			"text": "Choose Bridge in Build and place it on the marked water tile. Each segment costs 15 G plus 2 G per turn from its builder's treasury. Bridges are neutral crossings, so opponents can use them too.",
+			"title": "Build a bridge"
 		},
 		{
 			"details": {
-				"source": [
-					-3,
-					0
-				]
+				"building": "bridge"
 			},
-			"exercise": "bridge",
-			"id": "land",
-			"kind": "move",
-			"target": [
-				1,
-				0
-			],
-			"task": "Cross directly onto the opposite shore",
-			"text": "Select your Scout and click the marked neutral shore, beyond the Bridge. Crossing friendly land and empty bridges is part of the same move. When the landing is reachable, avoid wasting a turn stopping on the Bridge.",
-			"title": "Bridges open public routes"
-		},
-		{
-			"details": {
-
-			},
-			"exercise": "bridge",
-			"id": "shore",
-			"kind": "continue",
-			"target": null,
-			"task": "Continue after the crossing",
-			"text": "You crossed and captured shore in one action. The Bridge remains a public route. Your army needs a route back to a supporting treasury; expanding or reconnecting on the far shore makes a stronger foothold.",
-			"title": "Bridges open public routes"
-		},
-		{
-			"details": {
-
-			},
-			"exercise": "investment",
-			"id": "compare",
-			"kind": "inspect",
-			"setup": {
-				"cells": [
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -4,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": 0,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -4,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -4,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -3,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -3,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -3,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -2,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -2,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -2,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -1,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -1,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -1,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 0,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 0,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 0,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 1,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 1,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 1,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 2,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 2,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 3,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": 1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 3,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					}
-				],
-				"factions": [
-					{
-						"color": "86b998ff",
-						"name": "Fern",
-						"terrain": "80ad86ff"
-					},
-					{
-						"color": "d79879ff",
-						"name": "Ember",
-						"terrain": "c58768ff"
-					},
-					{
-						"color": "92acc9ff",
-						"name": "Tide",
-						"terrain": "6e8fb3ff"
-					},
-					{
-						"color": "c5b478ff",
-						"name": "Ochre",
-						"terrain": "b6a66dff"
-					},
-					{
-						"color": "b29acdff",
-						"name": "Aster",
-						"terrain": "a18ab9ff"
-					},
-					{
-						"color": "73b7b7ff",
-						"name": "Cove",
-						"terrain": "659f9eff"
-					},
-					{
-						"color": "d47985ff",
-						"name": "Ruby",
-						"terrain": "b75b67ff"
-					},
-					{
-						"color": "e8b4caff",
-						"name": "Dawn",
-						"terrain": "d5a0b7ff"
-					},
-					{
-						"color": "bfce78ff",
-						"name": "Moss",
-						"terrain": "a4b95cff"
-					},
-					{
-						"color": "9ac1c6ff",
-						"name": "Frost",
-						"terrain": "7cafb6ff"
-					},
-					{
-						"color": "99958eff",
-						"name": "Slate",
-						"terrain": "74716cff"
-					},
-					{
-						"color": "aa99c7ff",
-						"name": "Iris",
-						"terrain": "8875acff"
-					}
-				],
-				"format": "slay-level",
-				"gold": 20,
-				"player_start": null,
-				"rules": "modern",
-				"seed": 73021,
-				"size": "small",
-				"title": "Practice: Investment",
-				"version": 1
-			},
+			"exercise": "logistics",
+			"id": "second_bridge",
+			"kind": "build",
 			"target": [
 				-2,
-				0
+				2
 			],
-			"task": "Inspect a value-2 province's development cost",
-			"text": "Every friendly province here is already value 2. Click the marked province and look at Develop: the next +1 income costs 8 gold. Four such upgrades cost 32, while a House adds 4 income for 20.",
-			"title": "When a House is the better investment"
-		},
-		{
-			"details": {
-				"building": "house"
-			},
-			"exercise": "investment",
-			"id": "invest",
-			"kind": "build",
-			"target": null,
-			"task": "Build a House for the cheaper +4 income",
-			"text": "Choose House in Build and place it on any valid friendly tile. With the cheapest development already used, the House now buys income more efficiently. Compare costs instead of following a fixed build order.",
-			"title": "When a House is the better investment"
+			"task": "Build another bridge segment",
+			"text": "Choose Bridge again and click the gold-ringed water tile. This segment also costs 15 G and 2 G per turn: bridge prices stay flat. The builder pays its upkeep even when an opponent uses the crossing.",
+			"title": "Build another bridge segment"
 		},
 		{
 			"details": {
 
 			},
-			"exercise": "investment",
-			"id": "investment_budget",
+			"exercise": "logistics",
+			"id": "remove_bridge",
+			"kind": "dismantle",
+			"target": [
+				-2,
+				2
+			],
+			"task": "Remove the empty bridge",
+			"text": "Click the gold-ringed bridge, then Dismantle bridge in its details. Your empty sponsored bridges can be removed without a refund. Roads and towers cannot. Removing this segment stops its 2 G upkeep.",
+			"title": "Remove the empty bridge"
+		},
+		{
+			"confirm": true,
+			"details": {
+
+			},
+			"exercise": "logistics",
+			"id": "infrastructure_forecast",
 			"kind": "finance",
 			"target": null,
-			"task": "Check the House's added income",
-			"text": "Hover over gold. Gross income rose from 24 to 28 for a 20-gold investment. Future development, buildings and army purchases should be judged against what your position needs next.",
-			"title": "When a House is the better investment"
+			"task": "Check infrastructure upkeep",
+			"text": "Hover over gold in the bottom-left dock. The forecast now includes two towers and one bridge, plus your Scout's wages. Roads have no upkeep. Read the income, upkeep and net change, then click Continue.",
+			"title": "Check infrastructure upkeep"
 		}
 	],
-	"title": "Buildings and development",
+	"title": "Defences and upkeep",
 	"version": 1
 }

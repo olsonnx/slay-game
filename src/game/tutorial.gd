@@ -245,6 +245,8 @@ func refresh_marker() -> void:
 		var marker := MeshInstance3D.new()
 		marker.mesh = game.view.overlays.marker_mesh(1.03,0.79)
 		marker.position = game.view.coord_position(entry[0])+Vector3(0,0.08,0)
+		marker.set_meta("hex", entry[0])
+		marker.set_meta("role", "source" if entry[0] == source else "target")
 		marker.material_override = game.view.material(entry[1],true,true)
 		marker.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		marker_root.add_child(marker)

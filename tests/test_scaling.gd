@@ -24,7 +24,7 @@ func digest(rules) -> String:
 	return JSON.stringify(state).sha256_text()
 
 func run() -> void:
-	# Pin the event lottery that produced these v13 generator baselines.
+	# Pin the event lottery that produced these v14 generator baselines.
 	# The editable event pack has separate distribution/runtime coverage.
 	var event_weights: Dictionary = Rules.Events.WEIGHTS.duplicate()
 	Rules.Events.WEIGHTS.assign(Rules.Events.BUILTIN_WEIGHTS)

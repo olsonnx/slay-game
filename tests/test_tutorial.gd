@@ -69,11 +69,23 @@ func hover_control(game, control: Control, id: String) -> void:
 	move.global_position = move.position
 	surface.push_input(move,true)
 	await create_timer(1.0).timeout
-	expect(game.tutorial.index != before or game.tutorial.exercise_done or game.tutorial.completed,"A real mouse hover opens and advances the tooltip objective: "+id)
+	expect(game.tutorial.index != before or game.tutorial.exercise_done or game.tutorial.completed or game.tutorial.awaiting_confirmation,"A real mouse hover opens and advances the tooltip objective: "+id)
 	await capture(game.tutorial.category+"_"+id+"_tooltip")
+
+func choose_card(game, kind: String, index: int) -> void:
+	var opener: Button = game.hud.recruit_button if kind == "recruit" else game.hud.build_button if kind == "build" else game.hud.spell_button
+	if not game.hud.shop_panel.visible or game.hud.shop_kind != kind: opener.pressed.emit()
+	var cards: Array = game.hud.shop_items.get_children().filter(func(child): return child is Button)
+	expect(index >= 0 and index < cards.size(), "The instructed shop card exists: " + kind)
+	cards[index].pressed.emit()
 
 func perform(game, step: Dictionary) -> bool:
 	var target := target_for(game,step)
+	var bank: Dictionary = game.active_kingdom()
+	var gold_before: int = bank.get("gold",0)
+	var income_before: int = game.rules.income(bank)
+	var upkeep_before: int = game.rules.upkeep(bank)
+	var units_before: int = game.cells.values().filter(func(cell): return cell.owner == 0 and cell.unit > 0).size()
 	if target == game.NONE and step.kind == "recruit" and step.get("allow_turns",false):
 		await game.end_turn()
 		target = target_for(game,step)
@@ -93,14 +105,32 @@ func perform(game, step: Dictionary) -> bool:
 			var tip = icon._make_custom_tooltip(icon.tooltip_text)
 			tip.free()
 		"recruit":
-			await game.click_hex(target,"terrain")
-			game.choose_unit(int(step.details.tier))
+			choose_card(game,"recruit",int(step.details.tier)-1)
+			if preview:
+				game.set_process(false)
+				game.update_hover(target,0.0)
+				await capture(game.tutorial.category+"_"+step.id+"_area")
+				game.set_process(true)
 			await game.click_hex(target)
 		"build":
-			game.choose_building(step.details.building)
+			choose_card(game,"build",["tower","city","bridge"].find(step.details.building))
 			await game.click_hex(target)
+		"road":
+			game.inspect_province(step.details.source)
+			game.province_view.road_button.pressed.emit()
+			game.set_process(false)
+			game.update_hover(target, 0.0)
+			expect(game.view.overlay_root.has_node("RoadPreview") and game.hud.world_tip.visible,"Road exercises expose the shape and price before committing")
+			await capture("logistics_"+step.id+"_preview")
+			game.set_process(true)
+			await game.click_hex(target)
+		"rename_settlement":
+			game.inspect_province(target)
+			game.province_view.name_input.grab_focus()
+			game.province_view.name_input.text = "Forward City"
+			game.province_view.name_input.text_submitted.emit("Forward City")
 		"spell":
-			game.choose_spell(step.details.spell)
+			choose_card(game,"spells",preload("res://src/game/spell_catalog.gd").SPELLS.keys().find(step.details.spell))
 			await game.click_hex(target)
 		"move":
 			var order := move_order(game,step)
@@ -113,7 +143,11 @@ func perform(game, step: Dictionary) -> bool:
 		"end_turn": await game.end_turn()
 		"develop":
 			await game.click_hex(target,"terrain")
-			game.develop_province()
+			game.province_view.develop_button.pressed.emit()
+		"dismantle":
+			await game.click_hex(target,"terrain")
+			expect(game.province_view.dismantle_button.visible and not game.province_view.dismantle_button.disabled,"An empty sponsored bridge exposes Dismantle")
+			game.province_view.dismantle_button.pressed.emit()
 		"entrench":
 			await game.click_hex(target,"terrain")
 			game.entrench_province()
@@ -126,21 +160,41 @@ func perform(game, step: Dictionary) -> bool:
 			game.relocate_province_capital()
 			game.resolve_capital_relocation(0)
 		"stats": game.toggle_stats()
-		"event": game.resolve_shown_event(1 if alternate and step.id == "choose" else 0)
+		"event": game.resolve_shown_event(1 if alternate and step.id == "choice" else 0)
 		"continue": game.tutorial.continue_lesson()
 		"any":
 			if alternate:
 				for at in game.cells:
 					if game.cells[at].owner == 0 and game.cells[at].value == 1:
 						await game.click_hex(at,"terrain")
-						game.develop_province()
+						game.province_view.develop_button.pressed.emit()
 						if game.tutorial.completed or game.tutorial.exercise_done: break
 			else:
-				game.choose_building("house")
+				game.choose_building("city")
 				for at in game.cells:
-					if game.rules.can_build(at,0,"house"):
+					if game.rules.can_build(at,0,"city"):
 						await game.click_hex(at)
 						break
+	match step.id:
+		"clear_forest":
+			expect(not game.cells[target].tree and game.active_kingdom().gold == gold_before+1,"Clearing earns exactly 1 G immediately")
+			expect(game.rules.income(game.active_kingdom()) == income_before+2 and game.rules.upkeep(game.active_kingdom()) == upkeep_before,"The cleared value-2 province restores income without changing wages")
+		"develop_other_bank":
+			expect(game.active_kingdom().gold == gold_before-8 and game.rules.kingdom_at(Vector2i(-4,0)).gold == 100,"Development spends only the selected disconnected treasury")
+		"supply_road": expect(game.active_kingdom().gold == gold_before-8,"The eight newly paved tiles cost exactly 8 G")
+		"remove_bridge": expect(not game.cells.has(target) and game.active_kingdom().gold == gold_before and game.rules.upkeep(game.active_kingdom()) == upkeep_before-2,"Dismantling removes the crossing and its upkeep without a refund")
+		"trail_capture": expect(not game.cells[target].moved and not game.rules.has_effect(0,"trailblaze"),"Trailblaze is consumed and grants one extra action")
+		"trail_followup": expect(game.cells[target].moved,"The unblessed second capture spends the action")
+		"shatter_bridge": expect(not game.cells.has(target) and game.rules.get_mana(0) == 0,"Shatter spends 2 mana and removes the crossing")
+		"treasure": expect(game.active_kingdom().gold == gold_before+15 and game.rules.income(game.active_kingdom()) == income_before+1 and game.cells[target].get("treasure",0) == 0,"Treasure awards 15 G once and the captured tile earns 1 G per turn")
+		"choice":
+			if alternate:
+				var ready: Array = game.cells.values().filter(func(cell): return cell.owner == 0 and cell.unit == 1 and not cell.moved)
+				expect(ready.size() == 1 and game.cells.values().filter(func(cell): return cell.owner == 0 and cell.unit > 0).size() == units_before+1,"The volunteer choice deploys an immediately ready Scout")
+			else: expect(game.cells[Vector2i(1,0)].site_income in [1,2] and game.rules.income(game.active_kingdom()) in [income_before+1,income_before+2],"The landmark choice adds its advertised recurring income")
+	if game.tutorial.awaiting_confirmation:
+		expect(game.tutorial.current().id == step.id,"Reading remains visible until Continue: "+step.id)
+		game.tutorial.continue_button.pressed.emit()
 	await process_frame
 	return true
 
@@ -169,46 +223,20 @@ func play_topic(category: String) -> void:
 			continue
 		var step: Dictionary = tutor.current()
 		var before: int = tutor.index
+		for marker in tutor.marker_root.get_children():
+			var marked: Vector2i = marker.get_meta("hex")
+			var expected: Vector2i = step.details.get("source",game.NONE) if marker.get_meta("role") == "source" else step.get("highlight",step.target)
+			expect(marked == expected and (game.cells.has(marked) or step.kind == "build" and game.rules.can_build(marked,0,step.details.building)),"The instructional ring marks the actual source or destination: %s/%s %s expected %s" % [category,step.id,marked,expected])
 		var count: int = tutor.goal_count
 		await capture(category+"_"+step.id)
 		expect(tutor.panel.checks.size() == tutor.exercise_indices().size(),"Checklist contains the complete current exercise")
 		expect(tutor.panel.checks.all(func(box): return box.mouse_filter == Control.MOUSE_FILTER_IGNORE and box.focus_mode == Control.FOCUS_NONE),"Objective boxes cannot be checked manually")
 		expect(surface.get_visible_rect().encloses(tutor.panel.get_global_rect()),"Coach fits the minimum window: "+str(tutor.panel.get_global_rect()))
-		if category == "economy" and step.id == "deficit":
-			expect(game.rules.income(game.active_kingdom()) == 39 and game.rules.upkeep(game.active_kingdom()) == 40 and game.active_kingdom().gold == 0,"The deficit prompt describes a real 39-income, 40-wage shortfall")
-		if category == "conquest" and step.id == "relocate":
-			expect(game.rules.can_move(Vector2i(0,0),Vector2i(-1,0)) and game.cells[Vector2i(-1,0)].capital == 0,"The Soldier can really capture the original capital before relocation")
 		if not await perform(game,step): break
 		expect(tutor.completed or tutor.exercise_done or tutor.index != before or tutor.goal_count > count,"Real action progresses "+category+"/"+step.id)
 		if tutor.index == before and not tutor.exercise_done and not tutor.completed and tutor.goal_count == count:
 			print("STUCK ",step.id," mode ",game.action_mode," target ",target_for(game,step)," before ",tutor.action_before," units ",game.cells.values().filter(func(cell): return cell.owner == 0 and cell.unit > 0))
 			break
-		if category == "armies" and step.id == "neutral":
-			expect(game.rules.territory(0) == 8 and game.rules.income(game.active_kingdom()) == 12,"A plain neutral capture adds owned land and one recurring income")
-			expect(game.active_kingdom().gold == 10,"Ordinary capture does not immediately pay tax")
-		if category == "armies" and step.id == "knight":
-			expect(game.round_number == 1 and game.cells[Vector2i(0,-1)].unit == 3,"The Soldier upgrades to Knight immediately after attacking, without ending the turn")
-			expect(game.cells[Vector2i(0,-1)].moved and game.rules.reachable_targets(Vector2i(0,-1)).is_empty(),"The tutorial's upgraded Knight must wait until next turn to attack")
-			expect(game.message == "Knight upgraded. Ready next turn.","A spent upgrade explains that its action returns next turn")
-		if category == "armies" and step.id == "duel": expect(game.cells[Vector2i(0,0)].owner == 1 and game.cells[Vector2i(0,0)].unit == 0,"Equal Knights die without capture")
-		if category == "construction" and step.id == "tower": expect(not game.rules.can_move(Vector2i(0,0),Vector2i(-1,0)),"The Tower really prevents the Soldier attack")
-		if category == "construction" and step.id == "tower": expect(game.rules.defense(Vector2i(0,-1)) == 0,"The Tower lends no defense to adjacent neutral land")
-		if category == "economy" and step.id == "survive":
-			expect(game.cells.values().filter(func(cell): return cell.owner == 0 and cell.unit > 0).size() == 2,"Ordinary Scout expansion funds both armies without a rich neutral province")
-		if category == "economy" and step.id == "connect": expect(game.rules.kingdoms.values().filter(func(bank):return bank.owner == 0).size() == 1 and game.active_kingdom().gold == 10,"Reconnecting pools the banks' remaining gold")
-		if category == "armies" and step.id == "destroy_tower": expect(game.cells[Vector2i(1,0)].owner == 0 and game.cells[Vector2i(1,0)].building == "","A direct Knight attack destroys the Tower")
-		if category == "armies" and step.id == "entrench_turn": expect(game.cells[Vector2i(-2,-1)].unit == 2 and game.cells[Vector2i(-2,-1)].owner == 0 and attacks.any(func(action):return action.kind == "blocked_attack"),"The shield really saves the Soldier from a Knight attack")
-		if category == "construction" and step.id == "flank_attack": expect(game.cells[Vector2i(-1,1)].owner == 1,"The enemy flank really captures uncovered friendly land")
-		if category == "construction" and step.id == "land": expect(game.round_number == 1 and game.cells[Vector2i(1,0)].unit == 1,"Bridge crossing lands on the shore in the same turn")
-		if category == "construction" and step.id == "invest": expect(game.rules.income(game.active_kingdom()) == 28 and game.active_kingdom().gold == 0,"A House gives +4 income for 20 when development costs 8 per increment")
-		if category == "conquest" and step.id == "capital": expect(game.cells[Vector2i(1,0)].owner == 0 and game.cells[Vector2i(1,0)].building == "tower","Capital surrender wins the neighboring Tower intact")
-		if category == "conquest" and step.id == "pocket_starve": expect([Vector2i(-1,2),Vector2i(0,2),Vector2i(-1,3)].all(func(at):return game.cells[at].unit == 0 and game.cells[at].grave and at in deaths),"All three cut-off Soldiers die with graves and death playback")
-		if category == "conquest" and step.id == "old_capital_attack": expect(game.cells[Vector2i(-1,0)].owner == 1 and game.cells[Vector2i(-4,0)].capital == 0 and game.rules.has_capital(0),"Relocation actually saves the kingdom from an incoming capital attack")
-		if category == "exploration" and step.id == "bear_raid": expect(game.cells[Vector2i(-1,0)].owner == -1 and game.cells[Vector2i(-1,0)].building == "" and game.cells.values().any(func(cell):return cell.get("animal","") == "bear"),"A visible Bear really raids the House and neutralizes its land")
-		if category == "exploration" and step.id == "lair_spawn": expect(game.cells[Vector2i(0,0)].get("animal","") == "bear" and game.cells[Vector2i(-1,0)].building == "house","The Bear visibly emerges before it can raid the House")
-		if category == "exploration" and step.id == "create_landmark": expect(game.rules.has_effect(0,"stainless_steel") and game.rules.unit_upkeep(3,0) == 34,"The event landmark really reduces Knight wages")
-		if category == "exploration" and step.id == "hunt": expect(game.cells[Vector2i(0,1)].get("lair","") == "" and game.hud.effect_row.icons.has("income_bonus"),"Destroying the cave stops its lair and exposes the lasting income status")
-		if category == "conquest" and step.id == "starve": expect(game.cells[Vector2i(-1,2)].unit == 0 and game.cells[Vector2i(-1,2)].grave and Vector2i(-1,2) in deaths,"The cut-off Scout dies through animated starvation")
 	expect(game.tutorial.completed,"All exercises are playable: "+category)
 	expect(root.get_node("Gameplay").completed_tutorials.get(category,false) and app.menus.tutorial_panel.completion_checks[category].button_pressed,"Completing the whole topic ticks its menu checkbox immediately")
 	await capture(category+"_complete")
@@ -242,7 +270,8 @@ func run() -> void:
 	await app.startup_finished
 	await process_frame
 	app.menus.show_screen(app.menus.Screen.TUTORIAL)
-	expect(app.menus.tutorial_panel.category_buttons.size() == 7,"Seven subject groups replace the old three courses")
+	expect(app.menus.tutorial_panel.category_buttons.size() == 8,"Eight subject groups include Cities and supply lines")
+	expect(surface.get_visible_rect().encloses(app.menus.tutorial_panel.get_global_rect()),"The expanded chapter selector fits the minimum window")
 	await capture("topics")
 	for category in Lessons.IDS:
 		if category == "practice": continue
@@ -261,15 +290,17 @@ func run() -> void:
 	await process_frame
 	expect(tutor.panel.visible,"Closing Stats restores the coach")
 	var initial := Snapshots.capture(game.rules)
-	await game.click_hex(Vector2i(-2,0),"unit")
+	var initial_land: int = game.rules.territory(0)
 	game.choose_unit(3)
-	await game.click_hex(Vector2i(-2,0))
-	expect(tutor.index == 1 and Snapshots.capture(game.rules) == initial,"Unrelated purchases do not spend or skip a guided objective")
+	await game.click_hex(Vector2i(-4,0))
+	expect(tutor.index == 0 and Snapshots.capture(game.rules) == initial,"Unrelated purchases do not spend or skip a guided objective")
+	game.cancel_action()
 	var order := move_order(game,tutor.current())
+	await game.click_hex(order.source,"unit")
 	game.click_hex(order.target)
 	tutor.game.cancel_action()
 	await process_frame
-	expect(tutor.index == 1 and game.rules.territory(0) == 7,"Cancelled capture cannot tick its objective")
+	expect(tutor.index == 0 and game.rules.territory(0) == initial_land,"Cancelled capture cannot tick its objective")
 	tutor.restart_lesson()
 	expect(tutor.index == 0 and tutor.goal_count == 0 and Snapshots.capture(game.rules) == initial,"Retry restores the whole exercise and its checks")
 	await app.restart_current_level()
@@ -295,7 +326,7 @@ func play_practice() -> void:
 	var tutor = game.tutorial
 	var opening := Snapshots.capture(game.rules)
 	expect(tutor.opponent_mode == "ai" and game.rules.territory(0) >= 6 and game.active_kingdom().gold == 10,"Practice uses a normal generated opening and active AI")
-	expect(tutor.permits("recruit",Vector2i.ZERO,{"tier":3}) and tutor.permits("build",Vector2i.ZERO,{"building":"house"}),"Practice permits the player's own purchases")
+	expect(tutor.permits("recruit",Vector2i.ZERO,{"tier":3}) and tutor.permits("build",Vector2i.ZERO,{"building":"city"}),"Practice permits the player's own purchases")
 	var enemy_before: int = game.rules.territory(1)
 	await game.end_turn()
 	await process_frame
@@ -318,4 +349,4 @@ func play_practice() -> void:
 	tutor.finish.pressed.emit()
 	await process_frame
 	while app.transitioning: await process_frame
-	expect(app.game == null and app.menus.tutorial_panel.visible,"Choose topic returns to the seven-topic selector")
+	expect(app.game == null and app.menus.tutorial_panel.visible,"Choose topic returns to the eight-topic selector")

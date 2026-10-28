@@ -17,6 +17,34 @@ var last_played: Dictionary = {}
 var sequence := 0
 var rng := RandomNumberGenerator.new()
 var save_timer: Timer
+var mute_unfocused := false
+var focus_muted := false
+var previous_mute := false
+var output_device := "Default"
+
+func set_mute_unfocused(value: bool, persist := true) -> void:
+	mute_unfocused = value
+	if not value and focus_muted:
+		AudioServer.set_bus_mute(AudioServer.get_bus_index(&"Master"), previous_mute)
+		focus_muted = false
+	if persist: save_timer.start()
+	settings_changed.emit()
+
+func set_output_device(value: String, persist := true) -> void:
+	if value not in AudioServer.get_output_device_list() and value != "Default": return
+	output_device = value
+	AudioServer.output_device = value
+	if persist: save_timer.start()
+	settings_changed.emit()
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT and mute_unfocused and not focus_muted:
+		previous_mute = is_muted()
+		focus_muted = true
+		AudioServer.set_bus_mute(AudioServer.get_bus_index(&"Master"), true)
+	elif what == NOTIFICATION_APPLICATION_FOCUS_IN and focus_muted:
+		AudioServer.set_bus_mute(AudioServer.get_bus_index(&"Master"), previous_mute)
+		focus_muted = false
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -123,6 +151,7 @@ func get_volume(bus: StringName) -> float:
 	return 0.0 if decibels <= -79.9 else db_to_linear(decibels)
 
 func set_volume(bus: StringName, value: float, persist := true) -> void:
+	if not is_finite(value): return
 	var index := AudioServer.get_bus_index(bus)
 	if index < 0:
 		return
@@ -133,7 +162,8 @@ func set_volume(bus: StringName, value: float, persist := true) -> void:
 	settings_changed.emit()
 
 func set_muted(muted: bool, persist := true) -> void:
-	AudioServer.set_bus_mute(AudioServer.get_bus_index(&"Master"), muted)
+	previous_mute = muted
+	AudioServer.set_bus_mute(AudioServer.get_bus_index(&"Master"), muted or focus_muted)
 	if muted:
 		stop_all()
 	if persist:
@@ -154,7 +184,9 @@ func save_settings(path := SETTINGS_PATH) -> Error:
 	var config := ConfigFile.new()
 	for bus in BUSES:
 		config.set_value("volume", bus, get_volume(bus))
-	config.set_value("audio", "muted", is_muted())
+	config.set_value("audio", "muted", previous_mute if focus_muted else is_muted())
+	config.set_value("audio", "mute_unfocused", mute_unfocused)
+	config.set_value("audio", "output_device", output_device)
 	return config.save(path)
 
 func load_settings(path := SETTINGS_PATH) -> Error:
@@ -170,4 +202,8 @@ func load_settings(path := SETTINGS_PATH) -> Error:
 	var muted = config.get_value("audio", "muted", false)
 	if muted is bool:
 		set_muted(muted, false)
+	var background_mute = config.get_value("audio", "mute_unfocused", false)
+	set_mute_unfocused(background_mute if background_mute is bool else false, false)
+	var device = config.get_value("audio", "output_device", "Default")
+	set_output_device(device if device is String and device in AudioServer.get_output_device_list() else "Default", false)
 	return OK

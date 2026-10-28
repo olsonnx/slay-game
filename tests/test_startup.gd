@@ -39,18 +39,29 @@ func run() -> void:
 	boot_screen.progress_changed.connect(func(value: float): boot_progress.append(value))
 	expect(boot_screen.caption.text == "Loading..." and boot_screen.progress_bar.value == 0.0, "Startup displays Loading... and an empty progress bar")
 	expect(not app.startup_complete and app.game == null and app.menus.navigation_locked and app.menus.screen == app.menus.Screen.HIDDEN, "Application warmup covers and locks navigation before any match exists")
-	await app.startup_finished
+	expect(not app.music_controls.visible, "Music button stays hidden during application loading")
+	var observed_boot_fade := false
+	while not app.startup_complete:
+		if app.menus.screen == app.menus.Screen.MAIN and is_instance_valid(boot_screen):
+			var opacity: float = boot_screen.cover.modulate.a
+			if opacity > 0.0 and opacity < 1.0:
+				observed_boot_fade = true
+				expect(app.menus.navigation_locked, "Navigation remains locked while startup fades into the ready menu")
+		await process_frame
+	expect(observed_boot_fade and loading_screen(app) == null, "Startup fades over the destination before releasing its loading cover")
 	expect(valid_progress(boot_progress), "Startup reports intermediate, monotonic progress and reaches 100 percent")
 	expect(app.startup_complete and app.game == null and app.menus.screen == app.menus.Screen.MAIN, "Application warmup completes before showing the main menu")
+	expect(app.music_controls.visible, "Music button returns with the ready main menu")
 	var boot_frames: int = app.startup_warmup.prepared_frames
 	app.start_new_game(42, "large")
 	var map_screen = loading_screen(app)
 	var map_progress := []
 	map_screen.progress_changed.connect(func(value: float):
 		map_progress.append(value)
-		expect(is_equal_approx(map_screen.progress_bar.value, value), "Map progress bar displays reported work"))
+		expect(is_equal_approx(map_screen.progress_bar.value, value) and is_equal_approx(map_screen.hex_art.progress, value), "Map bar and hex assembly both display reported work"))
 	expect(map_screen.caption.text == "Creating map...", "Map creation displays its own progress screen")
 	expect(app.transitioning and app.game == null and not app.menus.menu_background.active, "Preparation is covered and the menu stops before scene creation")
+	expect(not app.music_controls.visible, "Music button stays hidden while preparing a match")
 	app.start_new_game(99, "very_small")
 	var responsive_frames := 0
 	var floating_birds := false
@@ -69,11 +80,20 @@ func run() -> void:
 	screen.set_progress(0.5)
 	screen.set_progress(0.2)
 	expect(screen.progress_bar.value == 0.5, "Late progress updates cannot move the bar backwards")
+	screen._process(5.0)
+	expect(screen.hex_art.progress == 0.5 and screen.percentage.text == "50%", "Hex animation never advances the reported loading progress")
 	screen.set_progress(2.0)
 	expect(screen.progress_bar.value == 1.0 and screen.percentage.text == "100%", "Progress is clamped to completion")
 	screen.queue_free()
 	expect(not floating_birds and not app.game.view.birds.visible, "Birds stay hidden during covered preparation and island entrance")
 	var game = app.game
+	var focus_settings = root.get_node("Gameplay")
+	var previous_focus_pause: bool = focus_settings.pause_on_focus_loss
+	focus_settings.set_preference("pause_on_focus_loss",true,false)
+	app._notification(Node.NOTIFICATION_APPLICATION_FOCUS_OUT)
+	expect(paused,"Focus-loss preference pauses a real solo match")
+	app.continue_game()
+	focus_settings.set_preference("pause_on_focus_loss",previous_focus_pause,false)
 	var prepared_value_syncs: int = game.view.static_batches.sync_count
 	var prepared_value_rebuilds: int = game.view.static_batches.terrain_rebuild_count
 	game.view.value_heatmap.set_active(true)
@@ -85,6 +105,11 @@ func run() -> void:
 	expect(game.view.unit_sprites == warmup_board.unit_sprites and game.view.get_node_or_null("GraphicsWarmup") == null and warmup.prepared_frames == boot_frames, "Matches reuse application texture caches without repeating graphics warmup")
 	expect(app.startup_viewport.render_target_update_mode == SubViewport.UPDATE_DISABLED, "Retained startup resources stop rendering after boot")
 	expect(warmup.completed and not warmup.visible and warmup.prepared_frames > 0, "Warmup completes under the cover and hides its retained specimens")
+	expect(warmup.has_node("WarmupRoadSurface") and warmup.has_node("WarmupRoadBorder"), "Startup submits the real road and preview surfaces")
+	expect(warmup.get_node("WarmupRoadSurface").material_override == game.view.roads.material, "Matches reuse the exact road material warmed at boot")
+	var road_meshes: int = game.view.roads.mesh_cache.size()
+	game.view.roads.tile_mesh(37, game.view.COLORS[0].darkened(game.view.roads.DARKENING))
+	expect(game.view.roads.mesh_cache.size() == road_meshes, "Road junction geometry is preloaded before the first placement")
 	expect(warmup.rendered_passes == (0 if DisplayServer.get_name() == "headless" else 3), "Native warmup actually draws the variants; headless never waits for GPU signals")
 	var cached_frames: int = game.view.unit_sprites.frames.size()
 	var cached_outlines: int = game.view.hover_outline_cache.size()

@@ -106,7 +106,7 @@ func verify_ridges() -> void:
 				expect(direct.size() == 3 and coord in direct, "Scouts use the pass as a direct route across a ridge")
 				rules.cells[coord]["mountain"] = true
 				var detour: Array = rules.movement_path(source, target)
-				expect(detour.size() > direct.size(), "Closing the shortcut requires a longer route around the ridge")
+				expect(detour.size() > direct.size() or detour.is_empty() and rules.friendly_routes(source).has(target), "Closing the shortcut requires a longer route or a multi-turn march around the ridge")
 				rules.cells[coord]["mountain"] = false
 				rules.cells[source]["unit"] = 0
 				break

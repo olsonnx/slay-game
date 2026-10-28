@@ -225,12 +225,12 @@ func run() -> void:
 	game.recruit_button.pressed.emit()
 	expect(events == [&"ui_close"] and not game.shop_panel.visible, "Closing a menu uses close instead of duplicate click feedback")
 	game.active_kingdom()["gold"] = 100
-	game.choose_building("house")
+	game.choose_building("city")
 	global_sound.stop_all()
 	events.clear()
 	var empty: Vector2i = game.NONE
 	for coord in game.active_kingdom()["hexes"]:
-		if game.rules.can_build(coord, 0, "house"):
+		if game.rules.can_build(coord, 0, "city"):
 			empty = coord
 			break
 	game.click_hex(empty)
@@ -317,7 +317,7 @@ func run() -> void:
 	root.add_child(menus)
 	menus.open_options(menus.Screen.MAIN)
 	var options = menus.options_view
-	expect(menus.options_panel.visible and options.sound_sliders.size() == 4, "Shared Options exposes all four audio sliders")
+	expect(menus.options_panel.visible and options.sound_sliders.size() == 5, "Shared Options exposes all five audio sliders")
 	var previous_path: String = global_sound.settings_path
 	global_sound.settings_path = path
 	var before_master: float = global_sound.get_volume(&"Master")
@@ -326,6 +326,8 @@ func run() -> void:
 	var before_sfx: float = global_sound.get_volume(&"SFX")
 	options.sound_sliders[&"Ambience"].value_changed.emit(17.0)
 	expect(is_equal_approx(global_sound.get_volume(&"Ambience"), 0.17) and is_equal_approx(global_sound.get_volume(&"SFX"), before_sfx), "Ambience slider adjusts its own category without changing game effects")
+	options.sound_sliders[&"Music"].value_changed.emit(31.0)
+	expect(is_equal_approx(global_sound.get_volume(&"Music"), 0.31) and is_equal_approx(global_sound.get_volume(&"Master"), before_master), "Music slider changes only the music category")
 	options.sound_mute.toggled.emit(true)
 	expect(global_sound.is_muted(), "Mute control changes the master mute state")
 	options.sound_mute.toggled.emit(false)
