@@ -147,7 +147,7 @@ func run() -> void:
 	game.choose_unit(1)
 	right_click()
 	expect(game.action_mode == "" and game.recruit_tier == 0, "RMB cancels recruitment")
-	game.choose_building("house")
+	game.choose_building("city")
 	right_click()
 	expect(game.action_mode == "", "RMB cancels building placement")
 	game.open_shop("build")
@@ -165,6 +165,11 @@ func run() -> void:
 	game.hovered = empty
 	game.refresh_ui()
 	expect(game.view.intent_preview.get_meta("kind") == "move" and game.view.intent_preview.get_meta("valid"), "Hovered movement tile shows a valid arrow preview")
+	for hub in [unit, empty]:
+		if game.cells[hub]["capital"] < 0: game.cells[hub]["building"] = "city"
+		game.cells[hub]["tree"] = false
+		game.cells[hub]["grave"] = false
+	game.view.render_cells(game.cells)
 	game.choose_unit(2)
 	game.hovered = empty
 	game.refresh_ui()
@@ -182,6 +187,8 @@ func run() -> void:
 		expect(badge.y < head.y - 35, "Upgrade badge remains above the soldier in angled and overhead views")
 	game.view.toggle_top_down()
 	game.hovered = empty
+	game.cells[empty]["building"] = ""
+	game.view.render_cells(game.cells)
 	var count_before: int = game.view.unit_actors.size()
 	game.choose_building("tower")
 	game.refresh_ui()
@@ -191,9 +198,9 @@ func run() -> void:
 	game.view.overlays.invalidate()
 	game.refresh_ui()
 	expect(game.view.intent_preview.get_node("GhostBuilding") == tower_ghost and tower_ghost.get_child(0).material_override == tower_material, "Hover refresh retains preview meshes and materials")
-	game.choose_building("house")
+	game.choose_building("city")
 	game.refresh_ui()
-	expect(game.view.intent_preview.has_node("GhostBuilding") and game.view.intent_preview.get_meta("kind") == "house", "House placement previews the selected building")
+	expect(game.view.intent_preview.has_node("GhostBuilding") and game.view.intent_preview.get_meta("kind") == "city", "City placement previews the selected building")
 	expect(tower_ghost.get_parent() == game.view.overlays.building_storage and tower_ghost.get_child(0).layers == 0, "Inactive previews return to their hidden cache")
 	expect(game.view.unit_actors.size() == count_before and game.cells[empty]["building"] == "", "Previews never mutate gameplay or register as real units")
 	game.hovered = unit

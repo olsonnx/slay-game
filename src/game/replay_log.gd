@@ -3,6 +3,7 @@ extends RefCounted
 ## Only authoritative rules opt in. AI search copies never inherit the recorder.
 const Snapshots = preload("res://src/game/state_snapshot.gd")
 const Summary = preload("res://src/game/replay_summary.gd")
+const Filename = preload("res://src/game/replay_filename.gd")
 const FORMAT := "slay-replay"
 const VERSION := 2
 const DIRECTORY := "user://replays"
@@ -100,6 +101,7 @@ func start(model, metadata: Dictionary = {}, target_path := "") -> bool:
 	var initial := raw_position(model)
 	previous = copy_index(initial)
 	append_record({"type":"header", "format":FORMAT, "version":1,
+		"game_version":ProjectSettings.get_setting("application/config/version", ""),
 		"created_utc":Time.get_datetime_string_from_system(true), "seed":model.level_seed,
 		"rules":model.rule_mode, "map_size":model.map_size, "factions":model.faction_count,
 		"humans":model.human_factions.duplicate(), "names":model.faction_names.duplicate(), "metadata":metadata.duplicate(true),
@@ -180,7 +182,7 @@ func save_completed(model) -> void:
 	error = ""
 	var target := destination
 	if target == "":
-		target = DIRECTORY.path_join("%s-%s-%s.jsonl" % [Time.get_datetime_string_from_system().replace(":", "-"), model.level_seed, Time.get_ticks_usec()])
+		target = Filename.available_path(DIRECTORY, Filename.filename(header, rows))
 	var directory_error := DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(target.get_base_dir()))
 	if directory_error != OK:
 		error = error_string(directory_error)

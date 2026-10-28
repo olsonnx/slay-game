@@ -205,6 +205,7 @@ func check_departure_depth() -> void:
 				view.pitch = pitch
 				view.yaw = yaw
 				view.update_camera()
+				var normal_far: float = view.camera.far
 				view.start_level_transition(false)
 				view.island_transition.tween.pause()
 				expect(view.water.material_override.get_shader_parameter("backdrop_depth") == true, "Departure water stays behind falling gameplay tiles")
@@ -212,18 +213,32 @@ func check_departure_depth() -> void:
 					var home: Vector3 = view.coord_position(tile.get_meta("hex"))
 					var depth: float = -view.camera.to_local(tile.get_parent().global_transform * home).z
 					var destination: Vector3 = view.island_transition.destinations[tile]
+					var first_tile: Node3D = view.island_transition.destinations.keys()[0]
+					var common_offset: Vector3 = view.island_transition.destinations[first_tile] - view.coord_position(first_tile.get_meta("hex"))
+					expect((destination - home).is_equal_approx(common_offset), "Departing tiles share one travel distance instead of compressing together at the screen edge")
 					for amount in [0.1, 0.5, 1.0]:
 						view.island_transition._departing_position(amount, tile, destination)
-						expect(is_equal_approx(tile.position.x, home.x) and is_equal_approx(tile.position.z, home.z) and tile.position.y < home.y, "Gameplay departure falls vertically without crossing a neighbour's footprint")
+						if pitch <= deg_to_rad(65.0):
+							expect(is_equal_approx(tile.position.x, home.x) and is_equal_approx(tile.position.z, home.z) and tile.position.y < home.y, "Angled gameplay departure falls vertically without crossing a neighbour's footprint")
+						else:
+							expect(view.camera.unproject_position(tile.global_position).y > view.camera.unproject_position(tile.get_parent().global_transform * home).y, "Overhead departure visibly moves down the screen")
 						expect(-view.camera.to_local(tile.global_position).z > depth, "A departing gameplay tile moves farther from the camera at every supported angle")
+						expect(-view.camera.to_local(tile.global_position + Vector3.DOWN).z < view.camera.far, "The whole falling tile stays inside the camera depth range")
 					var highest_point: Vector3 = tile.global_position + Vector3.UP * 3.0
-					expect(view.camera.unproject_position(highest_point).y > root.get_visible_rect().size.y or -view.camera.to_local(highest_point).z > view.camera.far, "Tile and tall props clear the screen or overhead far plane before departure ends")
+					expect(view.camera.unproject_position(highest_point).y > root.get_visible_rect().size.y, "Tile and tall props clear the screen before departure ends without far-plane clipping")
 				view.cancel_level_transition()
+				expect(is_equal_approx(view.camera.far, normal_far), "Cancelling departure restores the normal camera depth range")
 				expect(view.water.material_override.get_shader_parameter("backdrop_depth") == false and view.controls_enabled, "Cancelling departure restores physical water and controls")
 				for tile in view.tile_nodes.values():
 					expect(tile.position == view.coord_position(tile.get_meta("hex")), "Cancellation restores every tile to its map position")
+	view.pitch = 0.92
+	view.update_camera()
+	var finished_far: float = view.camera.far
 	view.start_level_transition(false)
+	view.update_camera()
+	expect(view.camera.far > finished_far and is_equal_approx(view.island_transition.departure_far, finished_far), "A camera refresh retains enough departure depth and remembers the normal range")
 	view.island_transition.finish()
+	expect(is_equal_approx(view.camera.far, finished_far), "Finished departure restores the normal camera depth range")
 	expect(view.water.material_override.get_shader_parameter("backdrop_depth") == false, "Finished departure restores the physical water depth")
 	view.start_level_transition(true)
 	expect(view.water.material_override.get_shader_parameter("backdrop_depth") == false, "Arrival retains physical water depth")

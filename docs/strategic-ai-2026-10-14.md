@@ -1,5 +1,7 @@
 # Strategic AI for large maps
 
+**28 October unified rollout:** gameplay now uses this planner on every map size. New matches explicitly select `strategic`; old `auto` configurations also select it without a size threshold. Difficulty budgets and local risk handling remain unchanged. The size-based rollout below is historical. See [unified AI verification](unified-ai-2026-10-28.md).
+
 **16 October update:** automatic selection now starts at 200 actual cell records, covering Large, Very Large and Huge presets and similarly sized editor maps. Large-map Hard simulations reproduced growing midgame waits with the old backend (individual faction turns exceeding 11 seconds by turn 8). On identical crowded Large positions across three seeds, individual searches took about 0.3–1.6 seconds with the beam planner versus 11–29 ms with strategic assignments. Three nine-round Large/Hard simulations completed after the change, including Aster's turns 7 and 8. This is a planning-performance fix; the original reported position could not be reconstructed without its seed or replay. It does not establish identical playing strength between the planners.
 
 **15 October update:** the [replay-driven AI fixes](ai-replay-fixes-2026-10-15.md) revise shared spending priorities, bridge access valuation, supply-cut objectives and breach protection. Independent queued orders retain normal validation and supply priorities refresh on replanning. The assignment budgets and worker architecture described here remain in place; measurements below predate that update.

@@ -5,8 +5,8 @@ const Events = preload("res://src/game/event_catalog.gd")
 const Catalog = preload("res://src/game/game_catalog.gd")
 const Rules = preload("res://src/game/kingdom_rules.gd")
 const Sizes = preload("res://src/game/map_sizes.gd")
-const FIELDS := ["owner", "unit", "capital", "tree", "grave", "building", "value", "mana_source", "mountain", "event"]
-const TOOLS := ["Land", "Water", "Owner", "Value", "Mountain", "Tree", "Grave", "Mana source", "Capital", "Scout", "Soldier", "Knight", "House", "Tower", "Bridge", "Clear objects", "Event", "Player start", "Bear cave", "Wolf den", "Boar burrow"]
+const FIELDS := ["owner", "unit", "capital", "tree", "grave", "building", "value", "mana_source", "mountain", "event", "road"]
+const TOOLS := ["Land", "Water", "Owner", "Value", "Mountain", "Tree", "Grave", "Mana source", "Capital", "Scout", "Soldier", "Knight", "City", "Road", "Tower", "Bridge", "Clear objects", "Event", "Player start", "Bear cave", "Wolf den", "Boar burrow"]
 const LAIR_TOOLS := {"Bear cave":"bear", "Wolf den":"wolf", "Boar burrow":"boar"}
 const MODERN_TOOLS := ["Mountain", "Mana source", "Bridge", "Event", "Bear cave", "Wolf den", "Boar burrow"]
 const TILE_TOOLS := ["Land", "Water", "Mountain", "Bridge"]
@@ -36,8 +36,12 @@ func state() -> Dictionary:
 	for coord in coords:
 		var row := {"q": coord.x, "r": coord.y}
 		for field in FIELDS:
-			row[field] = cells[coord][field]
+			row[field] = cells[coord].get(field, false) if field == "road" else cells[coord][field]
+		if cells[coord].has("road_links"):
+			row["road_links"] = []
+			for next in cells[coord].road_links: row.road_links.append([next.x, next.y])
 		if cells[coord].get("lair", "") != "": row["lair"] = cells[coord].lair
+		if cells[coord].get("settlement_name", "") != "": row["settlement_name"] = cells[coord].settlement_name
 		if cells[coord].get("treasure", 0) > 0: row["treasure"] = cells[coord].treasure
 		rows.append(row)
 	return {"format": "slay-level", "version": 1, "title": title, "size": map_size,
@@ -111,6 +115,8 @@ func in_bounds(coord: Vector2i) -> bool:
 	return Vector2(at.x, at.z).length() <= Sizes.generation_bounds(map_size).x
 
 func clear_objects(cell: Dictionary) -> void:
+	cell.erase("road")
+	cell.erase("road_links")
 	for field in ["lair","lair_wait","animal","animal_home","animal_target","treasure"]: cell.erase(field)
 	cell.merge({"unit": 0, "capital": -1, "tree": false, "grave": false,
 		"building": "", "mana_source": false, "event": ""}, true)
@@ -165,21 +171,28 @@ func paint(coord: Vector2i, tool: String, owner: int, value: int, event_id := ""
 			if cell["building"] == "bridge": return false
 			clear_objects(cell)
 		elif not cell["mountain"] and cell["building"] != "bridge":
-			if tool in ["Capital", "Scout", "Soldier", "Knight", "House", "Tower"] and cell["owner"] < 0: return false
-			if tool == "Mana source":
+			if tool in ["Capital", "Scout", "Soldier", "Knight", "City", "Tower"] and cell["owner"] < 0: return false
+			if tool == "Road":
+				if cell.owner < 0: return false
+				cell["road"] = true
+			elif tool == "Mana source":
 				if cell.get("lair", "") != "": clear_objects(cell)
 				cell["mana_source"] = true
 			else:
 				# Mana is a terrain attribute and can coexist with structures.
 				var mana: bool = cell["mana_source"]
 				var capital: int = cell["capital"] if tool in ["Scout", "Soldier", "Knight"] else -1
+				var building: String = cell["building"] if tool in ["Scout", "Soldier", "Knight"] and cell["building"] == "city" else ""
+				var road: bool = cell.get("road", false)
 				clear_objects(cell)
 				cell["mana_source"] = mana
 				cell["capital"] = capital
+				cell["building"] = building
+				if road: cell["road"] = true
 				match tool:
 					"Capital": cell["capital"] = cell["owner"]
 					"Scout", "Soldier", "Knight": cell["unit"] = ["Scout", "Soldier", "Knight"].find(tool) + 1
-					"House", "Tower": cell["building"] = tool.to_lower()
+					"City", "Tower": cell["building"] = tool.to_lower()
 					"Tree": cell["tree"] = true
 					"Grave": cell["grave"] = true
 					"Event": cell["event"] = event_id
@@ -196,7 +209,11 @@ func restore(data: Dictionary) -> void:
 	for row in data["cells"]:
 		var cell: Dictionary = Rules.new().make_cell(int(row["owner"]))
 		for field in FIELDS:
-			cell[field] = row[field]
+			cell[field] = row.get(field, false) if field == "road" else row[field]
+		if row.get("settlement_name", "") != "": cell["settlement_name"] = row.settlement_name
+		if row.has("road_links"):
+			cell["road_links"] = []
+			for link in row.road_links: cell.road_links.append(Vector2i(int(link[0]), int(link[1])))
 		if row.get("lair", "") != "":
 			cell["lair"] = row.lair
 			cell["lair_wait"] = 0
@@ -265,16 +282,25 @@ func read_data(data: Variant) -> String:
 		for field in ["tree", "grave", "mana_source", "mountain"]:
 			if not row.get(field) is bool: return Loc.text("Invalid terrain attributes.")
 		if row.get("event") is String: row["event"] = Events.canonical_id(row["event"])
-		if row.get("building") not in ["", "house", "tower", "bridge"] or (row.get("event") != "" and not Events.EVENTS.has(row.get("event"))): return "Unsupported object."
+		if row.get("building") == "house": row["building"] = "city"
+		if not row.get("road", false) is bool: return Loc.text("Invalid road attribute.")
+		if not row.get("settlement_name", "") is String or row.get("settlement_name", "").length() > 40: return Loc.text("Invalid settlement name.")
+		if row.has("road_links"):
+			if not row.road_links is Array or row.road_links.size() > 6: return Loc.text("Invalid road connections.")
+			for link in row.road_links:
+				if not link is Array or link.size() != 2 or not is_number(link[0]) or not is_number(link[1]): return Loc.text("Invalid road connections.")
+				if link[0] != floorf(link[0]) or link[1] != floorf(link[1]) or Rules.Grid.distance(coord, Vector2i(int(link[0]), int(link[1]))) != 1: return Loc.text("Invalid road connections.")
+		if row.get("road", false) and (row.owner < 0 or row.mountain or row.building == "bridge"): return Loc.text("Roads need owned land.")
+		if row.get("building") not in ["", "city", "tower", "bridge"] or (row.get("event") != "" and not Events.EVENTS.has(row.get("event"))): return "Unsupported object."
 		if row.get("lair", "") not in ["","bear","wolf","boar"]: return "Unsupported object."
 		if row.get("lair", "") != "" and (row.owner != -1 or row.unit != 0 or row.capital >= 0 or row.tree or row.grave or row.mana_source or row.mountain or row.building != "" or row.event != ""): return Loc.text("Lairs need empty neutral land.")
 		if row["capital"] >= 0 and row["capital"] != row["owner"]: return Loc.text("Capital must belong to its province.")
-		if (row["unit"] > 0 or row["building"] in ["house", "tower"]) and row["owner"] < 0: return Loc.text("Units and buildings need an owner.")
+		if (row["unit"] > 0 or row["building"] in ["city", "tower"]) and row["owner"] < 0: return Loc.text("Units and buildings need an owner.")
 		var objects := int(row["tree"]) + int(row["grave"]) + int(row["building"] != "") + int(row["unit"] > 0) + int(row["capital"] >= 0) + int(row["event"] != "")
 		if row.has("treasure"):
 			if not is_number(row.treasure) or row.treasure < 1 or row.treasure > 10000 or row.owner != -1 or objects > 0 or row.mountain or row.get("lair", "") != "": return Loc.text("Treasure needs empty neutral land and a positive gold reward.")
 		# Generated capitals can share their tile with a soldier.
-		if objects > 1 and not (objects == 2 and row["unit"] > 0 and row["capital"] >= 0): return Loc.text("Objects overlap on a province.")
+		if objects > 1 and not (objects == 2 and row["unit"] > 0 and (row["capital"] >= 0 or row["building"] == "city")): return Loc.text("Objects overlap on a province.")
 		if row["mountain"] and (row["owner"] != -1 or objects > 0 or row["mana_source"] or row["value"] != 0): return Loc.text("Mountain provinces must be empty and neutral.")
 		if row["building"] == "bridge" and (row["owner"] != -1 or objects != 1 or row["mana_source"] or row["value"] != 0): return Loc.text("Bridges must be empty, neutral and zero-value.")
 		if not row["mountain"] and row["building"] != "bridge" and row["value"] < 1: return Loc.text("Land needs a value from 1 to 6.")

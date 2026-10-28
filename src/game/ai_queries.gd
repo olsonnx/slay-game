@@ -8,9 +8,12 @@ var regions: Dictionary = {}
 var targets: Dictionary = {}
 var frontiers: Dictionary = {}
 var danger: Dictionary = {}
+var army_danger: Dictionary = {}
 var defenses: Dictionary = {}
 var banks: Dictionary = {}
 var banks_ready := false
+var unit_wages: Dictionary = {}
+var travel_cache: Dictionary = {}
 var supports: Dictionary = {}
 var adjacent: Dictionary = {}
 var candidate_sets: Dictionary = {}
@@ -34,23 +37,26 @@ func reply_strength(target: Vector2i, faction: int) -> int:
 	var key := Vector3i(target.x,target.y,faction)
 	if frontier_replies.has(key): return frontier_replies[key]
 	var strength := 0
-	for next in [target] + neighbors(target):
-		var owner: int = model.unit_faction(next) if model.cells[next]["unit"] > 0 else model.cells[next]["owner"]
-		if owner < 0 or owner == faction or model.is_mountain(next) or model.is_barrier(next): continue
-		var component := region(next)
-		if not army_strengths.has(component["id"]):
-			var rank := 0
-			for member in component["members"]:
-				if model.unit_faction(member) != owner or model.cells[member]["unit"] == 0: continue
-				var home := support(member)
-				if home.is_empty(): continue
-				var summary := bank_summary(home)
-				if home["gold"] + summary["income"] - summary["upkeep"] < 0: continue
-				rank = maxi(rank,model.cells[member]["unit"])
-			army_strengths[component["id"]] = rank
-		strength = maxi(strength,army_strengths[component["id"]])
+	for source in model.cells:
+		var cell: Dictionary = model.cells[source]
+		if cell.unit == 0 or model.unit_faction(source) < 0 or model.unit_faction(source) == faction: continue
+		var bank: Dictionary = support(source)
+		if bank.is_empty(): continue
+		var summary := bank_summary(bank)
+		if bank.gold + summary.income - summary.upkeep < 0: continue
+		if source != target and attack_reach(source, target): strength = maxi(strength, cell.unit)
 	frontier_replies[key] = strength
 	return strength
+
+func travel(source: Vector2i) -> Dictionary:
+	if not travel_cache.has(source): travel_cache[source] = preload("res://src/game/logistics.gd").routes(model, source)
+	return travel_cache[source]
+
+func attack_reach(source: Vector2i, target: Vector2i) -> bool:
+	var reach := travel(source)
+	for next in neighbors(target):
+		if reach.costs.get(next, 2147483647) + 2 <= reach.budget: return true
+	return false
 
 func supply_risk(coord: Vector2i) -> float:
 	if supply_risks.has(coord): return supply_risks[coord]
@@ -125,10 +131,14 @@ func capture_value(coord: Vector2i, faction: int) -> float:
 	if cell.get("animal", "") != "": value += 12.0
 	if cell["owner"] >= 0 and cell["owner"] != faction: value += 5.0 + cut_value(coord)
 	if cell["capital"] >= 0: value += 30.0
+	if cell["building"] == "city": value += 14.0
+	if cell.get("road", false): value += 2.0
 	if cell["mana_source"]: value += 5.0
 	if cell["building"] == "monument":
 		value += float(cell.get("site_income",0))*4.0+float(cell.get("site_mana",0))*8.0
 		if cell.get("site_steel",false): value += 12.0
+		for field in preload("res://src/game/event_sites.gd").BONUS_FIELDS.values():
+			if cell.get(field, false): value += 12.0
 	if cell["unit"] > 0: value += [0.0,4.0,8.0,14.0][cell["unit"]]
 	if model.is_bridge(coord) and cell["unit"] > 0 and model.unit_faction(coord) != faction: value += 8.0
 	value += campaign_value(coord,faction)
@@ -309,7 +319,7 @@ func bridge_campaign(site: Vector2i, capital: Vector2i) -> float:
 			# Upgrading a necessary guard does not free it for the landing.
 			if cell["unit"] > 0 and not component["free_units"].has(source): continue
 			var price: int = model.recruitment_cost(source,faction,rank,capital)
-			var wages: int = model.unit_upkeep(rank,faction) - model.unit_upkeep(cell["unit"],faction)
+			var wages: int = unit_upkeep(rank,faction) - unit_upkeep(cell["unit"],faction)
 			if price >= 0 and bank["gold"] >= model.BRIDGE_COST + price + 10 and finances["income"] - finances["upkeep"] - wages >= 0:
 				affordable = true
 				break
@@ -411,29 +421,16 @@ func neighbors(coord: Vector2i) -> Array:
 	return adjacent[coord]
 
 func candidate_targets(source: Vector2i) -> Array:
-	# Search enumeration needs destination membership, not source-rooted paths.
-	# Regions are immutable here; authoritative commands still build/validate paths.
-	if model.cells[source]["moved"] or model.is_mountain(source) or model.is_barrier(source):
-		return []
-	var component := region(source)
-	var strength: int = model.cells[source]["unit"]
-	var key := Vector2i(component["id"], strength)
-	if not candidate_sets.has(key):
-		var result: Array = []
-		var faction: int = model.unit_faction(source)
-		for coord in component["members"]:
-			var cell: Dictionary = model.cells[coord]
-			if (cell["building"] in ["", "monument"] or model.is_bridge(coord)) and (cell["unit"] == 0 or cell["unit"] == strength and strength < 3):
-				result.append(coord)
-		for coord in component["boundary"]:
-			var protection: int = model.attack_defense(coord,faction) if model.has_wildlife(coord) else defense(coord)
-			if (model.cells[coord]["owner"] != faction or model.is_bridge(coord) or model.has_wildlife(coord)) and (strength > protection or strength == 3 and model.cells[coord]["unit"] == 3 and model.unit_faction(coord) != faction):
-				result.append(coord)
-		candidate_sets[key] = result
-	return candidate_sets[key]
+	if model.cells[source]["moved"]: return []
+	return reachable_targets(source).keys()
 
-func _init(state) -> void:
+func _init(state, preparation_cache: Dictionary = {}) -> void:
 	model = state
+	# Only these immutable facts may outlive one purchase. The controller owns
+	# invalidation; defence, wildlife, economy and recruitment always start fresh.
+	for key in ["adjacent", "travel_cache", "army_danger"]:
+		if not preparation_cache.has(key): preparation_cache[key] = {}
+		set(key, preparation_cache[key])
 
 func friendly_routes(source: Vector2i) -> Dictionary:
 	if not routes.has(source):
@@ -455,13 +452,18 @@ func support(coord: Vector2i) -> Dictionary:
 		supports[coord] = model.unit_kingdom(coord)
 	return supports[coord]
 
+func unit_upkeep(tier: int, faction: int) -> int:
+	var key := Vector2i(tier, faction)
+	if not unit_wages.has(key): unit_wages[key] = model.unit_upkeep(tier, faction)
+	return unit_wages[key]
+
 func bank_summary(kingdom: Dictionary) -> Dictionary:
 	var capital: Vector2i = kingdom["capital"]
 	if not banks_ready:
 		# The public upkeep query scans off-land units for each kingdom. A search
 		# position is immutable, so account for every unit once across all banks.
 		for bank in model.kingdoms.values():
-			banks[bank["capital"]] = {"income": model.income(bank), "upkeep": 0}
+			banks[bank["capital"]] = {"income": model.income(bank), "upkeep": model.infrastructure_upkeep(bank)}
 		for coord in model.cells:
 			var cell: Dictionary = model.cells[coord]
 			if cell["unit"] == 0:
@@ -470,7 +472,7 @@ func bank_summary(kingdom: Dictionary) -> Dictionary:
 			if home.is_empty():
 				home = support(coord)
 			if not home.is_empty():
-				banks[home["capital"]]["upkeep"] += model.unit_upkeep(cell["unit"], home["owner"])
+				banks[home["capital"]]["upkeep"] += unit_upkeep(cell["unit"], home["owner"])
 		banks_ready = true
 	return banks[capital]
 
@@ -503,32 +505,30 @@ func region(source: Vector2i) -> Dictionary:
 func threats(faction: int) -> Dictionary:
 	if not danger.has(faction):
 		var result: Dictionary = {}
-		var groups: Dictionary = {}
-		var order: Dictionary = {}
-		for source in model.cells:
-			order[source] = order.size()
-			var unit: Dictionary = model.cells[source]
-			if unit["unit"] == 0 or model.unit_faction(source) == faction:
-				continue
-			var component := region(source)
-			var key: int = component["id"]
-			if not groups.has(key):
-				groups[key] = {"component": component, "strength": 0, "sources": []}
-			groups[key]["strength"] = maxi(groups[key]["strength"], unit["unit"])
-			groups[key]["sources"].append(source)
-		# Every unit in one accessible region threatens the same boundary. Aggregate
-		# once instead of appending its source to every border tile repeatedly.
-		for group in groups.values():
-			for target in group["component"]["boundary"]:
-				if model.cells[target]["owner"] != faction and model.unit_faction(target) != faction:
-					continue
-				if not result.has(target):
-					result[target] = {"strength": group["strength"], "sources": group["sources"]}
-				else:
-					result[target]["strength"] = maxi(result[target]["strength"], group["strength"])
-					var combined: Array = result[target]["sources"] + group["sources"]
-					combined.sort_custom(func(a, b): return order[a] < order[b])
-					result[target]["sources"] = combined
+		if not army_danger.has(faction):
+			# A multi-source flood over ALL land (even impassable/enemy land)
+			# gives a conservative lower bound. A real route cannot be shorter.
+			# Reject distant armies before weighted pathfinding, including roads.
+			var distances := threat_distances(faction)
+			for source in model.cells:
+				var unit: Dictionary = model.cells[source]
+				if unit.unit == 0 or model.unit_faction(source) == faction: continue
+				if distances.get(source, 2147483647) > Catalog.MOVEMENT[unit.unit] * 2 - 1: continue
+				var travel: Dictionary = travel(source)
+				var touched := {}
+				for approach in travel.parents:
+					if travel.costs[approach] + 2 > travel.budget: continue
+					for target in neighbors(approach):
+						if model.cells[target].owner != faction and model.unit_faction(target) != faction: continue
+						if touched.has(target) or model.is_mountain(target) or model.is_barrier(target): continue
+						touched[target] = true
+						if not result.has(target): result[target] = {"strength":unit.unit,"sources":[source]}
+						else:
+							result[target].strength = maxi(result[target].strength, unit.unit)
+							result[target].sources.append(source)
+			army_danger[faction] = result
+		# Wildlife replaces entries rather than mutating cached army records.
+		result = army_danger[faction].duplicate()
 		# Animals take one adjacent step per World turn, rather than using a
 		# kingdom's unlimited friendly movement. They do not coordinate armies.
 		for source in model.cells:
@@ -542,3 +542,20 @@ func threats(faction: int) -> Dictionary:
 					result[target] = {"strength":maxi(result[target].strength,strength),"sources":result[target].sources+[source]}
 		danger[faction] = result
 	return danger[faction]
+
+func threat_distances(faction: int) -> Dictionary:
+	var distances := {}
+	var queue := []
+	for coord in model.cells:
+		if model.cells[coord].owner == faction or model.unit_faction(coord) == faction:
+			distances[coord] = 0
+			queue.append(coord)
+	var head := 0
+	while head < queue.size():
+		var coord: Vector2i = queue[head]
+		head += 1
+		for next in neighbors(coord):
+			if distances.has(next): continue
+			distances[next] = distances[coord] + 1
+			queue.append(next)
+	return distances

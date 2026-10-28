@@ -50,6 +50,12 @@ func compare_paths(model, host) -> void:
 	else: displayed = model.cells.duplicate(true)
 	for batch in range(3):
 		var prior: Dictionary = model.cells.duplicate()
+		var unpublished := position(model)
+		var prior_rows: Array = comparable_rows(model.replay_log)
+		expect(worker.prefetch_movements(host, 1), "Next batch starts on the private worker during playback")
+		expect(not worker.prefetch_movements(host, 1), "Only one movement batch can be in flight")
+		while not WorkerThreadPool.is_task_completed(worker.movement_prefetch.task): await process_frame
+		expect(position(model) == unpublished and comparable_rows(model.replay_log) == prior_rows, "Completed prefetch cannot publish rules or replay before the playback boundary")
 		expected = serial.ai_movements(1)
 		actual = await worker.movements_async(host, 1)
 		expect(actual == expected, "Worker movement preserves serial decisions and animation records")
@@ -150,6 +156,32 @@ func run() -> void:
 	while not done[0]: await process_frame
 	expect(position(cancelled) == before, "Cancellation discards the complete worker transaction")
 	expect(opponent.simulation_job == null, "Cancellation releases the private worker lane")
+	host.closing = false
+	expect(opponent.prefetch_movements(host, 1), "Prefetch can start after an acknowledged cancellation")
+	host.closing = true
+	await opponent.discard_prefetch(host)
+	expect(position(cancelled) == before and opponent.movement_prefetch.is_empty() and opponent.simulation_job == null, "Closing during playback cancels and drains prefetch without publishing")
+	host.closing = false
+	var pausable = Rules.new()
+	pausable.generate(42, "very_small", 3)
+	var frozen := position(pausable)
+	var delayed = pausable.KingdomAI.new(pausable)
+	expect(delayed.prefetch_movements(host, 1), "Pause fixture starts private work")
+	while not WorkerThreadPool.is_task_completed(delayed.movement_prefetch.task): await process_frame
+	paused = true
+	var published := [false]
+	var publish := func():
+		await delayed.movements_async(host, 1)
+		published[0] = true
+	publish.call()
+	for frame in range(3): await process_frame
+	expect(not published[0] and position(pausable) == frozen, "Paused playback holds a completed prefetch without publishing")
+	paused = false
+	while not published[0]: await process_frame
+	expect(delayed.movement_prefetch.is_empty(), "Resume consumes prefetched work exactly once")
+	var fallback = pausable.KingdomAI.new(pausable)
+	fallback.threaded_simulation = false
+	expect(not fallback.prefetch_movements(host, 1), "Non-worker execution keeps its serial path")
 	host.queue_free()
 	await process_frame
 	print("Simulation worker checks: %d passed, %d failed" % [checks - failures, failures])

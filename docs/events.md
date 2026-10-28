@@ -12,15 +12,15 @@ Encounter markers are generated on neutral Modern land or painted with the edito
 | A noble ransom | Another faction is alive | +20G locally, or +1 mana if below capacity |
 | A crisis of confidence | Connected kingdom with income to sell or at least 10G to invest; no deficit required | Landmark with −1 local income / +10G locally, or −10G locally / landmark with +1 local income. Selling is disabled when the local kingdom earns zero; investing is disabled below 10G. |
 | The Pitchfork Parliament | Spare nonhuman kingdom identity and adjacent passable land | Independent AI kingdom seizes event province and adjacent passable land, with garrisons; or pay the entire local treasury |
-| Invention of stainless steel | Faction owns a Knight and does not control a steel landmark | Landmark granting its current owner −2G upkeep per Knight, faction-wide; does not stack |
+| Invention of stainless steel | Faction owns a Knight and does not control a steel landmark | Landmark granting its current owner −25% Knight wages, faction-wide; does not stack |
 
 Forest coverage is measured by income, not province count: blocked land values divided by all potential land income, including house income. Exactly half uses the paid lumberjack outcome. The catalog, weighted lottery and editor expose one `lumberjack` event. Its title and painting stay the same; story, choice caption and reward adapt to current coverage. Older authored `lumberjack_overgrown` markers migrate to `lumberjack` on load. A treeless kingdom draws a different eligible event instead of spending its encounter on an empty forest-clearance joke. Other connected kingdoms of the same faction are unaffected by either lumberjack. Mana sources remain, but clearing source-bearing trees can reduce mana capacity under the normal rules.
 
 Replacements happen only before reveal. A valid Comet keeps its identity and effects; forest coverage changes the story and reward within the single lumberjack event. Generated encounters exclude bridges as well as mountains. AI choices are checked against the same availability shown to players and fall back to an enabled choice when their preferred option is unavailable.
 
-Persistent encounter rewards construct a conquerable landmark on the encounter province. Comet and economist landmarks contribute signed income to their own connected kingdom, not another treasury of the same faction. A successful altar leaves a landmark and a mana source. A stainless steel landmark reduces its current owner's Knight upkeep by 2G across the faction; multiple steel sites do not stack. Capturing a site transfers its benefit or penalty immediately. An isolated income site pays nothing until reconnected to a kingdom; total kingdom income remains floored at zero.
+Persistent encounter rewards construct a conquerable landmark on the encounter province. Comet and economist landmarks contribute signed income to their own connected kingdom, not another treasury of the same faction. A successful altar leaves a landmark and a mana source. A stainless steel landmark reduces its current owner's Knight wages by 25% (36G to 27G), faction-wide; multiple steel sites do not stack. Capturing a site transfers its benefit or penalty immediately. An isolated income site pays nothing until reconnected to a kingdom; total kingdom income remains floored at zero.
 
-All sites currently share one stone monument model. Occupied monuments shift back-left and their garrisons stand front-right, using the same positions for movement arrivals and settled actors. They survive conquest, Shatter, wildlife raids, cartographer neutralization and replacement-capital selection. Neutral sites grant nobody a reward. Boar rewards and other immediate payouts occur only once, and temporary effects such as the next free spell remain consumable faction effects.
+Builders’ Guilds use a crane, Soldiers’ Barracks have training shields, Scout Lodges have green roofs and supply logs, and Watchtowers have a beacon. Other reward sites retain the stone monument. Occupied monuments shift back-left and their garrisons stand front-right, using the same positions for movement arrivals and settled actors. They survive conquest, Shatter, wildlife raids, cartographer neutralization and replacement-capital selection. Neutral sites grant nobody a reward. Boar rewards and other immediate payouts occur only once, and temporary effects such as the next free spell remain consumable faction effects.
 
 Reward identity and amounts live in the authoritative cell records, so simulations, tutorial checkpoints and replays retain them together with ownership. Legacy recordings can still read their original faction modifiers. Newly spawned rebels use an available identity with its own palette and join the normal AI turn order. Mountains and bridges are excluded from rebellion and cartographer regions.
 
@@ -42,7 +42,7 @@ Unavailable events are replaced using the same weights with unmet requirements e
 | Duel, wizard | 5 each |
 | Altar, comet | 4 each |
 | Goose, regroup | 3 each |
-| Revolt, stainless steel | 2 each |
+| Revolt, stainless steel, Builders’ Guild, Soldiers’ Barracks, Scout Lodge, Watchtower | 2 each |
 | Pit, cartographer | 1 each |
 
 Lumberjack has one lottery entry and weight 8 regardless of forest coverage. Zero-weight entries remain available to the level editor. Heavy clearance remains a real terrain effect even without a gold reward.
@@ -75,3 +75,11 @@ Event option tooltips put separate effects on separate lines, including semicolo
 ## Authoring events
 
 Use **Event Editor.cmd** or the level editor's **Events → Create events…** button. All built-in encounters are available as editable templates; custom packs load at game startup and can be reloaded explicitly in the map editor. The shared validator and runtime support weighted and conditional outcomes, costs, requirements, alternate stories, temporary effects and permanent landmarks. See [Event Editor](event-editor.md) for the complete workflow and effect reference.
+
+## Local development and defense landmarks
+
+Four new encounters construct durable, conquerable structures. Builders’ Guilds halve development cost on their province and the six adjacent friendly provinces. Soldiers’ Barracks halve the owner’s Soldier wages (12G to 6G); Scout Lodges halve Scout wages (4G to 2G). Wage reductions apply faction-wide while controlled. Bonuses of the same kind never stack.
+
+A Watchtower adds one defense to its own province and to friendly units on adjacent provinces, including friendly bridge garrisons. It grants no attack strength, no extra protection to empty neighboring land, and no extra support spreading from a boosted unit. Multiple Watchtowers do not compound this bonus. A protected Knight reaches defense 4 and cannot be bypassed by the ordinary equal-Knight duel. Losing or capturing a structure transfers its benefits immediately.
+
+All four properties are available as landmark checkboxes in the Event Editor, including editable templates for their new encounters. They survive snapshots, AI search copies, multiplayer state and replays.

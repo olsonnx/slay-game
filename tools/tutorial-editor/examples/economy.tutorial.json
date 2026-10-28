@@ -1,6 +1,5 @@
 {
 	"category": "economy",
-	"description": "Understand income, wages and separate treasuries.",
 	"format": "slay-tutorial",
 	"map": {
 		"cells": [
@@ -14,23 +13,25 @@
 				"owner": 0,
 				"q": -4,
 				"r": -1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
 				"capital": 0,
 				"event": "",
 				"grave": false,
-				"mana_source": false,
+				"mana_source": true,
 				"mountain": false,
 				"owner": 0,
 				"q": -4,
 				"r": 0,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -42,9 +43,10 @@
 				"owner": 0,
 				"q": -4,
 				"r": 1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -56,9 +58,10 @@
 				"owner": 0,
 				"q": -3,
 				"r": -1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -70,9 +73,10 @@
 				"owner": 0,
 				"q": -3,
 				"r": 0,
+				"road": false,
 				"tree": false,
-				"unit": 1,
-				"value": 1
+				"unit": 0,
+				"value": 2
 			},
 			{
 				"building": "",
@@ -84,9 +88,10 @@
 				"owner": 0,
 				"q": -3,
 				"r": 1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -98,9 +103,10 @@
 				"owner": 0,
 				"q": -2,
 				"r": -1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -112,9 +118,10 @@
 				"owner": 0,
 				"q": -2,
 				"r": 0,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -126,9 +133,10 @@
 				"owner": 0,
 				"q": -2,
 				"r": 1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -140,23 +148,25 @@
 				"owner": 0,
 				"q": -1,
 				"r": -1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": -1,
+				"r": 0,
+				"road": false,
 				"tree": true,
 				"unit": 0,
-				"value": 1
-			},
-			{
-				"building": "",
-				"capital": -1,
-				"event": "",
-				"grave": false,
-				"mana_source": false,
-				"mountain": false,
-				"owner": 0,
-				"q": -1,
-				"r": 0,
-				"tree": false,
-				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -168,9 +178,10 @@
 				"owner": 0,
 				"q": -1,
 				"r": 1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -179,12 +190,13 @@
 				"grave": false,
 				"mana_source": false,
 				"mountain": false,
-				"owner": -1,
+				"owner": 0,
 				"q": 0,
 				"r": -1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -193,12 +205,13 @@
 				"grave": false,
 				"mana_source": false,
 				"mountain": false,
-				"owner": -1,
+				"owner": 0,
 				"q": 0,
 				"r": 0,
+				"road": false,
 				"tree": false,
-				"unit": 0,
-				"value": 1
+				"unit": 1,
+				"value": 2
 			},
 			{
 				"building": "",
@@ -207,12 +220,13 @@
 				"grave": false,
 				"mana_source": false,
 				"mountain": false,
-				"owner": -1,
+				"owner": 0,
 				"q": 0,
 				"r": 1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -224,6 +238,7 @@
 				"owner": -1,
 				"q": 1,
 				"r": -1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
 				"value": 1
@@ -238,6 +253,7 @@
 				"owner": -1,
 				"q": 1,
 				"r": 0,
+				"road": false,
 				"tree": false,
 				"unit": 0,
 				"value": 1
@@ -252,6 +268,7 @@
 				"owner": -1,
 				"q": 1,
 				"r": 1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
 				"value": 1
@@ -266,37 +283,10 @@
 				"owner": 1,
 				"q": 2,
 				"r": -1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
-			},
-			{
-				"building": "",
-				"capital": -1,
-				"event": "",
-				"grave": false,
-				"mana_source": false,
-				"mountain": false,
-				"owner": 1,
-				"q": 2,
-				"r": 0,
-				"tree": false,
-				"unit": 0,
-				"value": 2
-			},
-			{
-				"building": "",
-				"capital": -1,
-				"event": "",
-				"grave": false,
-				"mana_source": false,
-				"mountain": false,
-				"owner": 1,
-				"q": 3,
-				"r": -1,
-				"tree": false,
-				"unit": 0,
-				"value": 2
+				"value": 1
 			},
 			{
 				"building": "",
@@ -306,11 +296,27 @@
 				"mana_source": false,
 				"mountain": false,
 				"owner": 1,
-				"q": 3,
+				"q": 2,
 				"r": 0,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 1
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 1,
+				"q": 3,
+				"r": 0,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 1
 			}
 		],
 		"factions": [
@@ -376,23 +382,27 @@
 			}
 		],
 		"format": "slay-level",
-		"gold": 10,
-		"player_start": null,
+		"gold": 100,
+		"player_start": [
+			-4,
+			0
+		],
 		"rules": "modern",
-		"seed": 73021,
+		"seed": 1,
 		"size": "small",
-		"title": "Practice: Budget",
+		"title": "Cities and logistics",
 		"version": 1
 	},
 	"opponent_mode": "scripted",
 	"require_victory": false,
 	"steps": [
 		{
+			"confirm": true,
 			"details": {
 
 			},
-			"exercise": "budget",
-			"id": "budget",
+			"exercise": "income",
+			"id": "forecast_before",
 			"kind": "finance",
 			"setup": {
 				"cells": [
@@ -406,23 +416,25 @@
 						"owner": 0,
 						"q": -4,
 						"r": -1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
 						"capital": 0,
 						"event": "",
 						"grave": false,
-						"mana_source": false,
+						"mana_source": true,
 						"mountain": false,
 						"owner": 0,
 						"q": -4,
 						"r": 0,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -434,9 +446,10 @@
 						"owner": 0,
 						"q": -4,
 						"r": 1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -448,9 +461,10 @@
 						"owner": 0,
 						"q": -3,
 						"r": -1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -462,9 +476,10 @@
 						"owner": 0,
 						"q": -3,
 						"r": 0,
+						"road": false,
 						"tree": false,
-						"unit": 1,
-						"value": 1
+						"unit": 0,
+						"value": 2
 					},
 					{
 						"building": "",
@@ -476,9 +491,10 @@
 						"owner": 0,
 						"q": -3,
 						"r": 1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -490,9 +506,10 @@
 						"owner": 0,
 						"q": -2,
 						"r": -1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -504,9 +521,10 @@
 						"owner": 0,
 						"q": -2,
 						"r": 0,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -518,9 +536,10 @@
 						"owner": 0,
 						"q": -2,
 						"r": 1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -532,23 +551,25 @@
 						"owner": 0,
 						"q": -1,
 						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -1,
+						"r": 0,
+						"road": false,
 						"tree": true,
 						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -1,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -560,9 +581,10 @@
 						"owner": 0,
 						"q": -1,
 						"r": 1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -571,12 +593,13 @@
 						"grave": false,
 						"mana_source": false,
 						"mountain": false,
-						"owner": -1,
+						"owner": 0,
 						"q": 0,
 						"r": -1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -585,479 +608,12 @@
 						"grave": false,
 						"mana_source": false,
 						"mountain": false,
-						"owner": -1,
+						"owner": 0,
 						"q": 0,
 						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 0,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 1,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 1,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 1,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 2,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 2,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 3,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": 1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 3,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					}
-				],
-				"factions": [
-					{
-						"color": "86b998ff",
-						"name": "Fern",
-						"terrain": "80ad86ff"
-					},
-					{
-						"color": "d79879ff",
-						"name": "Ember",
-						"terrain": "c58768ff"
-					},
-					{
-						"color": "92acc9ff",
-						"name": "Tide",
-						"terrain": "6e8fb3ff"
-					},
-					{
-						"color": "c5b478ff",
-						"name": "Ochre",
-						"terrain": "b6a66dff"
-					},
-					{
-						"color": "b29acdff",
-						"name": "Aster",
-						"terrain": "a18ab9ff"
-					},
-					{
-						"color": "73b7b7ff",
-						"name": "Cove",
-						"terrain": "659f9eff"
-					},
-					{
-						"color": "d47985ff",
-						"name": "Ruby",
-						"terrain": "b75b67ff"
-					},
-					{
-						"color": "e8b4caff",
-						"name": "Dawn",
-						"terrain": "d5a0b7ff"
-					},
-					{
-						"color": "bfce78ff",
-						"name": "Moss",
-						"terrain": "a4b95cff"
-					},
-					{
-						"color": "9ac1c6ff",
-						"name": "Frost",
-						"terrain": "7cafb6ff"
-					},
-					{
-						"color": "99958eff",
-						"name": "Slate",
-						"terrain": "74716cff"
-					},
-					{
-						"color": "aa99c7ff",
-						"name": "Iris",
-						"terrain": "8875acff"
-					}
-				],
-				"format": "slay-level",
-				"gold": 10,
-				"player_start": null,
-				"rules": "modern",
-				"seed": 73021,
-				"size": "small",
-				"title": "Practice: Budget",
-				"version": 1
-			},
-			"target": null,
-			"task": "Hover over your gold, bottom left",
-			"text": "Hover over gold to see this kingdom's treasury, income, upkeep and net income. Income minus wages settles at the start of your turn. A negative forecast spends savings; it does not automatically mean immediate bankruptcy.",
-			"title": "Read your next turn"
-		},
-		{
-			"details": {
-				"source": [
-					-3,
-					0
-				]
-			},
-			"exercise": "budget",
-			"id": "tree",
-			"kind": "move",
-			"target": [
-				-1,
-				-1
-			],
-			"task": "Clear the friendly forest",
-			"text": "Move your Scout onto the marked forest. Trees and graves block province income. Clearing a tree restores that income and also pays 1 gold immediately.",
-			"title": "Read your next turn"
-		},
-		{
-			"details": {
-
-			},
-			"exercise": "budget",
-			"id": "tree_budget",
-			"kind": "finance",
-			"target": null,
-			"task": "Hover over gold to compare the forecast",
-			"text": "Check gold again: clearing paid 1 immediately and improved recurring income. A one-time payment and a higher forecast are different benefits.",
-			"title": "Read your next turn"
-		},
-		{
-			"details": {
-
-			},
-			"exercise": "budget",
-			"id": "collect",
-			"kind": "end_turn",
-			"target": null,
-			"task": "End turn and collect the balance",
-			"text": "Click End turn. Your treasury receives income minus wages, rather than the full gross income shown in the tooltip. Keep checking the forecast before adding more troops.",
-			"title": "Read your next turn"
-		},
-		{
-			"details": {
-
-			},
-			"exercise": "banks",
-			"focus": [
-				0,
-				0
-			],
-			"id": "first_bank",
-			"kind": "finance",
-			"setup": {
-				"cells": [
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -4,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": 0,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -4,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -4,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -3,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -3,
-						"r": 0,
+						"road": false,
 						"tree": false,
 						"unit": 1,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -3,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -2,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -2,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -2,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -1,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -1,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -1,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 0,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 0,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 0,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": 1,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
 						"value": 2
 					},
 					{
@@ -1068,8 +624,9 @@
 						"mana_source": false,
 						"mountain": false,
 						"owner": 0,
-						"q": 1,
-						"r": 0,
+						"q": 0,
+						"r": 1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
 						"value": 2
@@ -1083,24 +640,41 @@
 						"mountain": false,
 						"owner": -1,
 						"q": 1,
-						"r": 1,
+						"r": -1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
 						"value": 1
 					},
 					{
 						"building": "",
-						"capital": 0,
+						"capital": -1,
 						"event": "",
 						"grave": false,
 						"mana_source": false,
 						"mountain": false,
-						"owner": 0,
-						"q": 2,
-						"r": -1,
+						"owner": -1,
+						"q": 1,
+						"r": 0,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 1
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": -1,
+						"q": 1,
+						"r": 1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 1
 					},
 					{
 						"building": "",
@@ -1111,24 +685,11 @@
 						"mountain": false,
 						"owner": 1,
 						"q": 2,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 3,
 						"r": -1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 1
 					},
 					{
 						"building": "",
@@ -1138,11 +699,27 @@
 						"mana_source": false,
 						"mountain": false,
 						"owner": 1,
-						"q": 3,
+						"q": 2,
 						"r": 0,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 1
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 1,
+						"q": 3,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 1
 					}
 				],
 				"factions": [
@@ -1208,99 +785,91 @@
 					}
 				],
 				"format": "slay-level",
-				"gold": 10,
-				"player_start": null,
+				"gold": 100,
+				"player_start": [
+					-4,
+					0
+				],
 				"rules": "modern",
-				"seed": 73021,
+				"seed": 1,
 				"size": "small",
-				"title": "Practice: Banks",
+				"title": "Cities and logistics",
 				"version": 1
 			},
 			"target": null,
-			"task": "Check the western kingdom's gold",
-			"text": "Your disconnected kingdoms each have 10 gold. Hover over gold to check the selected western kingdom. Faction color does not make their treasuries shared.",
-			"title": "Separate kingdoms, separate gold"
+			"task": "Read your treasury forecast",
+			"text": "Hover over gold in the bottom-left dock. Treasury is money you can spend now; income minus upkeep is next turn's net change. Your forest tile currently earns nothing. Read the forecast, then click Continue.",
+			"title": "Read your treasury forecast"
 		},
 		{
 			"details": {
-				"tier": 1
+
 			},
-			"exercise": "banks",
-			"id": "spend_west",
-			"kind": "recruit",
+			"exercise": "income",
+			"id": "inspect",
+			"kind": "inspect",
 			"target": [
 				-2,
 				0
 			],
-			"task": "Recruit in the western kingdom",
-			"text": "Recruit a Scout on the marked western province. Its 10-gold price empties only the western treasury. Gold held by the eastern kingdom cannot pay for this purchase.",
-			"title": "Separate kingdoms, separate gold"
+			"task": "Inspect a province",
+			"text": "Click the gold-ringed empty province to open its details. Its value is the gold it earns each turn while clear. Cities add recruitment sites, not an income bonus.",
+			"title": "Inspect a province"
 		},
 		{
 			"details": {
 
 			},
-			"exercise": "banks",
-			"id": "other_bank",
-			"kind": "kingdom",
+			"exercise": "income",
+			"id": "develop",
+			"kind": "develop",
 			"target": [
-				1,
+				-2,
 				0
 			],
-			"task": "Select the eastern kingdom",
-			"text": "Click the marked eastern province to select that kingdom's budget. You can switch the dock between kingdoms by selecting their land; opening a capital's details is not required.",
-			"title": "Separate kingdoms, separate gold"
+			"task": "Develop the province",
+			"text": "Click Develop in this province's details. Raising its value from 2 to 3 costs 8 G and adds 1 G to its income each turn. Further development costs more. The cost comes from this province's local treasury.",
+			"title": "Develop the province"
 		},
 		{
 			"details": {
-
+				"source": [
+					0,
+					0
+				]
 			},
-			"exercise": "banks",
-			"id": "east_budget",
-			"kind": "finance",
-			"target": null,
-			"task": "Check the eastern treasury",
-			"text": "Hover over gold. The eastern kingdom still has 10, even though you spent the western kingdom's gold. Each disconnected kingdom must fund its own armies.",
-			"title": "Separate kingdoms, separate gold"
-		},
-		{
-			"details": {
-
-			},
-			"exercise": "banks",
-			"id": "connect",
+			"exercise": "income",
+			"id": "clear_forest",
 			"kind": "move",
 			"target": [
-				0,
+				-1,
 				0
 			],
-			"task": "Capture the gap to join the kingdoms",
-			"text": "Select either western Scout and capture the marked neutral gap. This joins the two regions into one kingdom and pools the remaining gold. Reconnection can rescue land that could not support itself.",
-			"title": "Separate kingdoms, separate gold"
+			"task": "Clear the forest",
+			"text": "Click the blue-ringed Scout, then the gold-ringed forest. Entering clears the tree, pays 1 G immediately, and restores this value-2 tile's 2 G income. Trees and graves block tile income; trees only grow on empty ground.",
+			"title": "Clear the forest"
 		},
 		{
+			"confirm": true,
+			"details": {
+
+			},
+			"exercise": "income",
+			"id": "finance",
+			"kind": "finance",
+			"target": null,
+			"task": "Compare the new forecast",
+			"text": "Hover over gold again. Development added 1 G income and clearing the forest restored 2 G, so income is now 3 G higher. Upkeep is unchanged. Read the forecast and click Continue; the next exercise demonstrates separate treasuries.",
+			"title": "Compare the new forecast"
+		},
+		{
+			"confirm": true,
 			"details": {
 
 			},
 			"exercise": "banks",
-			"id": "joined_budget",
-			"kind": "finance",
-			"target": null,
-			"task": "Check the combined kingdom's budget",
-			"text": "Hover over gold: one connected kingdom now supports both regions. Its treasury contains the gold left from both banks, and the forecast includes their combined income and army wages.",
-			"title": "Separate kingdoms, separate gold"
-		},
-		{
-			"details": {
-
-			},
-			"exercise": "deficit",
-			"focus": [
-				-1,
-				1
-			],
-			"id": "deficit",
-			"kind": "finance",
+			"id": "separate_bank",
+			"kind": "inspect",
 			"setup": {
 				"cells": [
 					{
@@ -1313,23 +882,25 @@
 						"owner": 0,
 						"q": -4,
 						"r": -1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 4
+						"value": 2
 					},
 					{
 						"building": "",
 						"capital": 0,
 						"event": "",
 						"grave": false,
-						"mana_source": false,
+						"mana_source": true,
 						"mountain": false,
 						"owner": 0,
 						"q": -4,
 						"r": 0,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 4
+						"value": 2
 					},
 					{
 						"building": "",
@@ -1341,9 +912,10 @@
 						"owner": 0,
 						"q": -4,
 						"r": 1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 4
+						"value": 2
 					},
 					{
 						"building": "",
@@ -1355,9 +927,10 @@
 						"owner": 0,
 						"q": -3,
 						"r": -1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 3
+						"value": 2
 					},
 					{
 						"building": "",
@@ -1369,9 +942,10 @@
 						"owner": 0,
 						"q": -3,
 						"r": 0,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 3
+						"value": 2
 					},
 					{
 						"building": "",
@@ -1383,9 +957,10 @@
 						"owner": 0,
 						"q": -3,
 						"r": 1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 3
+						"value": 2
 					},
 					{
 						"building": "",
@@ -1397,9 +972,10 @@
 						"owner": 0,
 						"q": -2,
 						"r": -1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 3
+						"value": 2
 					},
 					{
 						"building": "",
@@ -1411,9 +987,100 @@
 						"owner": 0,
 						"q": -2,
 						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -2,
+						"r": 1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -1,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -1,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -1,
+						"r": 1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 0,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 0,
+						"r": 0,
+						"road": false,
 						"tree": false,
 						"unit": 1,
-						"value": 3
+						"value": 2
 					},
 					{
 						"building": "",
@@ -1423,94 +1090,11 @@
 						"mana_source": false,
 						"mountain": false,
 						"owner": 0,
-						"q": -2,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 3
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -1,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 3
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -1,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 3
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -1,
-						"r": 1,
-						"tree": false,
-						"unit": 3,
-						"value": 3
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 0,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 0,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
 						"q": 0,
 						"r": 1,
+						"road": false,
 						"tree": false,
-						"unit": 2,
+						"unit": 0,
 						"value": 2
 					},
 					{
@@ -1523,6 +1107,7 @@
 						"owner": -1,
 						"q": 1,
 						"r": -1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
 						"value": 1
@@ -1537,6 +1122,7 @@
 						"owner": -1,
 						"q": 1,
 						"r": 0,
+						"road": false,
 						"tree": false,
 						"unit": 0,
 						"value": 1
@@ -1548,12 +1134,13 @@
 						"grave": false,
 						"mana_source": false,
 						"mountain": false,
-						"owner": 1,
+						"owner": -1,
 						"q": 1,
 						"r": 1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 1
 					},
 					{
 						"building": "",
@@ -1565,37 +1152,10 @@
 						"owner": 1,
 						"q": 2,
 						"r": -1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 2,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 3,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 2
+						"value": 1
 					},
 					{
 						"building": "",
@@ -1605,8 +1165,69 @@
 						"mana_source": false,
 						"mountain": false,
 						"owner": 1,
+						"q": 2,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 1
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 1,
 						"q": 3,
 						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 1
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 4,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 4,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": 0,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 5,
+						"r": -1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
 						"value": 2
@@ -1675,59 +1296,52 @@
 					}
 				],
 				"format": "slay-level",
-				"gold": 0,
-				"player_start": null,
+				"gold": 100,
+				"player_start": [
+					-4,
+					0
+				],
 				"rules": "modern",
-				"seed": 73021,
+				"seed": 1,
 				"size": "small",
-				"title": "Practice: Deficit",
+				"title": "Cities and logistics",
 				"version": 1
 			},
-			"target": null,
-			"task": "Read the shortfall in the gold tooltip",
-			"text": "This kingdom earns 39 per turn. A Knight and Scout cost 40, and savings are empty. You cannot dismiss armies to avoid wages: plan purchases carefully. Ending now would bankrupt this kingdom and kill its supported armies.",
-			"title": "Keep an expensive army paid"
-		},
-		{
-			"criteria": {
-				"owner_before": -1,
-				"plain": true,
-				"source_tier": 1
-			},
-			"details": {
-
-			},
-			"exercise": "deficit",
-			"id": "fund",
-			"kind": "move",
-			"target": null,
-			"task": "Expand with the Scout to cover wages",
-			"text": "Use your cheaper, ready Scout to capture ordinary value-1 neutral land. Keep the Knight guarding your border. You do not need a rare rich province or another expensive unit: one extra connected income covers this small shortfall.",
-			"title": "Keep an expensive army paid"
+			"target": [
+				4,
+				-1
+			],
+			"task": "Select the other kingdom",
+			"text": "This new position has two disconnected friendly kingdoms. Click the gold-ringed province to select the right-hand treasury and open its details. Each kingdom keeps its own gold. Read the panel, then click Continue.",
+			"title": "Select the other kingdom"
 		},
 		{
 			"details": {
 
 			},
-			"exercise": "deficit",
-			"id": "funded_budget",
+			"exercise": "banks",
+			"id": "develop_other_bank",
+			"kind": "develop",
+			"target": [
+				4,
+				-1
+			],
+			"task": "Spend from the right-hand treasury",
+			"text": "Use Develop on this province. Its local treasury pays the 8 G cost; the disconnected kingdom on the left keeps all its gold. The two kingdoms share a color, not a treasury.",
+			"title": "Spend from the right-hand treasury"
+		},
+		{
+			"confirm": true,
+			"details": {
+
+			},
+			"exercise": "banks",
+			"id": "bank_forecast",
 			"kind": "finance",
 			"target": null,
-			"task": "Check that the forecast is no longer negative",
-			"text": "Hover over gold again. Income now covers both armies' wages. There is still little room for another purchase. Expanding with existing cheap armies is often better than buying the strongest rank everywhere.",
-			"title": "Keep an expensive army paid"
-		},
-		{
-			"details": {
-
-			},
-			"exercise": "deficit",
-			"id": "survive",
-			"kind": "end_turn",
-			"target": null,
-			"task": "End turn with both armies paid",
-			"text": "End turn. Both armies survive because this connected kingdom can pay them. Savings can cover temporary deficits, but an army whose local treasury falls below zero will starve.",
-			"title": "Keep an expensive army paid"
+			"task": "Read the selected kingdom's budget",
+			"text": "Hover over gold. This is the right-hand kingdom's remaining gold and forecast, not a faction-wide total. Selecting land in another connected kingdom changes the treasury you use. Click Continue when ready.",
+			"title": "Read the selected kingdom's budget"
 		}
 	],
 	"title": "Kingdoms and money",

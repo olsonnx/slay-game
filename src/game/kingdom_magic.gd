@@ -34,9 +34,10 @@ func generate_events(state) -> void:
 			break
 
 func has_effect(state, faction: int, effect: String) -> bool:
-	if effect == "stainless_steel":
+	var fields: Dictionary = preload("res://src/game/event_sites.gd").WAGE_FIELDS
+	if fields.has(effect):
 		for cell in state.cells.values():
-			if cell["owner"] == faction and cell.get("site_steel",false) and cell["building"] == "monument": return true
+			if cell["owner"] == faction and cell.get(fields[effect],false) and cell["building"] == "monument": return true
 	return state.effects_by_faction.get(faction, {}).get(effect, false)
 
 func set_effect(state, faction: int, effect: String, enabled: bool) -> void:
@@ -159,7 +160,7 @@ func can_cast(state, spell: String, coord: Vector2i, faction: int, capital := NO
 			if cell["owner"] != faction or state.has_effect(faction, "trailblaze"):
 				return false
 		"empty_friendly_land":
-			if state.has_wildlife(coord) or cell["owner"] != faction or cell["unit"] > 0 or cell["building"] != "" or state.kingdom_at(coord).is_empty():
+			if state.has_wildlife(coord) or cell["owner"] != faction or cell["unit"] > 0 or not preload("res://src/game/logistics.gd").recruitment_zone(state, coord, faction) or state.kingdom_at(coord).is_empty():
 				return false
 		"neutral_structure":
 			if cell["owner"] != -1 or cell["building"] == "":
@@ -172,7 +173,7 @@ func can_cast(state, spell: String, coord: Vector2i, faction: int, capital := NO
 	if spell == "trailblaze":
 		return not kingdom.is_empty() and (capital == NONE or kingdom["capital"] == capital)
 	match Spells.SPELLS[spell]["target"]:
-		"empty_friendly_land": return true
+		"empty_friendly_land": return not kingdom.is_empty() and (capital == NONE or kingdom.capital == capital)
 		"neutral_structure": return not kingdom.is_empty()
 	return false
 

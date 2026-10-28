@@ -124,7 +124,8 @@ func planning_checks() -> void:
 	exposed.cells[Vector2i(6, 0)]["unit"] = 3
 	exposed.rebuild_kingdoms()
 	exposed.ai_difficulty = "hard"
-	expect(Strategy.new(exposed, 0).run().is_empty(), "Hard avoids an unsupported Scout capture exposed to a remote Knight")
+	var unsafe_capture: Dictionary = Strategy.new(exposed, 0).run()
+	expect(unsafe_capture.get("coord", Rules.NONE) != Vector2i(3, 0), "Hard avoids an unsupported Scout capture within a Knight's three-step range")
 	var breach = Rules.new()
 	for q in range(8): breach.cells[Vector2i(q, 0)] = breach.make_cell(0 if q < 4 else 1)
 	breach.cells[Vector2i(3, 0)]["unit"] = 3
@@ -182,10 +183,12 @@ func async_checks() -> void:
 
 func rollout_checks() -> void:
 	var boundary = Rules.new()
+	expect(boundary.ai_algorithm == "strategic", "New games explicitly record the unified strategic policy")
+	boundary.ai_algorithm = "auto"
 	for q in range(199): boundary.cells[Vector2i(q, 0)] = boundary.make_cell()
-	expect(not boundary.uses_strategic_ai(), "Small boards retain the beam policy")
+	expect(boundary.uses_strategic_ai(), "Older automatic configurations use the strategic policy on small boards")
 	boundary.cells[Vector2i(199, 0)] = boundary.make_cell()
-	expect(boundary.uses_strategic_ai(), "Large-sized custom boards use bounded strategic assignments")
+	expect(boundary.uses_strategic_ai(), "Custom boards keep the same policy across the old size threshold")
 	boundary.ai_algorithm = "legacy"
 	expect(not boundary.uses_strategic_ai(), "Explicit legacy diagnostics override automatic rollout")
 	boundary.cells.clear()

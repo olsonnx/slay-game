@@ -63,7 +63,48 @@ func runtime_budget_checks() -> void:
 	print("Replay capture budget: moves %.3f ms, annotations %.3f ms" % [moves[12]/1000.0,annotations[12]/1000.0])
 	recorder.finish(model,"closed")
 
+func filename_checks() -> void:
+	var Names = preload("res://src/game/replay_filename.gd")
+	var header := {"created_utc":"2026-10-24T21:45:03", "game_version":"0.1.0", "seed":42,
+		"rules":"modern", "map_size":"large", "names":["Fern", "Tide"], "humans":[0], "factions":2,
+		"metadata":{"mode":"quick_play", "difficulty":"hard"}}
+	var results := [{"action":"result", "round":7, "args":{"outcome":"completed", "winner":0, "result":"victory"}}]
+	var expected := "20261024-214503Z_QP_Fern_STD_H_W_v0.1.0_s42.jsonl"
+	expect(Names.filename(header, results) == expected, "Compact replay names include the displayed map size and omit the rules label")
+	header.metadata["mode"] = "hotseat"
+	header.humans = [0, 1]
+	expect(Names.filename(header, results).contains("_LM_Fern-Tide_"), "Local multiplayer names identify all played kingdoms")
+	header.metadata["mode"] = "steam_online"
+	expect(Names.filename(header, results).contains("_SM_"), "Steam recordings have a distinct mode")
+	header.names = ["Łódź / ../王國:*?", "A".repeat(100)]
+	var safe: String = Names.filename(header, results)
+	expect(safe == safe.get_file() and safe.validate_filename() == safe and safe.to_utf8_buffer().size() < 180, "Custom names remain portable, bounded filenames without path separators")
+	expect(safe.contains("Łódź") and safe.contains("王國"), "Sanitizing filenames preserves international kingdom names")
+	header.humans = [0]
+	header.names = ["Alice", "Tide"]
+	header.metadata["match"] = {"slots":[{"color":11,"controller":"human"}, {"controller":"ai","difficulty":"hard"}]}
+	expect(Names.filename(header, results).contains("_Iris-Alice_"), "Custom player names retain their selected country")
+	header.erase("game_version")
+	expect(Names.filename(header, results).contains("_vUnknown_"), "Missing historical versions are never replaced with the running game version")
+	expect(Names.result_code({"result":"defeat"}) == "L" and Names.result_code({"outcome":"draw"}) == "D", "Losses and draws have distinct compact codes")
+	expect(Names.result_code({"outcome":"completed", "humans":[0, 1], "names":["Fern", "Tide"], "winner":1}) == "W-Tide", "Multiplayer result codes retain the winning kingdom")
+	var directory := "res://artifacts/replay-name-collisions"
+	DirAccess.make_dir_recursive_absolute(directory)
+	var first := directory.path_join(expected)
+	var file := FileAccess.open(first, FileAccess.WRITE)
+	file.store_string("Retain existing replay")
+	file.close()
+	var second: String = Names.available_path(directory, expected)
+	expect(second.ends_with("_s42_2.jsonl"), "Duplicate names use a readable numbered suffix")
+	file = FileAccess.open(second + ".tmp", FileAccess.WRITE)
+	file.close()
+	expect(Names.available_path(directory, expected).ends_with("_s42_3.jsonl") and FileAccess.get_file_as_string(first) == "Retain existing replay", "Duplicate naming preserves existing recordings and in-progress saves")
+	DirAccess.remove_absolute(first)
+	DirAccess.remove_absolute(second + ".tmp")
+	DirAccess.remove_absolute(directory)
+
 func run() -> void:
+	filename_checks()
 	malformed_record_checks()
 	root.get_node("Sound").set_muted(true, false)
 	var model = Rules.new()
@@ -75,6 +116,7 @@ func run() -> void:
 	if FileAccess.file_exists(path): DirAccess.remove_absolute(path)
 	var replay := Replay.new()
 	expect(replay.start(model, {"difficulty":"normal"}, path), "Replay starts with a complete initial position")
+	expect(replay.header.game_version == ProjectSettings.get_setting("application/config/version"), "Recordings identify their game version independently of the replay format")
 	model.replay_log = replay
 	expect(not FileAccess.file_exists(path) and replay.path == "", "Starting a game creates no replay file")
 	replay.save_completed(model)
@@ -106,10 +148,10 @@ func run() -> void:
 	expect(diagnostic_history["commands"][diagnostic_sequence - 1]["args"]["action"]["kind"] == "test", "Later AI diagnostics cannot mutate recorded decisions")
 	var site: Vector2i = model.NONE
 	for coord in bank["hexes"]:
-		if model.can_build(coord, faction, "house", capital):
+		if model.can_build(coord, faction, "city", capital):
 			site = coord
 			break
-	expect(site != model.NONE and model.build_structure(site, faction, "house", capital), "Construction command executes")
+	expect(site != model.NONE and model.build_structure(site, faction, "city", capital), "City construction command executes")
 	expect(model.recruit(capital, faction, 3), "Recruitment command executes")
 	var encounter := {"id":"gold", "coord":capital, "faction":faction}
 	if model.Events.EVENTS.gold.has("authored"):

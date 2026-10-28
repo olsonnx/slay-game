@@ -141,6 +141,7 @@ static func mode_name(summary: Dictionary) -> String:
 	match summary.get("mode", ""):
 		"quick_play": return Loc.text("Quick Play")
 		"hotseat": return Loc.text("Local multiplayer")
+		"steam_online": return Loc.text("Steam multiplayer")
 		"editor": return Loc.text("Custom map")
 	return Loc.text("Single player") if summary.get("humans", []).size() == 1 else Loc.text("Not recorded")
 

@@ -214,7 +214,7 @@ static func apply(state, event: Dictionary, bank: Dictionary, effect: Dictionary
 			state.cells[site].unit = int(effect.get("tier",1))
 			state.cells[site].unit_owner = faction
 			state.cells[site].unit_home = bank.capital
-			state.cells[site].moved = not effect.get("ready",true)
+			state.cells[site].moved = false
 		"clear_trees":
 			var forest: Dictionary = encounters.forest(state,bank)
 			var reward: int = forest.trees.size()*int(effect.get("gold_per_tree",1))
@@ -234,12 +234,12 @@ static func apply(state, event: Dictionary, bank: Dictionary, effect: Dictionary
 				encounters.disband(state,site)
 		"landmark":
 			var income := roll(state,effect,"income_",0)
-			Sites.create(state,coord,event.id,income,roll(state,effect,"mana_",0),effect.get("steel",false))
+			Sites.create(state,coord,event.id,income,roll(state,effect,"mana_",0),effect.get("steel",false),effect)
 			values.amount = income
 		"mana_source": cell.mana_source = effect.get("enabled",true)
 		"temporary_effect": state.set_effect(faction,effect.get("effect","free_spell"),effect.get("enabled",true))
 		"building":
-			cell.building = effect.get("building","house")
+			cell.building = effect.get("building","city")
 			cell.tree = false
 			cell.grave = false
 		"clear_terrain": values.amount = state.clear_terrain(coord,bank)

@@ -42,7 +42,7 @@ func update_resolution() -> void:
 	var bounds: Vector2 = get_viewport().get_texture().get_size()
 	if bounds.x < 1 or bounds.y < 1:
 		return
-	var scale_factor := minf(1.0, minf(1280.0 / bounds.x, 820.0 / bounds.y))
+	var scale_factor := Video.render_scale(get_window().size) if Video.fullscreen else minf(1.0, minf(1280.0 / bounds.x, 720.0 / bounds.y))
 	viewport.size = Vector2i(maxi(1, roundi(bounds.x * scale_factor)), maxi(1, roundi(bounds.y * scale_factor)))
 	map.layout_camera(float(bounds.x) / bounds.y)
 	if active:
@@ -62,7 +62,7 @@ func set_active(enabled: bool) -> void:
 
 func _process(delta: float) -> void:
 	var started := Time.get_ticks_usec() if profile_updates else 0
-	map.advance(delta)
+	if Video.menu_animation and not Video.reduced_motion: map.advance(delta)
 	if profile_updates:
 		last_update_usec = Time.get_ticks_usec() - started
 

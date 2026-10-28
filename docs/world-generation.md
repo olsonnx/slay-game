@@ -1,4 +1,6 @@
-# World generation v13 — 21 October 2026
+# World generation v14 — 25 October 2026
+
+Generation v14 expands the weighted encounter pool with Builders’ Guild, Soldiers’ Barracks, Scout Lodge, and Watchtower events. Seeded encounter assignments and subsequent RNG states change; terrain algorithms remain as described below. The 150 golden samples were regenerated for the expanded built-in event pool.
 
 The current playable sizes are Tiny (~80 tiles), Small (~150), Standard (~250),
 Large (~500) and Huge (~1,000). Very Small is retired from new-map selectors.
@@ -107,12 +109,12 @@ The editor retains its expanded bounds and shared 4,000-cell painting/loading ca
 The menu continues to use the same generator and shared terrain rendering.
 
 This intentionally changes the world associated with an older seed. Restarts are
-deterministic within v13, new replay metadata records generation version 13, and old
-replays reconstruct their stored positions. The 300 golden samples cover all five
+deterministic within v14, new replay metadata records generation version 14, and old
+replays reconstruct their stored positions. The 150 golden samples cover all five
 sizes, and default, two-kingdom and maximum-kingdom requests:
 
 ```powershell
-godot --headless --path . --script tools/create_generation_golden.gd -- --update-generation-v13
+godot --headless --path . --script tools/create_generation_golden.gd -- --update-generation-v14
 ```
 
 The generation suite checks optional islands, balanced multi-landmass layouts,

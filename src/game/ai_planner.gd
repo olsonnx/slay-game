@@ -31,13 +31,13 @@ var reply_prepared := false
 var max_step_usec := 0
 var started_usec := Time.get_ticks_usec()
 
-func _init(model, owner: int, preparation := false, owns_snapshot := false) -> void:
+func _init(model, owner: int, preparation := false, owns_snapshot := false, preparation_cache: Dictionary = {}) -> void:
 	state = model
 	faction = owner
 	spending = preparation
 	profile = Analysis.profile(model)
 	var copy = model if owns_snapshot else Analysis.snapshot(model)
-	var queries = Analysis.Queries.new(copy)
+	var queries = Analysis.Queries.new(copy, preparation_cache)
 	baseline = 0.0 if spending else Analysis.evaluate(copy, faction, queries)
 	beam = [{"model": copy, "queries": queries, "first": {}, "score": 0.0, "cost": 0.0, "sequence": []}]
 	var queued_at := Time.get_ticks_usec()

@@ -234,6 +234,10 @@ func ui_checks() -> void:
 	expect(game.effect_row.get_child_count() == 2, "HUD displays both active effects")
 	for icon in game.effect_row.get_children():
 		expect(icon.custom_minimum_size == Vector2(48, 48) and not icon.tooltip_text.is_empty(), "Effects are square with tooltips")
+		var dock_style: StyleBoxFlat = game.hud.economy_dock.get_theme_stylebox("panel")
+		for state in ["normal", "hover", "pressed", "hover_pressed", "disabled"]:
+			var icon_style: StyleBoxFlat = icon.get_theme_stylebox(state)
+			expect(icon_style.bg_color == dock_style.bg_color and icon_style.border_color == dock_style.border_color and icon_style.border_width_left == dock_style.border_width_left and icon_style.corner_radius_top_left == dock_style.corner_radius_top_left, "Status icons retain the dock background and outline in every state")
 	game.open_shop("spells")
 	expect(game.shop_items.get_child_count() == 3 and game.shop_panel.size.y == 188, "All three spells fit a single-row menu with balanced header and footer spacing")
 	game.rules.set_effect(0, "free_spell", false)

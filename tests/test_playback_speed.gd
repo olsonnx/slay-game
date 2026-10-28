@@ -23,6 +23,8 @@ func fixture() -> void:
 	game.rules.kingdoms.clear()
 	for column in range(8):
 		game.cells[Vector2i(column, 0)] = game.rules.make_cell(0 if column < 7 else -1)
+		# Roads keep this long playback route legal under finite movement ranges.
+		game.cells[Vector2i(column, 0)]["road"] = column < 7
 	for column in [9, 10]:
 		game.cells[Vector2i(column, 0)] = game.rules.make_cell(1)
 	game.rules.rebuild_kingdoms()
@@ -126,7 +128,8 @@ func run() -> void:
 	game.end_button.button_up.emit()
 
 	fixture()
-	game.cells[Vector2i.ZERO]["unit"] = 3
+	game.cells[Vector2i.ZERO]["unit"] = 0
+	game.cells[Vector2i(2, 0)]["unit"] = 3
 	game.cells[Vector2i(7, 0)]["owner"] = 1
 	game.cells[Vector2i(7, 0)]["capital"] = 1
 	game.cells[Vector2i(7, 0)]["unit"] = 1
@@ -140,7 +143,7 @@ func run() -> void:
 	var stages: Array[String] = []
 	var observe := func(_action: Dictionary, stage: String): stages.append(stage)
 	game.view.motion_stage.connect(observe)
-	var attack: Dictionary = game.rules.perform_move(Vector2i.ZERO, Vector2i(7, 0))
+	var attack: Dictionary = game.rules.perform_move(Vector2i(2, 0), Vector2i(7, 0))
 	expect(not attack.get("annexed", {}).is_empty(), "Castle fixture includes adjacent surrendering land")
 	await game.view.animate_moves([attack], game.cells)
 	game.view.motion_stage.disconnect(observe)
@@ -183,6 +186,19 @@ func run() -> void:
 	game.end_button.button_up.emit()
 	game.end_button.pressed.emit()
 	expect(game.round_number == 2 and not game.busy, "Release after real opponent completion does not queue another turn")
+	var playback_settings = root.get_node("Gameplay")
+	var saved_speed: float = playback_settings.playback_speed
+	playback_settings.set_preference("playback_speed",2.0,false)
+	game.busy = true
+	game.active_faction = 1
+	game.playback_speed.update()
+	expect(game.view.playback.speed_scale == 2.0,"Saved playback preference controls normal movement speed")
+	ctrl(true)
+	expect(game.view.playback.speed_scale == 6.0,"Hold-to-speed-up remains a predictable six-times rate")
+	ctrl(false)
+	expect(game.view.playback.speed_scale == 2.0,"Releasing acceleration returns to the chosen playback speed")
+	game.busy = false
+	playback_settings.set_preference("playback_speed",saved_speed,false)
 	game.shutdown()
 	expect(game.view.playback.speed_scale == 1, "Shutdown restores playback rate")
 	game.queue_free()

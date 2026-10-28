@@ -143,12 +143,15 @@ static func style(color: Color, radius := 12, border := false) -> StyleBoxFlat:
 	result.content_margin_bottom = 8
 	return result
 
+static func panel_style() -> StyleBoxFlat:
+	return style(Color(0.09, 0.14, 0.16, 0.96), 13, true)
+
 static func panel(parent: Node, rect: Rect2, stop := true) -> Panel:
 	var node := Panel.new()
 	node.position = rect.position
 	node.size = rect.size
 	node.mouse_filter = Control.MOUSE_FILTER_STOP if stop else Control.MOUSE_FILTER_IGNORE
-	node.add_theme_stylebox_override("panel", style(Color(0.09, 0.14, 0.16, 0.96), 13, true))
+	node.add_theme_stylebox_override("panel", panel_style())
 	parent.add_child(node)
 	return node
 

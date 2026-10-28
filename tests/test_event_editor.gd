@@ -137,7 +137,7 @@ func run() -> void:
 		expect(Schema.validate(data).is_empty(),"Every effect has a valid default form: "+kind)
 		expect(Runtime.resolve(state,data,event,0) != "","Every supported effect runs: "+kind)
 		match kind:
-			"building": expect(state.cells[COORD].building == "house","Ordinary building effects construct the selected type")
+			"building": expect(state.cells[COORD].building == "city","Ordinary building effects construct the selected type")
 			"tile_value": expect(state.cells[COORD].value == int(editor.context.income)+1,"Province development changes the actual value")
 			"temporary_effect": expect(state.has_effect(0,"free_spell"),"Temporary effects reach spell rules")
 			"landmark": expect(state.cells[COORD].site_income == 1,"Landmark settings reach authoritative cell data")

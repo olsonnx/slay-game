@@ -71,7 +71,7 @@ func run() -> void:
 		game._unhandled_input(key(KEY_E))
 		expect(game.shop_panel.visible and game.shop_kind == "build", "E opens building")
 		game._unhandled_input(key([KEY_Q, KEY_E, KEY_R][index]))
-		expect(game.action_mode == ["tower", "house", "bridge"][index], "Contextual build shortcut selects the matching card")
+		expect(game.action_mode == ["tower", "city", "bridge"][index], "Contextual build shortcut selects the matching card")
 	for index in range(3):
 		game.cancel_action()
 		game._unhandled_input(key(KEY_R))
@@ -87,12 +87,12 @@ func run() -> void:
 	var before_view: bool = game.view.top_down
 	game._input(key(KEY_TAB))
 	expect(game.view.top_down != before_view, "Tab switches view before GUI focus navigation")
-	keys.set_binding("view", KEY_T, false)
+	keys.set_binding("view", KEY_V, false)
 	before_view = game.view.top_down
 	game._input(key(KEY_TAB))
 	expect(game.view.top_down == before_view, "Old view binding stops working immediately")
-	game._input(key(KEY_T))
-	expect(game.view.top_down != before_view and game.view_button.tooltip_text.get_slice("\n", 0).ends_with("· T"), "Rebound view and tooltip update immediately")
+	game._input(key(KEY_V))
+	expect(game.view.top_down != before_view and game.view_button.tooltip_text.get_slice("\n", 0).ends_with("· V"), "Rebound view and tooltip update immediately")
 	keys.set_binding("recruit", KEY_J, false)
 	game._unhandled_input(key(KEY_Q))
 	expect(not game.shop_panel.visible, "Old menu-opening key is inactive outside a menu")

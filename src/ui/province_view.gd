@@ -5,6 +5,9 @@ const Hud = preload("res://src/ui/game_hud.gd")
 signal develop_requested
 signal entrench_requested
 signal relocate_requested
+signal dismantle_requested
+signal road_requested
+signal rename_requested(coord: Vector2i, text: String)
 signal close_requested
 var title: Label
 var value_label: Label
@@ -13,6 +16,11 @@ var mana_label: Label
 var develop_button: Button
 var relocate_button: Button
 var entrench_button: Button
+var dismantle_button: Button
+var road_button: Button
+var name_input: LineEdit
+var name_coord := Vector2i(1000000, 1000000)
+var saved_name := ""
 
 func _ready() -> void:
 	rest_top = -318.0
@@ -24,6 +32,8 @@ func _ready() -> void:
 	reveal = 0
 	add_theme_stylebox_override("panel", Hud.style(Color("17252a"), 13, true))
 	title = Hud.label_at(self, "Province", Vector2(16, 12), 17)
+	title.size = Vector2(340, 32)
+	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	var close := Button.new()
 	close.text = "×"
 	close.tooltip_text = Loc.text("Close province details.")
@@ -49,6 +59,14 @@ func _ready() -> void:
 	relocate_button.pressed.connect(func(): relocate_requested.emit())
 	Sound.bind_button(relocate_button)
 	add_child(relocate_button)
+	road_button = preload("res://src/ui/tooltip_button.gd").new()
+	road_button.size = Vector2(42, 36)
+	road_button.icon = Hud.UiTheme.svg_texture('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="#ede7d4" stroke-width="1.8" stroke-linecap="round"><path d="M8 3 4 21M16 3l4 18M12 4v3m0 4v3m0 4v3"/></g></svg>')
+	road_button.tooltip_text = Loc.text("Connect road\nChoose a friendly structure or existing road tile to connect.\n1 G per newly paved tile; existing pavement is free.")
+	Hud.UiTheme.style_button(road_button)
+	road_button.pressed.connect(func(): road_requested.emit())
+	Sound.bind_button(road_button)
+	add_child(road_button)
 	entrench_button = preload("res://src/ui/tooltip_button.gd").new()
 	entrench_button.size = Vector2(386, 36)
 	entrench_button.clip_text = true
@@ -56,9 +74,47 @@ func _ready() -> void:
 	entrench_button.pressed.connect(func(): entrench_requested.emit())
 	Sound.bind_button(entrench_button)
 	add_child(entrench_button)
+	dismantle_button = preload("res://src/ui/tooltip_button.gd").new()
+	dismantle_button.size = Vector2(386, 32)
+	dismantle_button.text = Loc.text("Dismantle")
+	dismantle_button.tooltip_text = Loc.text("Remove your unoccupied bridge without a refund.")
+	Hud.UiTheme.style_button(dismantle_button)
+	dismantle_button.pressed.connect(func(): dismantle_requested.emit())
+	Sound.bind_button(dismantle_button)
+	add_child(dismantle_button)
+	name_input = LineEdit.new()
+	name_input.max_length = 40
+	name_input.position = Vector2(12, 12)
+	name_input.size = Vector2(346, 32)
+	name_input.add_theme_font_size_override("font_size", 17)
+	name_input.add_theme_color_override("font_color", Color("ede7d4"))
+	name_input.add_theme_color_override("font_placeholder_color", Color("ede7d4"))
+	var name_style := StyleBoxEmpty.new()
+	name_style.content_margin_left = 4
+	name_style.content_margin_right = 4
+	name_style.content_margin_top = 4
+	name_style.content_margin_bottom = 4
+	name_input.add_theme_stylebox_override("normal", name_style)
+	name_input.add_theme_stylebox_override("read_only", name_style)
+	name_input.add_theme_stylebox_override("focus", Hud.UiTheme.focus_style(Vector2(4, 4)))
+	name_input.tooltip_text = Loc.text("Click to edit the name · Enter or click away to save · leave empty to reset")
+	name_input.text_submitted.connect(func(_text: String): name_input.release_focus())
+	name_input.focus_exited.connect(commit_name)
+	add_child(name_input)
 	hide()
 
+func commit_name() -> void:
+	if name_input.text == saved_name: return
+	saved_name = name_input.text.strip_edges()
+	name_input.text = saved_name
+	rename_requested.emit(name_coord, saved_name)
+
+func close() -> void:
+	name_input.release_focus()
+	super.close()
+
 func refresh(model, coord: Vector2i, can_act: bool, faction := 0) -> void:
+	if name_coord != coord: name_input.release_focus()
 	if not model.cells.has(coord):
 		close()
 		return
@@ -72,11 +128,11 @@ func refresh(model, coord: Vector2i, can_act: bool, faction := 0) -> void:
 	var value: int = cell.get("value", 1)
 	value_label.text = "Impassable" if mountain else "Wooden crossing" if bridge else Loc.text("Value %d") % value
 	var blocked: bool = cell["tree"] or cell["grave"]
-	var earnings: int = (0 if blocked else value) + (model.HOUSE_INCOME if cell["building"] == "house" else 0)
+	var earnings: int = (0 if blocked else value) + (model.CITY_INCOME if cell["building"] == "city" else 0)
 	income_label.text = Loc.text("%d G / turn") % earnings
 	mana_label.text = Loc.text("Mana source · +%d maximum mana") % model.mana_source_capacity(cell) if cell.get("mana_source", false) else ""
 	if preload("res://src/game/event_sites.gd").protected(cell):
-		title.text = Loc.text("Landmark")
+		title.text = preload("res://src/game/event_sites.gd").structure_name(cell)
 		mana_label.text = preload("res://src/game/event_sites.gd").description(cell)
 		income_label.text = Loc.text("%d G / turn") % (earnings+int(cell.get("site_income",0)))
 	if mountain:
@@ -88,6 +144,19 @@ func refresh(model, coord: Vector2i, can_act: bool, faction := 0) -> void:
 	if cell.get("treasure", 0) > 0:
 		mana_label.text = Loc.text("Treasure chest · guaranteed %d G on capture") % cell["treasure"]
 	if model.is_entrenched(coord): mana_label.text = Loc.text("Entrenched · absorbs one attack until your next turn")
+	if cell["building"] == "city":
+		title.text = Loc.text("City")
+		mana_label.text += ("\n" if mana_label.text != "" else "") + Loc.text("Recruit here or next door · ready immediately · no bonus income")
+	if cell.capital >= 0: title.text = Loc.text("Capital")
+	if preload("res://src/game/logistics.gd").recruitment_hub(cell) and cell.get("settlement_name", "") != "":
+		title.text = cell.settlement_name
+	title.size.x = 340
+	title.clip_text = true
+	if cell["building"] == "tower": mana_label.text += ("\n" if mana_label.text != "" else "") + Loc.text("Tower upkeep · 2 G / turn")
+	if bridge:
+		var payer: Dictionary = preload("res://src/game/logistics.gd").bridge_bank(model, cell)
+		mana_label.text = Loc.text("Bridge upkeep · 2 G / turn · treasury (%d, %d)") % [payer.capital.x, payer.capital.y] if not payer.is_empty() else Loc.text("Neutral bridge · no sponsor")
+	if cell.get("road", false): mana_label.text += ("\n" if mana_label.text != "" else "") + Loc.text("Road · friendly road steps cost ½ movement")
 	if cell.get("animal", "") != "" or cell.get("lair", "") != "":
 		var kind: String = cell.get("animal",cell.get("lair", ""))
 		var animal: Dictionary = model.Wildlife.DEFINITIONS[kind]
@@ -111,7 +180,9 @@ func refresh(model, coord: Vector2i, can_act: bool, faction := 0) -> void:
 	relocate_button.disabled = not can_act or not model.can_relocate_capital(coord, faction)
 	relocate_button.text = ""
 	relocate_button.tooltip_text = Loc.text("Move capital · %d G") % model.capital_relocation_cost(faction) + "\n" + Loc.text("Move this territory's capital here using its local treasury.\nRequires clear land; a unit may stay here.\nEach relocation costs 10 G more for your color, even after splits or capital loss.")
-	develop_button.size.x = 386 - (50 if relocate_button.visible else 0) - (128 if entrench_button.visible else 0)
+	road_button.visible = preload("res://src/game/road_construction.gd").endpoint(model, coord, faction)
+	road_button.disabled = not can_act or model.road_targets(coord, faction).is_empty()
+	develop_button.size.x = 386 - (50 if relocate_button.visible else 0) - (50 if road_button.visible else 0) - (128 if entrench_button.visible else 0)
 	if relocate_button.visible and owner == faction and value >= model.MAX_VALUE:
 		develop_button.text = Loc.text("Fully developed")
 	Hud.UiTheme.fit_text(mana_label, mana_label.text, 386)
@@ -119,10 +190,26 @@ func refresh(model, coord: Vector2i, can_act: bool, faction := 0) -> void:
 	var action_y := maxf(113, content_bottom + 10)
 	develop_button.position = Vector2(16, action_y)
 	relocate_button.position = Vector2(360, action_y)
+	road_button.position = Vector2(310 if relocate_button.visible else 360, action_y)
 	entrench_button.position = Vector2(24 + develop_button.size.x if develop_button.visible else 16, action_y)
 	entrench_button.size.x = 120 if develop_button.visible else 386
 	if develop_button.visible or entrench_button.visible:
 		content_bottom = action_y + 36
+	dismantle_button.text = Loc.text("Dismantle bridge")
+	dismantle_button.visible = model.can_dismantle(coord, faction)
+	dismantle_button.disabled = not can_act
+	if dismantle_button.visible:
+		dismantle_button.position = Vector2(16, content_bottom + 10)
+		content_bottom += 42
+	name_input.visible = model.can_rename_settlement(coord, faction)
+	title.visible = not name_input.visible
+	name_input.editable = can_act
+	if name_input.visible:
+		name_input.placeholder_text = Loc.text("Capital" if cell.capital >= 0 else "City")
+		if name_coord != coord or not name_input.has_focus():
+			name_input.text = cell.get("settlement_name", "")
+			saved_name = name_input.text
+	name_coord = coord
 	panel_height = maxf(164, content_bottom + 15) if develop_button.visible or entrench_button.visible else content_bottom + 15
 	# Keep the bottom above the resource dock when extra lines grow upwards.
 	rest_top = -154 - panel_height

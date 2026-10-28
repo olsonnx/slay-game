@@ -53,7 +53,9 @@ func prepare(board, palette_owners: Array = [], report: Callable = Callable()) -
 	if not owners.is_empty():
 		for tier in range(1, Sprites.CLIPS.size()):
 			add_sprite(board, tier, owners.keys()[0])
-	board.add_house(self, Vector3.ZERO)
+	board.add_city(self, Vector3.ZERO)
+	board.add_capital(self, Vector3.ZERO, Color.WHITE)
+	await board.roads.prepare(self, Array(board.COLORS))
 	board.add_tower(self, Vector3.ZERO, Color.WHITE)
 	board.add_bridge(self)
 	board.add_grave(self, Vector3.ZERO)

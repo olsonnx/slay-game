@@ -13,6 +13,25 @@ var multiplayer_setup: Dictionary = {}
 var quick_play_kingdom := -1
 var quick_play_use_profile := true
 var completed_tutorials: Dictionary = {}
+const PRESENTATION_DEFAULTS := {"camera_speed":1.0, "rotation_speed":1.0, "zoom_speed":1.0, "invert_zoom":false, "invert_vertical":false, "playback_speed":1.0, "pause_on_focus_loss":false}
+var camera_speed := 1.0
+var rotation_speed := 1.0
+var zoom_speed := 1.0
+var invert_zoom := false
+var invert_vertical := false
+var playback_speed := 1.0
+var pause_on_focus_loss := false
+
+func set_preference(key: String, value: Variant, persist := true) -> void:
+	if not valid_preference(key, value): return
+	set(key,value)
+	if persist: flush_settings()
+	changed.emit()
+
+static func valid_preference(key: String, value: Variant) -> bool:
+	if key not in PRESENTATION_DEFAULTS: return false
+	if PRESENTATION_DEFAULTS[key] is bool: return value is bool
+	return (value is float or value is int) and is_finite(float(value)) and value >= 0.25 and value <= (3.0 if key == "playback_speed" else 2.0)
 
 func complete_tutorial(category: String) -> void:
 	if category.is_empty() or completed_tutorials.get(category,false): return
@@ -66,6 +85,9 @@ func load_settings(path := DEFAULT_PATH) -> Error:
 	var config := ConfigFile.new()
 	var error := config.load(path)
 	if error == OK:
+		for key in PRESENTATION_DEFAULTS:
+			var value = config.get_value("presentation", key, PRESENTATION_DEFAULTS[key])
+			set(key, value if valid_preference(key,value) else PRESENTATION_DEFAULTS[key])
 		completed_tutorials.clear()
 		var saved_tutorials = config.get_value("tutorial", "completed", {})
 		if saved_tutorials is Dictionary:
@@ -84,6 +106,7 @@ func load_settings(path := DEFAULT_PATH) -> Error:
 
 func flush_settings() -> Error:
 	var config := ConfigFile.new()
+	for key in PRESENTATION_DEFAULTS: config.set_value("presentation", key, get(key))
 	config.set_value("tutorial", "completed", completed_tutorials)
 	config.set_value("gameplay", "multiplayer_setup", multiplayer_setup)
 	config.set_value("gameplay", "quick_play_kingdom", quick_play_kingdom)

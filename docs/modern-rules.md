@@ -1,3 +1,5 @@
+> This describes the earlier rules baseline. On the 0.2.0 experiment branch, see [Cities and logistics](cities-and-logistics.md) for recruitment, movement, construction and upkeep changes.
+
 # Game rules implementation
 
 The game has three spells: Trailblaze (1 mana), Summon (2) and Shatter (2).

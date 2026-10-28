@@ -31,7 +31,8 @@ func fixture():
 	for bank in r.kingdoms.values(): bank.gold = 50
 	return r
 func run() -> void:
-	for id in ["comet","economist","stainless_steel"]:
+	landmark_bonus_checks()
+	for id in ["comet","economist","stainless_steel","builders_guild","barracks","scout_lodge","watchtower"]:
 		for choice in ([0,1] if id == "economist" else [0]):
 			var model = fixture()
 			var site := Vector2i(3,0)
@@ -77,10 +78,10 @@ func run() -> void:
 	expect(r.mana_regeneration(0) == 1 and r.mana_summary(1).regeneration == 2,"Mana regeneration transfers on capture")
 	r = fixture()
 	Sites.create(r,target,"stainless_steel",0,0,true)
-	expect(r.unit_upkeep(3,0) == 34,"Steel landmark lowers its owner's knight upkeep")
+	expect(r.unit_upkeep(3,0) == 27,"Steel landmark lowers its owner's knight upkeep")
 	r.cells[source].unit = 3
 	r.perform_move(source,target)
-	expect(r.unit_upkeep(3,0) == 36 and r.unit_upkeep(3,1) == 34,"Steel benefit follows conquest")
+	expect(r.unit_upkeep(3,0) == 36 and r.unit_upkeep(3,1) == 27,"Steel benefit follows conquest")
 	r.cells[target].owner = -1
 	r.rebuild_kingdoms()
 	r.set_mana(1,99)
@@ -177,3 +178,60 @@ func run() -> void:
 	await create_timer(1.1).timeout
 	print("Event site checks: %d passed, %d failed" % [checks-failures,failures])
 	quit(1 if failures else 0)
+
+func landmark_bonus_checks() -> void:
+	var r = fixture()
+	var site := Vector2i(3, 0)
+	for q in range(1, 6): r.cells[Vector2i(q, 0)].value = 2
+	Sites.create(r, site, "builders_guild", 0, 0, false, {"development_discount":true})
+	expect(r.development_cost(site) == 4 and r.development_cost(Vector2i(2, 0)) == 4, "Guild halves development cost on its province and friendly neighbors")
+	expect(r.development_cost(Vector2i(1, 0)) == 8 and r.development_cost(Vector2i(4, 0)) == 8, "Guild discounts neither distant provinces nor enemy neighbors")
+	var gold: int = r.kingdom_at(site).gold
+	expect(r.develop(site, 0) and r.kingdom_at(site).gold == gold - 4 and r.cells[site].value == 3 and r.development_cost(site) == 9, "Development charges the discounted cost and recalculates after upgrading")
+	Sites.create(r, Vector2i(2, 0), "builders_guild", 0, 0, false, {"development_discount":true})
+	expect(r.development_cost(site) == 9, "Overlapping guild discounts do not stack")
+	r.cells[site].owner = 1
+	r.cells[Vector2i(2, 0)].owner = 1
+	r.rebuild_kingdoms()
+	expect(r.development_cost(Vector2i(1, 0)) == 8 and r.development_cost(Vector2i(4, 0)) == 4, "Guild discounts follow current ownership")
+	r = fixture()
+	var bonuses := {"soldier_discount":true, "scout_discount":true}
+	for coord in [site, Vector2i(2, 0)]: Sites.create(r, coord, "combined_fixture", 0, 0, true, bonuses)
+	expect(r.unit_upkeep(1, 0) == 2 and r.unit_upkeep(2, 0) == 6 and r.unit_upkeep(3, 0) == 27, "Wage reductions are Scout 50%, Soldier 50%, Knight 25% without stacking")
+	expect(r.unit_upkeep(1, 1) == 4 and r.unit_upkeep(2, 1) == 12 and r.unit_upkeep(3, 1) == 36, "Wage landmarks affect only their owner")
+	var simulation = Snapshot.simulation(r)
+	expect(simulation.unit_upkeep(2, 0) == 6 and simulation.unit_upkeep(3, 0) == 27, "Simulation snapshots preserve new wage properties")
+	r.cells[Vector2i(4, 0)].unit = 3
+	expect(not r.perform_move(Vector2i(4, 0), site).is_empty(), "New property landmarks remain conquerable")
+	expect(r.unit_upkeep(2, 1) == 6 and r.unit_upkeep(2, 0) == 6, "Each owner benefits from its own surviving wage landmark")
+	r.cells[Vector2i(2, 0)].owner = 1
+	r.rebuild_kingdoms()
+	expect(r.unit_upkeep(2, 0) == 12 and r.unit_upkeep(1, 0) == 4 and r.unit_upkeep(3, 0) == 36, "Losing the last landmark removes all its wage benefits")
+	r = fixture()
+	Sites.create(r, Vector2i(2, 0), "watchtower", 0, 0, false, {"defense_aura":true})
+	r.cells[site].unit = 2
+	expect(r.defense(site) == 3 and r.defense(Vector2i(2, 0)) == 3, "Watchtower strengthens its own province and adjacent friendly units")
+	expect(r.defense(Vector2i(1, 0)) == 1, "Empty neighboring provinces gain no defense aura")
+	r.cells[site].unit = 3
+	r.cells[Vector2i(4, 0)].unit = 3
+	expect(r.defense(site) == 4 and not r.can_move(Vector2i(4, 0), site), "A protected Knight cannot be bypassed through an equal-rank duel")
+	Sites.create(r, site, "watchtower", 0, 0, false, {"defense_aura":true})
+	expect(r.defense(site) == 4, "Overlapping watchtowers and their own garrisons receive just one defense bonus")
+	r.cells[Vector2i(1, 0)].unit = 2
+	expect(r.defense(Vector2i(1, 0)) == 3 and r.defense(Vector2i.ZERO) == 2, "Boosted unit defense does not radiate to a second ring")
+	r.cells[site].owner = 1
+	r.cells[Vector2i(2, 0)].owner = 1
+	r.rebuild_kingdoms()
+	expect(r.defense(Vector2i(1, 0)) == 2 and r.defense(Vector2i(4, 0)) == 4, "Watchtower protection transfers on capture without helping former owners")
+	r = fixture()
+	Sites.create(r, Vector2i(2, 0), "watchtower", 0, 0, false, {"defense_aura":true})
+	var bridge := Vector2i(2, 1)
+	r.cells[bridge] = r.make_cell(-1)
+	r.cells[bridge].building = "bridge"
+	r.cells[bridge].unit = 2
+	r.cells[bridge].unit_owner = 0
+	expect(r.defense(bridge) == 3, "Adjacent friendly bridge garrisons receive the unit defense bonus")
+	r.cells[bridge].unit_owner = 1
+	expect(r.defense(bridge) == 2, "An enemy bridge garrison receives no aura from the other faction")
+	r.cells[bridge].unit = 0
+	expect(r.defense(bridge) == 0, "An empty neutral bridge receives no aura")

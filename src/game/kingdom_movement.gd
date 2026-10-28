@@ -32,7 +32,7 @@ static func province_defense(state, coord: Vector2i) -> int:
 	var cells: Dictionary = state.cells
 	var strength: int = local_defense(state, coord)
 	if cells[coord]["owner"] < 0:
-		return strength
+		return preload("res://src/game/event_sites.gd").defense_bonus(state, coord, strength)
 	for direction in Grid.DIRECTIONS:
 		var next: Vector2i = coord + direction
 		if not cells.has(next):
@@ -40,7 +40,7 @@ static func province_defense(state, coord: Vector2i) -> int:
 		if cells[next]["owner"] == cells[coord]["owner"]:
 			# Knights defend their own hex at 3, but lend at most 2 to neighbours.
 			strength = maxi(strength, mini(2, local_defense(state, next)))
-	return strength
+	return preload("res://src/game/event_sites.gd").defense_bonus(state, coord, strength)
 
 static func attack_defense(state, coord: Vector2i, faction: int) -> int:
 	var protection := defense(state,coord)
@@ -88,26 +88,27 @@ static func friendly_routes(state, source: Vector2i) -> Dictionary:
 
 static func knight_duel(state, source: Vector2i, target: Vector2i) -> bool:
 	var cells: Dictionary = state.cells
-	return cells[source]["unit"] == 3 and cells[target]["unit"] == 3 and state.unit_faction(source) != state.unit_faction(target)
+	return cells[source]["unit"] == 3 and cells[target]["unit"] == 3 and state.unit_faction(source) != state.unit_faction(target) and attack_defense(state, target, state.unit_faction(source)) <= 3
 
 static func reachable_targets(state, source: Vector2i) -> Dictionary:
 	var cells: Dictionary = state.cells
 	var targets: Dictionary = {}
 	if not cells.has(source) or cells[source]["unit"] == 0 or cells[source]["moved"]:
 		return targets
-	var parents: Dictionary = friendly_routes(state, source)
+	var travel: Dictionary = preload("res://src/game/logistics.gd").routes(state, source)
+	var parents: Dictionary = travel.parents
 	var faction: int = state.unit_faction(source)
 	var strength: int = cells[source]["unit"]
 	var checked_border: Dictionary = {}
 	for coord in parents:
-		if coord != source and (cells[coord]["building"] in ["", "monument"] or state.is_bridge(coord)):
-			if cells[coord]["unit"] == 0 or (cells[coord]["unit"] == cells[source]["unit"] and cells[source]["unit"] < 3):
+		if coord != source and (cells[coord]["building"] in ["", "monument", "city", "tower"] or state.is_bridge(coord)):
+			if cells[coord]["unit"] == 0 or (state.unit_faction(coord) == faction and cells[coord]["unit"] == strength and strength < 3):
 				targets[coord] = parents
 		for direction in Grid.DIRECTIONS:
 			var next: Vector2i = coord + direction
 			if not cells.has(next):
 				continue
-			if parents.has(next) or checked_border.has(next):
+			if parents.has(next) or checked_border.has(next) or travel.costs[coord] + 2 > travel.budget:
 				continue
 			checked_border[next] = true
 			# Hunting on friendly land ignores friendly defenders. Capturing enemy
@@ -118,24 +119,7 @@ static func reachable_targets(state, source: Vector2i) -> Dictionary:
 	return targets
 
 static func target_parents(state, source: Vector2i, target: Vector2i) -> Dictionary:
-	# A command validates one destination. Avoid evaluating every other border
-	# province's defenders just to recover the same friendly route graph.
-	var cells: Dictionary = state.cells
-	if not cells.has(source) or not cells.has(target) or source == target: return {}
-	if cells[source]["unit"] == 0 or cells[source]["moved"]: return {}
-	var parents := friendly_routes(state, source)
-	if parents.is_empty(): return {}
-	var destination: Dictionary = cells[target]
-	if parents.has(target):
-		if (destination["building"] in ["", "monument"] or state.is_bridge(target)) and (destination["unit"] == 0 or destination["unit"] == cells[source]["unit"] and cells[source]["unit"] < 3): return parents
-		return {}
-	if state.is_mountain(target) or state.is_barrier(target): return {}
-	var faction: int = state.unit_faction(source)
-	if destination["owner"] == faction and not state.is_bridge(target) and not state.has_wildlife(target): return {}
-	if cells[source]["unit"] <= attack_defense(state, target, faction) and not knight_duel(state, source, target): return {}
-	for direction in Grid.DIRECTIONS:
-		if parents.has(target + direction): return parents
-	return {}
+	return reachable_targets(state, source).get(target, {})
 
 static func can_move(state, source: Vector2i, target: Vector2i) -> bool:
 	return not target_parents(state, source, target).is_empty()
@@ -157,8 +141,9 @@ static func movement_path(state, source: Vector2i, target: Vector2i, known_targe
 				var steps := 0
 				var cursor: Vector2i = next
 				while cursor != state.NONE:
-					steps += 1
-					cursor = parents[cursor]
+					var previous: Vector2i = parents[cursor]
+					if previous != Grid.NONE: steps += preload("res://src/game/logistics.gd").step_cost(state, previous, cursor, state.unit_faction(source))
+					cursor = previous
 				if steps < shortest:
 					shortest = steps
 					endpoint = next
@@ -202,7 +187,7 @@ static func blocked_landing(state, source: Vector2i, target: Vector2i, path: Arr
 		var coord: Vector2i = path[index]
 		if coord == source: return source
 		var cell: Dictionary = state.cells[coord]
-		if cell["unit"] == 0 and (cell["building"] in ["", "monument"] or state.is_bridge(coord)):
+		if cell["unit"] == 0 and (cell["building"] in ["", "monument", "city", "tower"] or state.is_bridge(coord)):
 			return coord
 	return source
 
@@ -254,7 +239,7 @@ static func apply_move(state, source: Vector2i, target: Vector2i, path: Array = 
 	destination["grave"] = false
 	if capturing:
 		destination["capital"] = -1
-		if not preload("res://src/game/event_sites.gd").protected(destination): destination["building"] = ""
+		if destination["building"] != "city" and not preload("res://src/game/event_sites.gd").protected(destination): destination["building"] = ""
 	unit["unit"] = 0
 	unit["moved"] = false
 	unit["unit_owner"] = -1

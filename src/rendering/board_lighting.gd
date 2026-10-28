@@ -49,7 +49,7 @@ func refresh_sources() -> void:
 		var source := {}
 		if cell.get("mana_source",false):
 			source = {"position":board.coord_position(coord)+Vector3(0.48,0.65,-0.38),"mana":true}
-		elif cell.get("capital",-1) >= 0 or cell.get("building","") == "house":
+		elif cell.get("capital",-1) >= 0 or cell.get("building","") == "city":
 			source = {"position":board.coord_position(coord)+Vector3(0.1,0.6,0.4),"mana":false}
 		if sources_by_coord.get(coord, {}) == source: continue
 		changed = true

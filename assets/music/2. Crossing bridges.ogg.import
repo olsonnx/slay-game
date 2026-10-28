@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://q5xluc8banwk"
+path="res://.godot/imported/2. Crossing bridges.ogg-8398e4a11de2888f44ef83bd89391d49.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/music/2. Crossing bridges.ogg"
+dest_files=["res://.godot/imported/2. Crossing bridges.ogg-8398e4a11de2888f44ef83bd89391d49.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

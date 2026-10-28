@@ -1,6 +1,5 @@
 {
 	"category": "magic",
-	"description": "Use sources and all three spells with a purpose.",
 	"format": "slay-tutorial",
 	"map": {
 		"cells": [
@@ -9,14 +8,15 @@
 				"capital": -1,
 				"event": "",
 				"grave": false,
-				"mana_source": true,
+				"mana_source": false,
 				"mountain": false,
 				"owner": 0,
 				"q": -4,
 				"r": -1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -28,37 +28,40 @@
 				"owner": 0,
 				"q": -4,
 				"r": 0,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
 				"capital": -1,
 				"event": "",
 				"grave": false,
-				"mana_source": true,
+				"mana_source": false,
 				"mountain": false,
 				"owner": 0,
 				"q": -4,
 				"r": 1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
 				"capital": -1,
 				"event": "",
 				"grave": false,
-				"mana_source": true,
+				"mana_source": false,
 				"mountain": false,
 				"owner": 0,
 				"q": -3,
 				"r": -1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -70,9 +73,145 @@
 				"owner": 0,
 				"q": -3,
 				"r": 0,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": -3,
+				"r": 1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": -2,
+				"r": -1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": -2,
+				"r": 0,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": -2,
+				"r": 1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": -1,
+				"r": -1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "city",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": true,
+				"mountain": false,
+				"owner": 0,
+				"q": -1,
+				"r": 0,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": -1,
+				"r": 1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": 0,
+				"r": -1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": 0,
+				"r": 0,
+				"road": false,
 				"tree": false,
 				"unit": 1,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -82,137 +221,12 @@
 				"mana_source": false,
 				"mountain": false,
 				"owner": 0,
-				"q": -3,
-				"r": 1,
-				"tree": false,
-				"unit": 0,
-				"value": 1
-			},
-			{
-				"building": "",
-				"capital": -1,
-				"event": "",
-				"grave": false,
-				"mana_source": false,
-				"mountain": false,
-				"owner": 0,
-				"q": -2,
-				"r": -1,
-				"tree": false,
-				"unit": 0,
-				"value": 1
-			},
-			{
-				"building": "",
-				"capital": -1,
-				"event": "",
-				"grave": false,
-				"mana_source": false,
-				"mountain": false,
-				"owner": 0,
-				"q": -2,
-				"r": 0,
-				"tree": false,
-				"unit": 0,
-				"value": 1
-			},
-			{
-				"building": "",
-				"capital": -1,
-				"event": "",
-				"grave": false,
-				"mana_source": false,
-				"mountain": false,
-				"owner": 0,
-				"q": -2,
-				"r": 1,
-				"tree": false,
-				"unit": 0,
-				"value": 1
-			},
-			{
-				"building": "",
-				"capital": -1,
-				"event": "",
-				"grave": false,
-				"mana_source": false,
-				"mountain": false,
-				"owner": 0,
-				"q": -1,
-				"r": -1,
-				"tree": false,
-				"unit": 0,
-				"value": 1
-			},
-			{
-				"building": "",
-				"capital": -1,
-				"event": "",
-				"grave": false,
-				"mana_source": false,
-				"mountain": false,
-				"owner": 0,
-				"q": -1,
-				"r": 0,
-				"tree": false,
-				"unit": 0,
-				"value": 1
-			},
-			{
-				"building": "",
-				"capital": -1,
-				"event": "",
-				"grave": false,
-				"mana_source": false,
-				"mountain": false,
-				"owner": 0,
-				"q": -1,
-				"r": 1,
-				"tree": false,
-				"unit": 0,
-				"value": 1
-			},
-			{
-				"building": "",
-				"capital": -1,
-				"event": "",
-				"grave": false,
-				"mana_source": false,
-				"mountain": false,
-				"owner": -1,
-				"q": 0,
-				"r": -1,
-				"tree": false,
-				"unit": 0,
-				"value": 1
-			},
-			{
-				"building": "",
-				"capital": -1,
-				"event": "",
-				"grave": false,
-				"mana_source": true,
-				"mountain": false,
-				"owner": -1,
-				"q": 0,
-				"r": 0,
-				"tree": false,
-				"unit": 0,
-				"value": 1
-			},
-			{
-				"building": "",
-				"capital": -1,
-				"event": "",
-				"grave": false,
-				"mana_source": false,
-				"mountain": false,
-				"owner": -1,
 				"q": 0,
 				"r": 1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -224,6 +238,7 @@
 				"owner": -1,
 				"q": 1,
 				"r": -1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
 				"value": 1
@@ -238,6 +253,7 @@
 				"owner": -1,
 				"q": 1,
 				"r": 0,
+				"road": false,
 				"tree": false,
 				"unit": 0,
 				"value": 1
@@ -252,6 +268,7 @@
 				"owner": -1,
 				"q": 1,
 				"r": 1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
 				"value": 1
@@ -266,37 +283,10 @@
 				"owner": 1,
 				"q": 2,
 				"r": -1,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
-			},
-			{
-				"building": "",
-				"capital": -1,
-				"event": "",
-				"grave": false,
-				"mana_source": false,
-				"mountain": false,
-				"owner": 1,
-				"q": 2,
-				"r": 0,
-				"tree": false,
-				"unit": 0,
-				"value": 2
-			},
-			{
-				"building": "",
-				"capital": -1,
-				"event": "",
-				"grave": false,
-				"mana_source": false,
-				"mountain": false,
-				"owner": 1,
-				"q": 3,
-				"r": -1,
-				"tree": false,
-				"unit": 0,
-				"value": 2
+				"value": 1
 			},
 			{
 				"building": "",
@@ -306,11 +296,27 @@
 				"mana_source": false,
 				"mountain": false,
 				"owner": 1,
-				"q": 3,
+				"q": 2,
 				"r": 0,
+				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 1
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 1,
+				"q": 3,
+				"r": 0,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 1
 			}
 		],
 		"factions": [
@@ -376,12 +382,15 @@
 			}
 		],
 		"format": "slay-level",
-		"gold": 30,
-		"player_start": null,
+		"gold": 100,
+		"player_start": [
+			-4,
+			0
+		],
 		"rules": "modern",
-		"seed": 73021,
+		"seed": 1,
 		"size": "small",
-		"title": "Practice: Trail",
+		"title": "Cities and logistics",
 		"version": 1
 	},
 	"opponent_mode": "scripted",
@@ -389,437 +398,10 @@
 	"steps": [
 		{
 			"details": {
-				"spell": "trailblaze"
-			},
-			"exercise": "trail",
-			"id": "trailblaze",
-			"kind": "spell",
-			"setup": {
-				"cells": [
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": true,
-						"mountain": false,
-						"owner": 0,
-						"q": -4,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": 0,
-						"event": "",
-						"grave": false,
-						"mana_source": true,
-						"mountain": false,
-						"owner": 0,
-						"q": -4,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": true,
-						"mountain": false,
-						"owner": 0,
-						"q": -4,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": true,
-						"mountain": false,
-						"owner": 0,
-						"q": -3,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -3,
-						"r": 0,
-						"tree": false,
-						"unit": 1,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -3,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -2,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -2,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -2,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -1,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -1,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -1,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 0,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": true,
-						"mountain": false,
-						"owner": -1,
-						"q": 0,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 0,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 1,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 1,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 1,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 2,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 2,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 3,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": 1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 3,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					}
-				],
-				"factions": [
-					{
-						"color": "86b998ff",
-						"name": "Fern",
-						"terrain": "80ad86ff"
-					},
-					{
-						"color": "d79879ff",
-						"name": "Ember",
-						"terrain": "c58768ff"
-					},
-					{
-						"color": "92acc9ff",
-						"name": "Tide",
-						"terrain": "6e8fb3ff"
-					},
-					{
-						"color": "c5b478ff",
-						"name": "Ochre",
-						"terrain": "b6a66dff"
-					},
-					{
-						"color": "b29acdff",
-						"name": "Aster",
-						"terrain": "a18ab9ff"
-					},
-					{
-						"color": "73b7b7ff",
-						"name": "Cove",
-						"terrain": "659f9eff"
-					},
-					{
-						"color": "d47985ff",
-						"name": "Ruby",
-						"terrain": "b75b67ff"
-					},
-					{
-						"color": "e8b4caff",
-						"name": "Dawn",
-						"terrain": "d5a0b7ff"
-					},
-					{
-						"color": "bfce78ff",
-						"name": "Moss",
-						"terrain": "a4b95cff"
-					},
-					{
-						"color": "9ac1c6ff",
-						"name": "Frost",
-						"terrain": "7cafb6ff"
-					},
-					{
-						"color": "99958eff",
-						"name": "Slate",
-						"terrain": "74716cff"
-					},
-					{
-						"color": "aa99c7ff",
-						"name": "Iris",
-						"terrain": "8875acff"
-					}
-				],
-				"format": "slay-level",
-				"gold": 30,
-				"player_start": null,
-				"rules": "modern",
-				"seed": 73021,
-				"size": "small",
-				"title": "Practice: Trail",
-				"version": 1
-			},
-			"target": null,
-			"task": "Cast Trailblaze on friendly land",
-			"text": "Mana is shared across your kingdoms, unlike gold. The purple dock shows current mana, capacity and regeneration. Trailblaze costs 1 mana: your next neutral capture keeps its action. Any other valid move consumes the blessing without that extra action.",
-			"title": "Trailblaze keeps momentum"
-		},
-		{
-			"details": {
-				"source": [
-					-3,
-					0
-				]
-			},
-			"exercise": "trail",
-			"id": "source",
-			"kind": "move",
-			"target": [
-				0,
-				0
-			],
-			"task": "Capture the neutral mana source",
-			"text": "Select your Scout and capture this neutral source. Sources increase maximum mana; every four controlled sources also add regeneration. Trailblaze leaves the Scout ready, so you can immediately use the new foothold.",
-			"title": "Trailblaze keeps momentum"
-		},
-		{
-			"criteria": {
-				"owner_before": -1
-			},
-			"details": {
 
 			},
-			"exercise": "trail",
-			"id": "extra_capture",
-			"kind": "move",
-			"target": null,
-			"task": "Capture another neutral province now",
-			"text": "The same Scout is still ready. Capture another highlighted neutral province without ending the turn. This is how a small mana investment can turn into more land and recurring income during ordinary expansion.",
-			"title": "Trailblaze keeps momentum"
-		},
-		{
-			"details": {
-
-			},
-			"exercise": "summon",
-			"id": "regen",
+			"exercise": "summoning",
+			"id": "mana",
 			"kind": "end_turn",
 			"setup": {
 				"cells": [
@@ -828,14 +410,15 @@
 						"capital": -1,
 						"event": "",
 						"grave": false,
-						"mana_source": true,
+						"mana_source": false,
 						"mountain": false,
 						"owner": 0,
 						"q": -4,
 						"r": -1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -847,135 +430,145 @@
 						"owner": 0,
 						"q": -4,
 						"r": 0,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
 						"capital": -1,
 						"event": "",
 						"grave": false,
-						"mana_source": true,
+						"mana_source": false,
 						"mountain": false,
 						"owner": 0,
 						"q": -4,
 						"r": 1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -3,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -3,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -3,
+						"r": 1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -2,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -2,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -2,
+						"r": 1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -1,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "city",
 						"capital": -1,
 						"event": "",
 						"grave": false,
 						"mana_source": true,
 						"mountain": false,
 						"owner": 0,
-						"q": -3,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -3,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -3,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -2,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -2,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -2,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -1,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
 						"q": -1,
 						"r": 0,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -987,9 +580,10 @@
 						"owner": 0,
 						"q": -1,
 						"r": 1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -998,12 +592,13 @@
 						"grave": false,
 						"mana_source": false,
 						"mountain": false,
-						"owner": -1,
+						"owner": 0,
 						"q": 0,
 						"r": -1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -1012,12 +607,13 @@
 						"grave": false,
 						"mana_source": false,
 						"mountain": false,
-						"owner": -1,
+						"owner": 0,
 						"q": 0,
 						"r": 0,
+						"road": false,
 						"tree": false,
-						"unit": 0,
-						"value": 1
+						"unit": 1,
+						"value": 2
 					},
 					{
 						"building": "",
@@ -1026,12 +622,13 @@
 						"grave": false,
 						"mana_source": false,
 						"mountain": false,
-						"owner": -1,
+						"owner": 0,
 						"q": 0,
 						"r": 1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -1043,6 +640,7 @@
 						"owner": -1,
 						"q": 1,
 						"r": -1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
 						"value": 1
@@ -1057,6 +655,7 @@
 						"owner": -1,
 						"q": 1,
 						"r": 0,
+						"road": false,
 						"tree": false,
 						"unit": 0,
 						"value": 1
@@ -1071,6 +670,7 @@
 						"owner": -1,
 						"q": 1,
 						"r": 1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
 						"value": 1
@@ -1085,37 +685,10 @@
 						"owner": 1,
 						"q": 2,
 						"r": -1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 2,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 3,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 2
+						"value": 1
 					},
 					{
 						"building": "",
@@ -1125,11 +698,27 @@
 						"mana_source": false,
 						"mountain": false,
 						"owner": 1,
-						"q": 3,
+						"q": 2,
 						"r": 0,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 1
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 1,
+						"q": 3,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 1
 					}
 				],
 				"factions": [
@@ -1195,46 +784,497 @@
 					}
 				],
 				"format": "slay-level",
-				"gold": 30,
-				"player_start": null,
+				"gold": 100,
+				"player_start": [
+					-4,
+					0
+				],
 				"rules": "modern",
-				"seed": 73021,
+				"seed": 1,
 				"size": "small",
-				"title": "Practice: Summon",
+				"title": "Cities and logistics",
 				"version": 1
 			},
 			"target": null,
-			"task": "End turn to regenerate mana",
-			"text": "This kingdom has four sources, including its capital, for capacity 5 and regeneration 2. Start with 1 mana and end turn: it becomes 3. Regeneration cannot exceed capacity, so unused mana may stop growing.",
-			"title": "Summon reinforcements"
+			"task": "End turn to gain mana",
+			"text": "The mana display is beside gold. You start with 1 mana; click End turn to gain another and afford Summon's 2-mana cost. Mana is shared by your faction, while mana sources increase its storage capacity.",
+			"title": "End turn to gain mana"
 		},
 		{
 			"details": {
 				"spell": "summon"
 			},
-			"exercise": "summon",
+			"exercise": "summoning",
 			"id": "summon",
 			"kind": "spell",
-			"target": null,
-			"task": "Summon a Scout on valid friendly land",
-			"text": "Choose Summon in Spells and click empty land in a friendly kingdom. It costs 2 mana instead of recruitment gold. The Scout is ready immediately, but its normal 4-gold wage still appears in that kingdom's forecast.",
-			"title": "Summon reinforcements"
+			"target": [
+				-1,
+				0
+			],
+			"task": "Summon a Scout at the city",
+			"text": "Open Spells, choose Summon, then click the gold-ringed city. The green area shows its legal empty recruitment tiles on or beside cities and capitals. Summon costs 2 mana; the new Scout has normal upkeep and is ready immediately.",
+			"title": "Summon a Scout at the city"
 		},
 		{
-			"criteria": {
-				"owner_before": -1,
-				"source_tier": 1
-			},
 			"details": {
-
+				"source": [
+					-1,
+					0
+				]
 			},
-			"exercise": "summon",
-			"id": "use_summon",
+			"exercise": "summoning",
+			"id": "march",
 			"kind": "move",
-			"target": null,
-			"task": "Capture neutral land with the new Scout",
-			"text": "Use the summoned Scout before ending the turn. Summon is useful when another ready army can do something now; creating troops you cannot support just moves the cost into future wages.",
-			"title": "Summon reinforcements"
+			"target": [
+				-2,
+				1
+			],
+			"task": "Move the summoned Scout",
+			"text": "Click the blue-ringed summoned Scout, then the gold-ringed friendly tile. No End turn is needed first. Summon uses the same deployment area and readiness rules as paid recruits.",
+			"title": "Move the summoned Scout"
+		},
+		{
+			"details": {
+				"spell": "trailblaze"
+			},
+			"exercise": "trailblaze",
+			"id": "bless",
+			"kind": "spell",
+			"setup": {
+				"cells": [
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -4,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": 0,
+						"event": "",
+						"grave": false,
+						"mana_source": true,
+						"mountain": false,
+						"owner": 0,
+						"q": -4,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -4,
+						"r": 1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -3,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -3,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -3,
+						"r": 1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -2,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -2,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -2,
+						"r": 1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -1,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "city",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": true,
+						"mountain": false,
+						"owner": 0,
+						"q": -1,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -1,
+						"r": 1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 0,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 0,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 1,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 0,
+						"r": 1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": -1,
+						"q": 1,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 1
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": -1,
+						"q": 1,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 1
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": -1,
+						"q": 1,
+						"r": 1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 1
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 1,
+						"q": 2,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 1
+					},
+					{
+						"building": "",
+						"capital": 1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 1,
+						"q": 2,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 1
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 1,
+						"q": 3,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 1
+					}
+				],
+				"factions": [
+					{
+						"color": "86b998ff",
+						"name": "Fern",
+						"terrain": "80ad86ff"
+					},
+					{
+						"color": "d79879ff",
+						"name": "Ember",
+						"terrain": "c58768ff"
+					},
+					{
+						"color": "92acc9ff",
+						"name": "Tide",
+						"terrain": "6e8fb3ff"
+					},
+					{
+						"color": "c5b478ff",
+						"name": "Ochre",
+						"terrain": "b6a66dff"
+					},
+					{
+						"color": "b29acdff",
+						"name": "Aster",
+						"terrain": "a18ab9ff"
+					},
+					{
+						"color": "73b7b7ff",
+						"name": "Cove",
+						"terrain": "659f9eff"
+					},
+					{
+						"color": "d47985ff",
+						"name": "Ruby",
+						"terrain": "b75b67ff"
+					},
+					{
+						"color": "e8b4caff",
+						"name": "Dawn",
+						"terrain": "d5a0b7ff"
+					},
+					{
+						"color": "bfce78ff",
+						"name": "Moss",
+						"terrain": "a4b95cff"
+					},
+					{
+						"color": "9ac1c6ff",
+						"name": "Frost",
+						"terrain": "7cafb6ff"
+					},
+					{
+						"color": "99958eff",
+						"name": "Slate",
+						"terrain": "74716cff"
+					},
+					{
+						"color": "aa99c7ff",
+						"name": "Iris",
+						"terrain": "8875acff"
+					}
+				],
+				"format": "slay-level",
+				"gold": 100,
+				"player_start": [
+					-4,
+					0
+				],
+				"rules": "modern",
+				"seed": 1,
+				"size": "small",
+				"title": "Cities and logistics",
+				"version": 1
+			},
+			"target": [
+				0,
+				0
+			],
+			"task": "Prepare Trailblaze",
+			"text": "In this new position, open Spells and choose Trailblaze. Click the gold-ringed friendly tile to spend 1 mana. The blessing applies to the next unit you move, not only the unit on the spell's tile. Any valid move consumes it.",
+			"title": "Prepare Trailblaze"
+		},
+		{
+			"details": {
+				"source": [
+					0,
+					0
+				]
+			},
+			"exercise": "trailblaze",
+			"id": "trail_capture",
+			"kind": "move",
+			"target": [
+				1,
+				0
+			],
+			"task": "Capture with the blessed Scout",
+			"text": "Click the blue-ringed Scout, then the gold-ringed neutral tile. Because this next move captures neutral land, Trailblaze leaves the Scout ready for another move.",
+			"title": "Capture with the blessed Scout"
+		},
+		{
+			"details": {
+				"source": [
+					1,
+					0
+				]
+			},
+			"exercise": "trailblaze",
+			"id": "trail_followup",
+			"kind": "move",
+			"target": [
+				1,
+				1
+			],
+			"task": "Use the extra move",
+			"text": "Move that Scout from the blue ring to the gold-ringed neutral tile. This is a second capture in the same turn. Trailblaze was consumed by the first move, so the Scout is spent after this one.",
+			"title": "Use the extra move"
 		},
 		{
 			"details": {
@@ -1250,14 +1290,15 @@
 						"capital": -1,
 						"event": "",
 						"grave": false,
-						"mana_source": true,
+						"mana_source": false,
 						"mountain": false,
 						"owner": 0,
 						"q": -4,
 						"r": -1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -1269,37 +1310,145 @@
 						"owner": 0,
 						"q": -4,
 						"r": 0,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
 						"capital": -1,
 						"event": "",
 						"grave": false,
-						"mana_source": true,
+						"mana_source": false,
 						"mountain": false,
 						"owner": 0,
 						"q": -4,
 						"r": 1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -3,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -3,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -3,
+						"r": 1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -2,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -2,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -2,
+						"r": 1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -1,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "city",
 						"capital": -1,
 						"event": "",
 						"grave": false,
 						"mana_source": true,
 						"mountain": false,
 						"owner": 0,
-						"q": -3,
-						"r": -1,
+						"q": -1,
+						"r": 0,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -1309,11 +1458,42 @@
 						"mana_source": false,
 						"mountain": false,
 						"owner": 0,
-						"q": -3,
+						"q": -1,
+						"r": 1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 0,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 0,
 						"r": 0,
+						"road": false,
 						"tree": false,
 						"unit": 1,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -1323,95 +1503,12 @@
 						"mana_source": false,
 						"mountain": false,
 						"owner": 0,
-						"q": -3,
+						"q": 0,
 						"r": 1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -2,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -2,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -2,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -1,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -1,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 0,
-						"q": -1,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -1421,8 +1518,9 @@
 						"mana_source": false,
 						"mountain": false,
 						"owner": -1,
-						"q": 0,
+						"q": 1,
 						"r": -1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
 						"value": 1
@@ -1435,8 +1533,9 @@
 						"mana_source": false,
 						"mountain": false,
 						"owner": -1,
-						"q": 0,
+						"q": 1,
 						"r": 0,
+						"road": false,
 						"tree": false,
 						"unit": 0,
 						"value": 0
@@ -1449,50 +1548,9 @@
 						"mana_source": false,
 						"mountain": false,
 						"owner": -1,
-						"q": 0,
-						"r": 1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 1,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
-						"q": 1,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": -1,
 						"q": 1,
 						"r": 1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
 						"value": 1
@@ -1507,37 +1565,10 @@
 						"owner": 1,
 						"q": 2,
 						"r": -1,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 2,
-						"r": 0,
-						"tree": false,
-						"unit": 0,
-						"value": 2
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 3,
-						"r": -1,
-						"tree": false,
-						"unit": 0,
-						"value": 2
+						"value": 1
 					},
 					{
 						"building": "",
@@ -1547,11 +1578,27 @@
 						"mana_source": false,
 						"mountain": false,
 						"owner": 1,
-						"q": 3,
+						"q": 2,
 						"r": 0,
+						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 1
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 1,
+						"q": 3,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 1
 					}
 				],
 				"factions": [
@@ -1617,48 +1664,36 @@
 					}
 				],
 				"format": "slay-level",
-				"gold": 30,
-				"player_start": null,
+				"gold": 100,
+				"player_start": [
+					-4,
+					0
+				],
 				"rules": "modern",
-				"seed": 73021,
+				"seed": 1,
 				"size": "small",
-				"title": "Practice: Shatter",
+				"title": "Cities and logistics",
 				"version": 1
 			},
 			"target": null,
-			"task": "Regenerate enough mana for Shatter",
-			"text": "Shatter costs 2 mana. End turn to regenerate enough. Its targets are reachable neutral structures; it cannot erase an enemy-owned Tower or an impassable mountain.",
-			"title": "Shatter a neutral structure"
-		},
-		{
-			"details": {
-
-			},
-			"exercise": "shatter",
-			"id": "bridge_details",
-			"kind": "inspect",
-			"target": [
-				0,
-				0
-			],
-			"task": "Inspect the neutral Bridge",
-			"text": "This crossing could let either side approach. Destroying a bridge removes the route, and any army standing on it is lost. Check what depends on the crossing before spending mana to cut it.",
-			"title": "Shatter a neutral structure"
+			"task": "Prepare to destroy a crossing",
+			"text": "This new position has an empty neutral bridge beside your land. Click End turn to reach 2 mana. Shatter can remove an adjacent neutral structure, including a bridge; any unit on a destroyed bridge is lost too.",
+			"title": "Prepare to destroy a crossing"
 		},
 		{
 			"details": {
 				"spell": "shatter"
 			},
 			"exercise": "shatter",
-			"id": "shatter",
+			"id": "shatter_bridge",
 			"kind": "spell",
 			"target": [
-				0,
+				1,
 				0
 			],
-			"task": "Shatter the marked Bridge",
-			"text": "Choose Shatter, then click the Bridge. This removes the crossing rather than capturing it. Income landmarks cannot be destroyed this way: their rewards change hands through conquest.",
-			"title": "Shatter a neutral structure"
+			"task": "Shatter the empty bridge",
+			"text": "Open Spells, choose Shatter, then click the gold-ringed bridge. The spell costs 2 mana and removes the crossing completely. It does not return construction gold.",
+			"title": "Shatter the empty bridge"
 		}
 	],
 	"title": "Mana and spells",

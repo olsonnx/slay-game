@@ -109,6 +109,8 @@ func configure_map(size_id: String, bounds: Vector2, layout: Dictionary = {}) ->
 	_refresh_zoom_limits()
 
 func pan(direction: Vector2, delta: float) -> void:
+	var editor = get_viewport().gui_get_focus_owner()
+	if editor is LineEdit or editor is TextEdit: return
 	if direction.is_zero_approx():
 		return
 	stop_camera_pan(false)
@@ -117,7 +119,7 @@ func pan(direction: Vector2, delta: float) -> void:
 	var movement := direction.normalized()
 	var right := Vector3(cos(yaw), 0, -sin(yaw))
 	var backward := Vector3(sin(yaw), 0, cos(yaw))
-	focus += (right * movement.x + backward * movement.y) * zoom * 0.48 * delta
+	focus += (right * movement.x + backward * movement.y) * zoom * 0.48 * delta * Gameplay.camera_speed
 	focus.x = clampf(focus.x, -navigation_limits.x, navigation_limits.x)
 	focus.z = clampf(focus.z, -navigation_limits.y, navigation_limits.y)
 	update_camera()
@@ -129,8 +131,8 @@ func orbit(relative: Vector2) -> void:
 		top_down = false
 		pitch = saved_pitch
 		yaw = saved_yaw
-	yaw -= relative.x * 0.006
-	pitch = clampf(pitch + relative.y * 0.004, 0.44, 1.37)
+	yaw -= relative.x * 0.006 * Gameplay.rotation_speed
+	pitch = clampf(pitch + relative.y * 0.004 * Gameplay.rotation_speed * (-1.0 if Gameplay.invert_vertical else 1.0), 0.44, 1.37)
 	_refresh_zoom_limits()
 	zoom = minf(zoom, max_zoom)
 	zoom_target = minf(zoom_target, max_zoom)
@@ -148,7 +150,7 @@ func drag_pan(relative: Vector2) -> void:
 	var second := camera.project_ray_origin(relative)
 	var first_ground := first - ray * first.y / ray.y
 	var second_ground := second - ray * second.y / ray.y
-	focus += first_ground - second_ground
+	focus += (first_ground - second_ground) * Gameplay.camera_speed
 	focus.x = clampf(focus.x, -navigation_limits.x, navigation_limits.x)
 	focus.z = clampf(focus.z, -navigation_limits.y, navigation_limits.y)
 	update_camera()
@@ -163,7 +165,7 @@ func change_zoom(steps: float, cursor := Vector2(-1, -1)) -> void:
 	zoom_uses_reference = zoom_reference != Vector2(-1, -1)
 	if zoom_uses_reference:
 		zoom_cursor = zoom_reference
-	zoom_target = clampf(previous_target * pow(0.88, steps), 8.0, max_zoom)
+	zoom_target = clampf(previous_target * pow(0.88, steps * Gameplay.zoom_speed * (-1.0 if Gameplay.invert_zoom else 1.0)), 8.0, max_zoom)
 	zooming = not is_equal_approx(zoom, zoom_target)
 
 func toggle_top_down() -> void:
@@ -203,6 +205,9 @@ func stop_camera_pan(cancel_zoom := true) -> void:
 
 func smooth_pan_to(target: Vector3) -> void:
 	stop_camera_pan()
+	if Video.reduced_motion:
+		_set_camera_focus(target)
+		return
 	if focus.is_equal_approx(target):
 		return
 	camera_pan_tween = create_tween()

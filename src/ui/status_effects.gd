@@ -18,7 +18,15 @@ func refresh(model, faction := 0) -> void:
 			var definition: Array = Events.EFFECTS[effect]
 			active[effect] = [definition[0], Loc.text(definition[1]) + "\n" + (Loc.text("Next move: act again after a neutral capture\nAny move spends it") if effect == "trailblaze" else Loc.text("Next successful spell: 0 mana\nLasts until used")), Color("c7b2fa")]
 	if model.has_effect(faction, "stainless_steel"):
-		active["stainless_steel"] = ["S", Loc.text("Invention of stainless steel\nEach Knight costs 2 less gold per turn\nActive while you control its landmark"), Color("b5d5df")]
+		active["stainless_steel"] = ["S", Loc.text("Invention of stainless steel\nKnight wages are 25% lower\nActive while you control its landmark; does not stack"), Color("b5d5df")]
+	for bonus in ["soldier_discount", "scout_discount", "development_discount", "defense_aura"]:
+		if not owned_effects.get(bonus, false): continue
+		var detail: Array = {
+			"soldier_discount":["B", Loc.text("Soldiers' Barracks\nSoldier wages are 50% lower\nActive while controlled; does not stack")],
+			"scout_discount":["L", Loc.text("Scout Lodge\nScout wages are 50% lower\nActive while controlled; does not stack")],
+			"development_discount":["D", Loc.text("Builders' Guild\nDevelopment costs 50% less on its province and adjacent friendly provinces\nActive while controlled; does not stack")],
+			"defense_aura":["+1", Loc.text("Watchtower\n+1 defense on its province and adjacent friendly units\nNo attack bonus; does not stack")]}[bonus]
+		active[bonus] = [detail[0], detail[1], Color("c8d3a1")]
 	var permanent_income: int = owned_effects.get("income_bonus", 0)
 	if permanent_income != 0:
 		active["income_bonus"] = ["G", source_breakdown(owned_effects, "income", permanent_income, Loc.text("Gold per turn")), Color("eed3a1")]
@@ -44,6 +52,8 @@ func refresh(model, faction := 0) -> void:
 			icon.custom_minimum_size = Vector2(48, 48)
 			icon.focus_mode = Control.FOCUS_NONE
 			icon.add_theme_font_size_override("font_size", 25)
+			for state in Hud.BUTTON_STATES:
+				icon.add_theme_stylebox_override(state, Hud.panel_style())
 			Hud.button_foreground(icon,definition[2])
 			add_child(icon)
 			icons[id] = icon

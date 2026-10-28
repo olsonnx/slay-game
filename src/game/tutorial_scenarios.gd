@@ -2,9 +2,10 @@ extends RefCounted
 ## Small authored practice positions. Each exercise declares its own starting board.
 const Rules = preload("res://src/game/kingdom_rules.gd")
 const Level = preload("res://src/editor/level_document.gd")
-const FIRST := {"armies":"opening","economy":"budget","construction":"house","conquest":"capital","magic":"trail","exploration":"chest","practice":"practice"}
+const FIRST := {"armies":"opening","economy":"budget","construction":"city","conquest":"capital","magic":"trail","exploration":"chest","practice":"practice"}
 
 static func map_data(category: String) -> Dictionary:
+	if category != "practice": return preload("res://src/game/logistics_tutorial.gd").map_data(category)
 	return position(FIRST.get(category,"opening"))
 
 static func add(doc, at: Vector2i, owner: int, value := 1, fields: Dictionary = {}) -> void:
@@ -58,7 +59,7 @@ static func position(id: String) -> Dictionary:
 				add(doc,Vector2i(1,0),1,1)
 			elif id == "lair":
 				doc.cells[Vector2i(-3,0)].unit = 3
-				doc.cells[Vector2i(-1,0)].building = "house"
+				doc.cells[Vector2i(-1,0)].building = "city"
 				add(doc,Vector2i(0,0),-1,1)
 				add(doc,Vector2i(0,1),-1,1,{"lair":"bear"})
 				# One clear exit makes the first normal emergence easy to follow.
@@ -85,9 +86,9 @@ static func position(id: String) -> Dictionary:
 			add(doc,Vector2i(0,1),1,2,{"unit":2})
 			add(doc,Vector2i(1,1),1,2)
 			doc.starting_gold = 0
-		"house","investment":
+		"city","investment":
 			doc.cells[Vector2i(-3,0)].unit = 0
-			doc.starting_gold = 30 if id == "house" else 20
+			doc.starting_gold = 30 if id == "city" else 20
 			if id == "investment":
 				for cell in doc.cells.values():
 					if cell.owner == 0: cell.value = 2

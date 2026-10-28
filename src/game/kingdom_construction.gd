@@ -11,7 +11,8 @@ static func development_cost(state, coord: Vector2i) -> int:
 	if not cells.has(coord) or state.is_bridge(coord) or state.is_mountain(coord):
 		return 0
 	var value: int = cells[coord].get("value", 1)
-	return state.DEVELOPMENT_BASE_COST * value * value
+	var cost: int = state.DEVELOPMENT_BASE_COST * value * value
+	return ceili(cost * 0.5) if preload("res://src/game/event_sites.gd").has_aura(state, coord, "development_discount") else cost
 
 static func capital_relocation_cost(state, faction: int) -> int:
 	return 10 * (1 + int(state.capital_relocations.get(faction, 0)))
@@ -41,6 +42,7 @@ static func relocate_capital(state, coord: Vector2i, faction: int) -> bool:
 	state.kingdoms.erase(former)
 	state.kingdoms[coord] = bank
 	for cell in cells.values():
+		if cell.get("bridge_home", NONE) == former and cell.get("bridge_owner", -1) == faction: cell["bridge_home"] = coord
 		if cell.get("unit_home", NONE) == former and cell.get("unit_owner", -1) == faction:
 			cell["unit_home"] = coord
 	state.capital_relocations[faction] = int(state.capital_relocations.get(faction, 0)) + 1
@@ -99,12 +101,12 @@ static func recruit(state, coord: Vector2i, faction: int, requested_tier := 0, c
 		return false
 	var kingdom: Dictionary = state.kingdom_at(coord)
 	var cell: Dictionary = cells[coord]
-	var action_spent: bool = cell["unit"] > 0 and cell["moved"]
+	var spent: bool = cell["unit"] > 0 and cell["moved"]
 	kingdom["gold"] -= cost
 	cell["unit"] = cell["unit"] + 1 if requested_tier == 0 else requested_tier
 	state.clear_terrain(coord, kingdom)
-	# Reinforcing a spent army changes its rank without granting another action.
-	cell["moved"] = action_spent
+	# A fresh recruit can move; upgrading never restores a spent action.
+	cell["moved"] = spent
 	state.record_replay("recruit", faction, {"coord":coord, "tier":cell["unit"], "cost":cost, "capital":kingdom["capital"]})
 	return true
 
@@ -119,7 +121,7 @@ static func recruitment_cost(state, coord: Vector2i, faction: int, requested_tie
 	if kingdom.is_empty() or kingdom["owner"] != faction or (capital != NONE and kingdom["capital"] != capital):
 		return -1
 	var cell: Dictionary = cells[coord]
-	if cell["building"] != "" or cell["unit"] >= 3 or state.is_entrenched(coord):
+	if not preload("res://src/game/logistics.gd").recruitment_zone(state, coord, faction) or cell["unit"] >= 3 or state.is_entrenched(coord):
 		return -1
 	var target_tier: int = cell["unit"] + 1 if requested_tier == 0 else requested_tier
 	if target_tier <= cell["unit"] or target_tier > 3:
@@ -138,7 +140,7 @@ static func can_build(state, coord: Vector2i, faction: int, kind: String, capita
 			return false
 		var payer := construction_kingdom(state, coord, faction, capital)
 		return not payer.is_empty() and payer["gold"] >= state.BRIDGE_COST
-	if kind not in ["tower", "house"]:
+	if kind not in ["tower", "city"]:
 		return false
 	var kingdom: Dictionary = state.kingdom_at(coord)
 	if kingdom.is_empty() or kingdom["owner"] != faction:
@@ -146,7 +148,7 @@ static func can_build(state, coord: Vector2i, faction: int, kind: String, capita
 	if capital != NONE and kingdom["capital"] != capital:
 		return false
 	var cell: Dictionary = cells[coord]
-	var cost: int = state.TOWER_COST if kind == "tower" else state.HOUSE_COST
+	var cost: int = state.tower_cost(faction) if kind == "tower" else state.CITY_COST
 	return kingdom["gold"] >= cost and cell["unit"] == 0 and cell["capital"] < 0 and cell["building"] == "" and not cell["tree"] and not cell["grave"]
 
 static func build_structure(state, coord: Vector2i, faction: int, kind: String, capital := NONE) -> bool:
@@ -159,11 +161,13 @@ static func build_structure(state, coord: Vector2i, faction: int, kind: String, 
 		cells[coord] = state.make_cell()
 		cells[coord]["building"] = "bridge"
 		cells[coord]["value"] = 0
+		cells[coord]["bridge_owner"] = faction
+		cells[coord]["bridge_home"] = payer["capital"]
 		state.rebuild_kingdoms()
 		state.record_replay("build", faction, {"coord":coord, "building":kind, "capital":capital})
 		return true
 	var kingdom: Dictionary = state.kingdom_at(coord)
-	kingdom["gold"] -= state.TOWER_COST if kind == "tower" else state.HOUSE_COST
+	kingdom["gold"] -= state.tower_cost(faction) if kind == "tower" else state.CITY_COST
 	cells[coord]["building"] = kind
 	state.record_replay("build", faction, {"coord":coord, "building":kind, "capital":kingdom["capital"]})
 	return true

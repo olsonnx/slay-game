@@ -64,11 +64,15 @@
 									"kind": "mana_source"
 								},
 								{
+									"defense_aura": false,
+									"development_discount": false,
 									"income_max": 0,
 									"income_min": 0,
 									"kind": "landmark",
 									"mana_max": 0,
 									"mana_min": 0,
+									"scout_discount": false,
+									"soldier_discount": false,
 									"steel": false
 								}
 							],
@@ -346,11 +350,15 @@
 						{
 							"effects": [
 								{
+									"defense_aura": false,
+									"development_discount": false,
 									"income_max": 2,
 									"income_min": 1,
 									"kind": "landmark",
 									"mana_max": 0,
 									"mana_min": 0,
+									"scout_discount": false,
+									"soldier_discount": false,
 									"steel": false
 								}
 							],
@@ -365,7 +373,7 @@
 					"ai_score": 0,
 					"cost_gold": 0,
 					"cost_mana": 0,
-					"hint": "Gain a ready Scout.\nNormal upkeep applies.",
+					"hint": "Gain a Scout on or beside an available city or capital. Ready immediately.\nNormal upkeep applies.",
 					"label": "Recruit the volunteers.",
 					"outcomes": [
 						{
@@ -809,11 +817,15 @@
 									"use_reveal_roll": false
 								},
 								{
+									"defense_aura": false,
+									"development_discount": false,
 									"income_max": -1,
 									"income_min": -1,
 									"kind": "landmark",
 									"mana_max": 0,
 									"mana_min": 0,
+									"scout_discount": false,
+									"soldier_discount": false,
 									"steel": false
 								}
 							],
@@ -841,11 +853,15 @@
 						{
 							"effects": [
 								{
+									"defense_aura": false,
+									"development_discount": false,
 									"income_max": 1,
 									"income_min": 1,
 									"kind": "landmark",
 									"mana_max": 0,
 									"mana_min": 0,
+									"scout_discount": false,
+									"soldier_discount": false,
 									"steel": false
 								}
 							],
@@ -964,22 +980,26 @@
 					"ai_score": 0,
 					"cost_gold": 0,
 					"cost_mana": 0,
-					"hint": "Build a landmark: its owner pays 2 gold less upkeep per Knight.",
+					"hint": "Build a landmark: its owner's Knight wages are 25% lower. Does not stack.",
 					"label": "A triumph of military economy.",
 					"outcomes": [
 						{
 							"effects": [
 								{
+									"defense_aura": false,
+									"development_discount": false,
 									"income_max": 0,
 									"income_min": 0,
 									"kind": "landmark",
 									"mana_max": 0,
 									"mana_min": 0,
+									"scout_discount": false,
+									"soldier_discount": false,
 									"steel": true
 								}
 							],
 							"requires": [],
-							"text": "The landmark's owner pays 2 gold less per Knight.",
+							"text": "The landmark's owner pays 25% lower Knight wages.",
 							"weight": 100
 						}
 					],
@@ -1017,6 +1037,222 @@
 			],
 			"text": "A smith has invented armour that refuses to rust. Our knights demand the savings be passed on to them. The treasurer has understood this request rather differently.",
 			"title": "Invention of stainless steel",
+			"variants": [],
+			"weight": 2
+		},
+		{
+			"choices": [
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "Build a Builders' Guild: development costs 50% less here and on adjacent friendly provinces. Does not stack.",
+					"label": "Let them build on this idea.",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"defense_aura": false,
+									"development_discount": true,
+									"income_max": 0,
+									"income_min": 0,
+									"kind": "landmark",
+									"mana_max": 0,
+									"mana_min": 0,
+									"scout_discount": false,
+									"soldier_discount": false,
+									"steel": false
+								}
+							],
+							"requires": [],
+							"text": "Build a Builders' Guild: development costs 50% less here and on adjacent friendly provinces. Does not stack.",
+							"weight": 100
+						}
+					],
+					"requires": []
+				}
+			],
+			"enabled": true,
+			"gold_roll_max": 0,
+			"gold_roll_min": 0,
+			"id": "builders_guild_example",
+			"modern_only": true,
+			"painting": "",
+			"painting_artist": "",
+			"painting_title": "",
+			"requirements": "",
+			"requires": [
+				{
+					"effect": "free_spell",
+					"kind": "kingdom",
+					"not": false,
+					"value": 1
+				}
+			],
+			"text": "The builders have formed a guild. Their first discovery is that neighboring villages can share tools. Their second is that nobody has been keeping the receipts.",
+			"title": "Measure twice, tax once",
+			"variants": [],
+			"weight": 2
+		},
+		{
+			"choices": [
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "Build Soldiers' Barracks: its owner's Soldier wages are 50% lower. Does not stack.",
+					"label": "Put it in writing.",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"defense_aura": false,
+									"development_discount": false,
+									"income_max": 0,
+									"income_min": 0,
+									"kind": "landmark",
+									"mana_max": 0,
+									"mana_min": 0,
+									"scout_discount": false,
+									"soldier_discount": true,
+									"steel": false
+								}
+							],
+							"requires": [],
+							"text": "Build Soldiers' Barracks: its owner's Soldier wages are 50% lower. Does not stack.",
+							"weight": 100
+						}
+					],
+					"requires": []
+				}
+			],
+			"enabled": true,
+			"gold_roll_max": 0,
+			"gold_roll_min": 0,
+			"id": "barracks_example",
+			"modern_only": true,
+			"painting": "",
+			"painting_artist": "",
+			"painting_title": "",
+			"requirements": "",
+			"requires": [
+				{
+					"effect": "free_spell",
+					"kind": "kingdom",
+					"not": false,
+					"value": 1
+				}
+			],
+			"text": "A retired quartermaster offers to house the soldiers together. Apparently, buying twelve identical dinners is cheaper than reimbursing twelve heroic banquets.",
+			"title": "The quartermaster's ledger",
+			"variants": [],
+			"weight": 2
+		},
+		{
+			"choices": [
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "Build a Scout Lodge: its owner's Scout wages are 50% lower. Does not stack.",
+					"label": "Approve the boot budget.",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"defense_aura": false,
+									"development_discount": false,
+									"income_max": 0,
+									"income_min": 0,
+									"kind": "landmark",
+									"mana_max": 0,
+									"mana_min": 0,
+									"scout_discount": true,
+									"soldier_discount": false,
+									"steel": false
+								}
+							],
+							"requires": [],
+							"text": "Build a Scout Lodge: its owner's Scout wages are 50% lower. Does not stack.",
+							"weight": 100
+						}
+					],
+					"requires": []
+				}
+			],
+			"enabled": true,
+			"gold_roll_max": 0,
+			"gold_roll_min": 0,
+			"id": "scout_lodge_example",
+			"modern_only": true,
+			"painting": "",
+			"painting_artist": "",
+			"painting_title": "",
+			"requirements": "",
+			"requires": [
+				{
+					"effect": "free_spell",
+					"kind": "kingdom",
+					"not": false,
+					"value": 1
+				}
+			],
+			"text": "The scouts have found a lodge with dry boots, warm beds, and a remarkably inexpensive kitchen. They would like to register it as a military innovation.",
+			"title": "Room at the rangers' lodge",
+			"variants": [],
+			"weight": 2
+		},
+		{
+			"choices": [
+				{
+					"ai_score": 0,
+					"cost_gold": 0,
+					"cost_mana": 0,
+					"hint": "Restore a Watchtower: +1 defense here and to adjacent friendly units. No attack bonus. Does not stack.",
+					"label": "Light the beacon.",
+					"outcomes": [
+						{
+							"effects": [
+								{
+									"defense_aura": true,
+									"development_discount": false,
+									"income_max": 0,
+									"income_min": 0,
+									"kind": "landmark",
+									"mana_max": 0,
+									"mana_min": 0,
+									"scout_discount": false,
+									"soldier_discount": false,
+									"steel": false
+								}
+							],
+							"requires": [],
+							"text": "Restore a Watchtower: +1 defense here and to adjacent friendly units. No attack bonus. Does not stack.",
+							"weight": 100
+						}
+					],
+					"requires": []
+				}
+			],
+			"enabled": true,
+			"gold_roll_max": 0,
+			"gold_roll_min": 0,
+			"id": "watchtower_example",
+			"modern_only": true,
+			"painting": "",
+			"painting_artist": "",
+			"painting_title": "",
+			"requirements": "",
+			"requires": [
+				{
+					"effect": "free_spell",
+					"kind": "kingdom",
+					"not": false,
+					"value": 1
+				}
+			],
+			"text": "An old watchtower still commands the surrounding roads. Its keeper proposes a warning beacon. The army proposes somebody else take the night shift.",
+			"title": "A light on the hill",
 			"variants": [],
 			"weight": 2
 		}

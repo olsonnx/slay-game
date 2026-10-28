@@ -92,6 +92,8 @@ func summary_checks() -> void:
 	expect(Replay.read_replay(path, true).get("error") != "", "Preview availability never bypasses full validation before playback")
 	var hotseat := Summary.from_records({"names":["Fern", "Tide"], "humans":[0, 1]}, [{"action":"result", "round":4, "args":{"outcome":"completed", "winner":1}}])
 	expect(Summary.mode_name(hotseat) == "Local multiplayer" and Summary.players(hotseat) == "Fern / Tide" and Summary.outcome(hotseat) == "Tide won", "Multiplayer metadata lists all local kingdoms and names the winner")
+	hotseat.mode = "steam_online"
+	expect(Summary.mode_name(hotseat) == "Steam multiplayer", "Steam recordings are distinguished from local multiplayer in the library")
 	expect(Summary.description(hotseat).contains("Duration: Not recorded"), "Missing historical duration is clearly marked rather than estimated")
 	var mixed := Summary.from_records({"names":["Alice", "Bot A", "Bot B"], "humans":[0], "metadata":{"match":{"slots":[{"color":11,"controller":"human"}, {"controller":"ai","difficulty":"easy"}, {"controller":"ai","difficulty":"hard"}]}}}, [])
 	expect(Summary.players(mixed) == "Iris (Alice)" and Summary.description(mixed).contains("Difficulty: Mixed"), "Summary distinguishes a player's name from their kingdom and preserves mixed AI settings")

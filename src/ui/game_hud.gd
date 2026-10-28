@@ -107,7 +107,7 @@ signal shortcuts_changed
 var activation: Callable
 
 func layout_country_heading() -> void:
-	var width := minf(650.0, maxf(120.0, ui_root.size.x - 428.0))
+	var width := minf(650.0, maxf(120.0, ui_root.size.x - 488.0))
 	level_label.size = Vector2(width, 34)
 	round_label.size = Vector2(width, 24)
 	round_label.clip_text = true
@@ -140,8 +140,8 @@ func build_ui(actions: Dictionary, cue: Callable) -> void:
 	ui_root.add_child(view_controls)
 	view_controls.anchor_left = 1
 	view_controls.anchor_right = 1
-	view_controls.offset_left = -308
-	view_controls.offset_right = -24
+	view_controls.offset_left = -368
+	view_controls.offset_right = -84
 	view_controls.offset_top = 24
 	view_controls.offset_bottom = 64
 	view_controls.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -178,8 +178,8 @@ func build_ui(actions: Dictionary, cue: Callable) -> void:
 	gold_delta_label.add_theme_constant_override("outline_size", 3)
 	gold_delta_label.add_theme_color_override("font_outline_color", Color("172c33"))
 	gold_delta_label.hide()
-	recruit_button = button_at(dock, "Recruit", Rect2(172, 16, 110, 50), actions["open_shop"].bind("recruit"), Loc.text("Choose a Scout, Soldier or Knight.\nPlace on your land or upgrade an army.\nUpgrading does not restore its action.\nRecruitment uses that kingdom's gold."))
-	build_button = button_at(dock, "Build", Rect2(292, 16, 110, 50), actions["open_shop"].bind("build"), Loc.text("Choose a defensive tower or an income house.\nBuild on a clear empty hex in your kingdom."))
+	recruit_button = button_at(dock, "Recruit", Rect2(172, 16, 110, 50), actions["open_shop"].bind("recruit"), Loc.text("Choose a Scout, Soldier or Knight.\nRecruit on or beside a city or capital.\nNew recruits can move immediately.\nRecruitment uses that kingdom's gold."))
+	build_button = button_at(dock, "Build", Rect2(292, 16, 110, 50), actions["open_shop"].bind("build"), Loc.text("Choose a defensive tower or a recruitment city.\nBuild on a clear empty hex in your kingdom."))
 	mana_control = preload("res://src/ui/tooltip_control.gd").new()
 	mana_control.position = Vector2(223, 59)
 	mana_control.size = Vector2(180, 52)
@@ -302,8 +302,8 @@ func build_ui(actions: Dictionary, cue: Callable) -> void:
 func refresh_shortcuts() -> void:
 	shortcuts_changed.emit()
 	heatmap_button.tooltip_text = Loc.text("Province values\nShortcut: %s") % Keys.key_name("heatmap")
-	recruit_button.tooltip_text = Loc.text("Recruit or upgrade using local gold\nUpgrading does not restore a spent action\nShortcut: %s") % Keys.key_name("recruit")
-	build_button.tooltip_text = Loc.text("Build\nTower, house or bridge\nShortcut: %s") % Keys.key_name("build")
+	recruit_button.tooltip_text = Loc.text("Recruit on or beside cities / capitals using local gold\nNew recruits can move immediately\nShortcut: %s") % Keys.key_name("recruit")
+	build_button.tooltip_text = Loc.text("Build\nTower, city or bridge\nShortcut: %s") % Keys.key_name("build")
 	spell_button.tooltip_text = Loc.text("Spells\nUses faction mana\nShortcut: %s") % Keys.key_name("spells")
 	shop_panel.get_node("Close").tooltip_text = Loc.text("Cancel placement\nShortcut: %s") % Keys.key_name("cancel")
 	for card in shop_items.get_children():

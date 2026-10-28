@@ -6,6 +6,19 @@ const Loc = preload("res://src/localization/text.gd")
 func click_hex(game, coord: Vector2i, hit_kind := "auto") -> void:
 	if game.interaction_blocked():
 		return
+	if game.session.selection.action_mode == "road":
+		var source: Vector2i = game.session.selection.selected
+		if not game.tutorial_permits("road", coord, {"source":source}): return
+		if game.rules.build_road(game.session.selection.selected, coord, game.player_faction):
+			game.session.selection.action_mode = ""
+			game.session.selection.selected = game.NONE
+			game.view.render_cells(game.cells)
+			Sound.play(&"action_place")
+			game.report_tutorial_action("road", coord, {"source":source})
+			game.announce(Loc.text("Road connected."))
+		else: game.announce(Loc.text("Choose a highlighted friendly structure or road tile with enough local gold."))
+		game.refresh_ui()
+		return
 	if game.session.selection.action_mode == "bridge" and not game.busy and not game.game_over and not game.cells.has(coord) and game.session.selection.valid_targets.has(coord):
 		if not game.tutorial_permits("build",coord,{"building":"bridge"}): return
 		if game.rules.build_structure(coord, game.player_faction, "bridge", game.active_capital()):
@@ -28,7 +41,7 @@ func click_hex(game, coord: Vector2i, hit_kind := "auto") -> void:
 	if game.tutorial != null and game.busy: return
 	if game.session.selection.action_mode == "spell" and not game.tutorial_permits("spell",coord,{"spell":game.session.selection.chosen_spell}): return
 	if game.session.selection.action_mode == "recruit" and not game.tutorial_permits("recruit",coord,{"tier":game.session.selection.recruit_tier}): return
-	if game.session.selection.action_mode in ["tower","house"] and not game.tutorial_permits("build",coord,{"building":game.session.selection.action_mode}): return
+	if game.session.selection.action_mode in ["tower","city","road"] and not game.tutorial_permits("build",coord,{"building":game.session.selection.action_mode}): return
 	if game.session.selection.action_mode == "" and game.session.selection.selected != coord and game.session.selection.valid_targets.has(coord) and not game.tutorial_permits("move",coord,{"source":game.session.selection.selected}): return
 	game.session.selection.inspected_unit = game.NONE
 	game.session.selection.inspected_animal = game.NONE
@@ -69,7 +82,7 @@ func click_hex(game, coord: Vector2i, hit_kind := "auto") -> void:
 			game.announce(message % Loc.text(game.UNIT_NAMES[game.cells[coord]["unit"]]))
 		else:
 			game.announce(Loc.text("Choose a valid hex with enough gold in its kingdom."))
-	elif game.session.selection.action_mode in ["tower", "house"]:
+	elif game.session.selection.action_mode in ["tower", "city", "road"]:
 		changed = game.rules.build_structure(coord, game.player_faction, game.session.selection.action_mode, game.active_capital())
 		if changed:
 			Sound.play(&"action_place")

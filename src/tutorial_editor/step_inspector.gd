@@ -45,7 +45,7 @@ func _ready() -> void:
 	coord_field(goal_page,"Target tile (blank = any)","target")
 	coord_field(goal_page,"Source unit (blank = any)","source")
 	choice(goal_page,"Unit tier","tier",["any","Scout","Soldier","Knight"])
-	choice(goal_page,"Building","building",["any","house","tower","bridge"])
+	choice(goal_page,"Building","building",["any","city","tower","bridge"])
 	choice(goal_page,"Spell","spell",["any","trailblaze","summon","shatter"])
 	choice(goal_page,"Move result","outcome",["any","move","attack","merge","blocked_attack","knight_duel"])
 	choice(goal_page,"View/Stats state","state",["any","on / open","off / closed"])
@@ -93,7 +93,7 @@ func _ready() -> void:
 	enemy_page.add_child(orders)
 	orders.item_selected.connect(select_order)
 	choice(enemy_page,"Order","op_kind",Doc.ORDERS,false)
-	fields.op_kind.item_selected.connect(func(_index): fields.op_value.text = {"recruit":"1","build":"house","spell":"summon"}.get(selected("op_kind"),""))
+	fields.op_kind.item_selected.connect(func(_index): fields.op_value.text = {"recruit":"1","build":"city","spell":"summon"}.get(selected("op_kind"),""))
 	line(enemy_page,"Faction","op_faction",false)
 	coord_field(enemy_page,"From","op_source",false)
 	coord_field(enemy_page,"To","op_target",false)
@@ -255,7 +255,7 @@ func collect() -> void:
 	step.allow_turns = fields.allow_turns.button_pressed
 	step.wildlife_turn = fields.wildlife_turn.button_pressed
 	step.kind = selected("kind")
-	step.target = parse_coord(fields.target.text) if step.kind in ["recruit","move","build","spell","select","inspect","develop","entrench","relocate_capital","kingdom","animal"] else null
+	step.target = parse_coord(fields.target.text) if step.kind in ["recruit","move","build","spell","select","inspect","develop","entrench","relocate_capital","road","rename_settlement","kingdom","animal"] else null
 	var focus = parse_coord(fields.focus.text)
 	if focus == null: step.erase("focus")
 	else: step.focus = focus
@@ -264,13 +264,13 @@ func collect() -> void:
 	else: step.highlight = highlight
 	step.condition_mode = selected("condition_mode")
 	step.restrict_actions = fields.restrict_actions.button_pressed
-	step.confirm = fields.confirm.button_pressed if step.kind in ["inspect","stats"] else false
+	step.confirm = fields.confirm.button_pressed if step.kind in ["inspect","stats","finance"] else false
 	var details := {}
 	if step.kind == "status" and fields.effect.text != "": details.effect = fields.effect.text
-	if step.kind == "move":
+	if step.kind in ["move","road"]:
 		var source = parse_coord(fields.source.text)
 		if source != null: details.source = source
-		if selected("outcome") != "any": details.outcome = selected("outcome")
+		if step.kind == "move" and selected("outcome") != "any": details.outcome = selected("outcome")
 	if step.kind == "recruit" and fields.tier.selected > 0: details.tier = fields.tier.selected
 	if step.kind == "build" and selected("building") != "any": details.building = selected("building")
 	if step.kind == "spell" and selected("spell") != "any": details.spell = selected("spell")
@@ -281,11 +281,12 @@ func collect() -> void:
 
 func update_visibility() -> void:
 	var kind: String = step.get("kind","continue")
-	groups.target.visible = kind in ["recruit","move","build","spell","select","inspect","develop","entrench","relocate_capital","kingdom","animal"]
-	groups.source.visible = kind == "move"
+	groups.target.visible = kind in ["recruit","move","build","spell","select","inspect","develop","entrench","relocate_capital","road","rename_settlement","kingdom","animal"]
+	groups.source.visible = kind in ["move","road"]
+	groups.source.get_child(0).text = "Source structure (blank = any)" if kind == "road" else "Source unit (blank = any)"
 	fields.wildlife_turn.visible = kind == "end_turn"
 	groups.effect.visible = kind == "status"
-	fields.confirm.visible = kind in ["inspect","stats"]
+	fields.confirm.visible = kind in ["inspect","stats","finance"]
 	groups.tier.visible = kind == "recruit"
 	groups.building.visible = kind == "build"
 	groups.spell.visible = kind == "spell"
@@ -302,7 +303,7 @@ func refresh_lists() -> void:
 func condition_defaults() -> void:
 	var kind := selected("cond_type")
 	fields.cond_faction.text = "-1" if kind == "victory" else "0"
-	fields.cond_value.text = {"unit":"1","building":"house","gold":"10","mana":"1","round":"2","territory":"1","value":"2"}.get(kind,"0")
+	fields.cond_value.text = {"unit":"1","building":"city","gold":"10","mana":"1","round":"2","territory":"1","value":"2"}.get(kind,"0")
 	if kind in ["mana","round","victory","territory","income"]: fields.cond_target.text = ""
 
 func select_condition(index: int) -> void:

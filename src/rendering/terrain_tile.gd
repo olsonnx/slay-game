@@ -115,10 +115,10 @@ static func populate(assets, tile: Node3D, coord: Vector2i, cell: Dictionary, co
 		assets.add_grave(features, Vector3(0.15, 0, 0))
 	if cell["building"] == "tower":
 		assets.add_tower(features, preload("res://src/rendering/tile_layout.gd").landmark_offset(cell), color)
-	elif cell["building"] == "house":
-		assets.add_house(features, preload("res://src/rendering/tile_layout.gd").landmark_offset(cell))
+	elif cell["building"] == "city":
+		assets.add_city(features, preload("res://src/rendering/tile_layout.gd").landmark_offset(cell))
 	if cell["building"] == "monument":
-		assets.add_monument(features, color, preload("res://src/rendering/tile_layout.gd").landmark_offset(cell))
+		assets.add_event_landmark(features, color, preload("res://src/rendering/tile_layout.gd").landmark_offset(cell), cell.get("site_source", ""))
 	if cell["capital"] >= 0:
 		assets.add_capital(features, Vector3(-0.20, 0, -0.12) if cell["unit"] > 0 or cell["grave"] or cell["tree"] else Vector3.ZERO, color)
 	if cell.get("treasure", 0) > 0:

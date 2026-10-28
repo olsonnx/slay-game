@@ -497,7 +497,6 @@ func inspect_selected() -> void:
 					number(object,"max_rank_gold","Gold awarded if already a Knight",0)
 				"recruit":
 					number(object,"tier","Army rank · 1 Scout / 2 Soldier / 3 Knight",1,3)
-					checkbox(object,"ready","Army can act immediately")
 				"clear_trees":
 					number(object,"gold_per_tree","Gold per cleared tree",0)
 					checkbox(object,"adaptive","No gold when trees block more than half of kingdom income")
@@ -508,13 +507,17 @@ func inspect_selected() -> void:
 					number(object,"income_max","Permanent local income · maximum")
 					number(object,"mana_min","Permanent mana regeneration · minimum")
 					number(object,"mana_max","Permanent mana regeneration · maximum")
-					checkbox(object,"steel","Owner's Knights cost 2 gold less per turn (does not stack)")
+					checkbox(object,"steel","Owner's Knight wages -25% (does not stack)")
+					checkbox(object,"soldier_discount","Owner's Soldier wages -50% (does not stack)")
+					checkbox(object,"scout_discount","Owner's Scout wages -50% (does not stack)")
+					checkbox(object,"development_discount","Local development cost -50% (friendly radius 1)")
+					checkbox(object,"defense_aura","Defense +1 here and to adjacent friendly units")
 					help_text(inspector,"The shared landmark cannot be destroyed. Its rewards and penalties transfer with conquest. One landmark effect can contain all three bonuses.")
 				"mana_source": checkbox(object,"enabled","Enable mana source")
 				"temporary_effect":
 					options(object,"effect","Effect",{"free_spell":"Next spell free","trailblaze":"Next neutral capture grants another move"})
 					checkbox(object,"enabled","Grant effect · uncheck to remove")
-				"building": options(object,"building","Ordinary building",{"house":"House","tower":"Tower"})
+				"building": options(object,"building","Ordinary building",{"city":"City","tower":"Tower"})
 				"tile_value": number(object,"amount","Province value change")
 				_: help_text(inspector,"This effect needs no additional settings.")
 			help_text(inspector,"Effects run in order. Place death, disbanding or territorial changes last. Validate with Preview & test before saving.")
@@ -657,7 +660,7 @@ func sandbox():
 		for i in range(state.faction_names.size()): state.human_factions.append(i)
 	if not context.recruit_space:
 		for cell in state.cells.values():
-			if cell.owner == 0 and cell.unit == 0 and cell.capital < 0 and cell.building == "" and not cell.tree: cell.building = "house"
+			if cell.owner == 0 and cell.unit == 0 and cell.capital < 0 and cell.building == "" and not cell.tree: cell.building = "city"
 	state.rebuild_kingdoms()
 	for bank in state.kingdoms.values(): bank.gold = int(context.gold)
 	state.set_mana(0,int(context.mana))

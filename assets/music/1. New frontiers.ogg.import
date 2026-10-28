@@ -1,0 +1,19 @@
+[remap]
+
+importer="oggvorbisstr"
+type="AudioStreamOggVorbis"
+uid="uid://yt4yhdo658at"
+path="res://.godot/imported/1. New frontiers.ogg-57a7edfbbe9d004c153c54d7641f687b.oggvorbisstr"
+
+[deps]
+
+source_file="res://assets/music/1. New frontiers.ogg"
+dest_files=["res://.godot/imported/1. New frontiers.ogg-57a7edfbbe9d004c153c54d7641f687b.oggvorbisstr"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -105,8 +105,10 @@ static func play_ai(game, faction: int) -> void:
 	if game.closing:
 		game.session.finish_work()
 		return
+	opponent.prefetch_movements(game.ai_execution(), faction)
 	await game.view.play_preparation(preparation, opponent.preparation_cells(), opponent.presentation_patch_ready)
 	if game.closing:
+		await opponent.discard_prefetch(game.ai_execution())
 		game.session.finish_work()
 		return
 	game.playback_kingdoms = game.rules.kingdoms.duplicate(true)
@@ -116,8 +118,10 @@ static func play_ai(game, faction: int) -> void:
 		game.session.finish_work()
 		return
 	while not movements.is_empty():
+		opponent.prefetch_movements(game.ai_execution(), faction)
 		await game.view.animate_moves(movements, opponent.movement_cells(movements))
 		if game.closing:
+			await opponent.discard_prefetch(game.ai_execution())
 			game.session.finish_work()
 			return
 		game.playback_kingdoms = game.rules.kingdoms.duplicate(true)

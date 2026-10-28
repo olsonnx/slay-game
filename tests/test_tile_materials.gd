@@ -30,17 +30,15 @@ func run() -> void:
 	var options = load("res://src/ui/options_view.gd").new()
 	root.add_child(options)
 	await process_frame
-	expect(options.plastic_tiles_toggle.button_pressed, "Plastic toggle reflects the current preference")
-	expect(options.level_transition_toggle.get_rect().end.x <= options.plastic_tiles_toggle.position.x and options.plastic_tiles_toggle.get_rect().end.x <= 432, "Plastic toggle fits alongside transitions at minimum window size")
 	expect(top.material_override.roughness <= 0.35 and earth.material_override.roughness > 0.7, "Plastic tops have a restrained stronger sheen while bases remain matte")
-	options.plastic_tiles_toggle.button_pressed = false
+	video.set_preference(&"plastic_tiles", false, false)
 	expect(not board.plastic_tiles and is_equal_approx(top.material_override.roughness, 0.92) and earth.material_override.albedo_color == Color("776a51"), "Disabling plastic immediately restores original matte tops and brown bases")
 	var arrays: Array = top.mesh.surface_get_arrays(0)
 	var has_bevel := false
 	for normal in arrays[Mesh.ARRAY_NORMAL]:
 		if normal.y > 0.05 and normal.y < 0.95: has_bevel = true
 	expect(not has_bevel, "Original tiles have no bevels")
-	options.plastic_tiles_toggle.button_pressed = true
+	video.set_preference(&"plastic_tiles", true, false)
 	expect(board.plastic_tiles and top.material_override.roughness <= 0.35 and earth.material_override.albedo_color == Terrain.BASE_COLOR, "Reenabling plastic restores the new finish")
 	expect(Snapshot.capture(game.rules) == before and board.tile_nodes == retained, "Switching finishes retains game state, RNG and tile nodes")
 	board.value_heatmap.set_active(true)

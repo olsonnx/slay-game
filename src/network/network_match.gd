@@ -25,6 +25,8 @@ func _init(connection, controller, roster: Array) -> void:
 	local_faction = seats.get(transport.local_id, -1)
 	game.network_match = self
 	game.session.online = true
+	if transport.is_host() and game.rules.replay_log != null:
+		game.rules.replay_log.header.metadata["mode"] = "steam_online"
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 func _ready() -> void:
@@ -52,7 +54,7 @@ func route_click(coord: Vector2i) -> bool:
 	var selection = game.session.selection
 	var mode: String = selection.action_mode
 	var kind := ""
-	if mode in ["recruit", "spell", "house", "tower", "bridge"]: kind = mode
+	if mode in ["recruit", "spell", "city", "tower", "bridge", "road"]: kind = mode
 	elif selection.selected != coord and selection.valid_targets.has(coord): kind = "move"
 	if kind == "": return false # Pure local selection/inspection.
 	submit({"kind":kind,"coord":coord,"source":selection.selected,"capital":game.active_capital(),"tier":selection.recruit_tier,"spell":selection.chosen_spell})
@@ -98,7 +100,7 @@ func valid_command(sender: int, command: Dictionary) -> bool:
 	if not command.get("request") is int or command.request <= int(last_requests.get(sender, 0)): return false
 	if not command.get("revision") is int or command.revision != revision: return false
 	var kind = command.get("kind")
-	if kind not in ["move", "recruit", "spell", "house", "tower", "bridge", "develop", "entrench", "relocate", "event", "end_turn"]: return false
+	if kind not in ["move", "recruit", "spell", "city", "tower", "road", "bridge", "develop", "entrench", "relocate", "dismantle", "rename", "event", "end_turn"]: return false
 	if kind == "event":
 		if game.shown_event.is_empty() or not command.get("choice") is int: return false
 		var definition: Dictionary = game.rules.event_definition(game.shown_event)
@@ -108,15 +110,23 @@ func valid_command(sender: int, command: Dictionary) -> bool:
 	if not command.get("coord") is Vector2i: return false
 	var coord: Vector2i = command.coord
 	if absi(coord.x) > 200 or absi(coord.y) > 200: return false
+	if kind == "road":
+		return command.get("source") is Vector2i and game.rules.road_targets(command.source, game.player_faction).has(coord)
 	if kind == "move":
 		return command.get("source") is Vector2i and game.cells.has(command.source) and game.rules.unit_faction(command.source) == game.player_faction and game.rules.can_move(command.source, coord)
-	if kind in ["recruit", "spell", "house", "tower", "bridge"]:
+	if kind in ["recruit", "spell", "city", "tower", "bridge"]:
 		if not command.get("capital") is Vector2i: return false
 		if game.rules.kingdoms.get(command.capital, {}).get("owner", -1) != game.player_faction: return false
 	match kind:
+		"rename":
+			if not command.get("name") is String or command.name.length() > 40: return false
+			for index in range(command.name.length()):
+				if command.name.unicode_at(index) < 32 or command.name.unicode_at(index) == 127: return false
+			return game.rules.can_rename_settlement(coord, game.player_faction)
 		"recruit": return command.get("tier") is int and command.tier in [1, 2, 3] and game.rules.can_recruit(coord, game.player_faction, command.tier, command.capital)
 		"spell": return command.get("spell") is String and game.Spells.SPELLS.has(command.spell) and game.rules.spell_targets(command.spell, game.player_faction, command.capital).has(coord)
-		"house", "tower", "bridge": return game.rules.can_build(coord, game.player_faction, kind, command.capital)
+		"city", "tower", "bridge": return game.rules.can_build(coord, game.player_faction, kind, command.capital)
+		"dismantle": return game.rules.can_dismantle(coord, game.player_faction)
 		"develop": return game.rules.can_develop(coord, game.player_faction)
 		"entrench": return game.rules.can_entrench(coord, game.player_faction)
 		"relocate": return game.rules.can_relocate_capital(coord, game.player_faction)
@@ -135,14 +145,16 @@ func handle(sender: int, command: Dictionary) -> void:
 	var kind: String = command.kind
 	match kind:
 		"end_turn": await game.end_turn()
+		"rename": game.rules.rename_settlement(command.coord, game.player_faction, command.name)
 		"event": game.resolve_shown_event(command.choice)
-		"develop", "entrench", "relocate":
+		"develop", "entrench", "relocate", "dismantle":
 			if kind == "relocate":
 				game.rules.relocate_capital(command.coord, game.player_faction)
 				game.view.render_cells(game.cells)
 			else:
 				game.inspect_province(command.coord)
-				if kind == "develop": game.develop_province()
+				if kind == "dismantle": game.dismantle_province()
+				elif kind == "develop": game.develop_province()
 				else: game.entrench_province()
 		_:
 			game.session.selection.active_hex = command.get("capital", game.NONE)
@@ -209,7 +221,7 @@ func valid_state(data: Dictionary) -> bool:
 		if cell.owner < -1 or cell.owner >= position.faction_count or cell.capital < -1 or cell.capital >= position.faction_count or cell.unit < 0 or cell.unit > 3: return false
 		for key in ["tree", "grave", "moved"]:
 			if not cell.get(key) is bool: return false
-		if cell.get("building") not in ["", "house", "tower", "bridge", "monument"] or not cell.get("kingdom") is Vector2i: return false
+		if cell.get("building") not in ["", "city", "tower", "road", "bridge", "monument"] or not cell.get("kingdom") is Vector2i: return false
 		if cell.get("animal", "") not in ["", "bear", "wolf", "boar"] or cell.get("lair", "") not in ["", "bear", "wolf", "boar"]: return false
 	for capital in position.kingdoms:
 		var kingdom = position.kingdoms[capital]

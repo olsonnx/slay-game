@@ -62,7 +62,7 @@ func open_shop(kind: String) -> void:
 		for spell in Spells.SPELLS:
 			var definition: Dictionary = Spells.SPELLS[spell]
 			var mana_cost: int = 0 if session.rules.has_effect(session.player_faction, "free_spell") else definition["cost"]
-			var description: String = Spells.tooltip_description(spell, Catalog.unit_upkeep(1))
+			var description: String = Spells.tooltip_description(spell, session.rules.unit_upkeep(1, session.player_faction))
 			var button: Button = hud.button_at(hud.shop_items, "", Rect2((index % 3) * 132, floori(index / 3.0) * 119, 124, 111), actions["choose_spell"].bind(spell), Loc.text("%s · %d mana\n%s") % [Loc.text(definition["name"]), mana_cost, description])
 			var glyph: Label = hud.label_at(button, definition["glyph"], Vector2(0, 8), 36, Color("bda2fa"))
 			glyph.size.x = 124
@@ -76,17 +76,17 @@ func open_shop(kind: String) -> void:
 			bind_card_shortcut(button, "choice_%d" % (index + 1))
 			index += 1
 	else:
-		var kinds := ["tower", "house", "bridge"]
+		var kinds := ["tower", "city", "bridge"]
 		var width := 124
 		var stride := 132
 		for index in range(kinds.size()):
 			var kind_name: String = kinds[index]
-			var tip := Catalog.building_tooltip(kind_name)
+			var cost: int = session.rules.tower_cost(session.player_faction) if kind_name == "tower" else Catalog.BRIDGE_COST if kind_name == "bridge" else Catalog.CITY_COST
+			var tip := Catalog.building_tooltip(kind_name, cost)
 			var button: Button = hud.button_at(hud.shop_items, "", Rect2(index * stride, 0, width, 111), actions["choose_building"].bind(kind_name), tip)
 			var name_label: Label = hud.label_at(button, kind_name.capitalize(), Vector2(0, 66), 16)
 			name_label.size.x = width
 			name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			var cost := Rules.TOWER_COST if kind_name == "tower" else Rules.BRIDGE_COST if kind_name == "bridge" else Rules.HOUSE_COST
 			var price: Label = hud.label_at(button, Loc.text("%d G") % cost, Vector2(0, 90), 14, Color("eed3a1"))
 			price.name = "Cost"
 			price.size.x = width
@@ -183,7 +183,8 @@ func refresh_overlays() -> void:
 	var inspected: Vector2i = session.selection.inspected_hex if session.selection.action_mode == "" else session.selection.NONE
 	if session.selection.action_mode == "" and session.selection.inspected_animal != session.selection.NONE:
 		inspected = session.selection.inspected_animal
-	board.show_overlays(session.selection.selected, session.selection.hovered, session.selection.valid_targets, session.selection.preview_path, capital, tile_intent(session.selection.hovered), protector, inspected)
+	var recruitment: bool = session.selection.action_mode == "recruit" or session.selection.action_mode == "spell" and session.selection.chosen_spell == "summon"
+	board.show_overlays(session.selection.selected, session.selection.hovered, session.selection.valid_targets, session.selection.preview_path, capital, tile_intent(session.selection.hovered), protector, inspected, recruitment)
 	if session.selection.inspected_hex != session.selection.NONE and session.selection.inspected_hex != session.selection.selected and session.rules.cells.has(session.selection.inspected_hex):
 		board.outline(session.selection.inspected_hex, Color("ede7d4"))
 
@@ -195,7 +196,9 @@ func tile_intent(coord: Vector2i) -> Dictionary:
 	if session.selection.action_mode == "recruit":
 		var tier: int = session.rules.cells[coord]["unit"] + 1 if session.selection.recruit_tier == 0 else session.selection.recruit_tier
 		return {"kind": "upgrade" if session.rules.cells[coord]["owner"] == session.player_faction and session.rules.cells[coord]["unit"] > 0 else "recruit", "valid": session.selection.valid_targets.has(coord), "tier": tier, "faction": session.player_faction}
-	if session.selection.action_mode in ["tower", "house"]:
+	if session.selection.action_mode == "road":
+		return {"kind":"road", "valid":session.selection.valid_targets.has(coord), "source":session.selection.selected}
+	if session.selection.action_mode in ["tower", "city"]:
 		return {"kind": session.selection.action_mode, "valid": session.selection.valid_targets.has(coord)}
 	if session.selection.action_mode == "spell":
 		if session.selection.chosen_spell == "summon":
@@ -213,11 +216,16 @@ func tile_intent(coord: Vector2i) -> Dictionary:
 	return {}
 
 func show_world_tip() -> void:
-	var signature := [session.selection.hovered, session.rules.cells[session.selection.hovered], board.value_heatmap.active, tip_revision]
+	var road_plan: Dictionary = session.selection.valid_targets.get(session.selection.hovered, {}) if session.selection.action_mode == "road" else {}
+	var signature := [session.selection.hovered, session.rules.cells[session.selection.hovered], board.value_heatmap.active, tip_revision, session.selection.action_mode, session.selection.selected, road_plan.get("cost", -1)]
 	if tip_signature == signature:
 		place_world_tip()
 		return
-	tip_signature = [session.selection.hovered, session.rules.cells[session.selection.hovered].duplicate(true), board.value_heatmap.active, tip_revision]
+	tip_signature = signature.duplicate(true)
+	if not road_plan.is_empty():
+		hud.Tooltip.fit(hud.world_tip, hud.tip_label, Loc.text("Build road · %d G") % road_plan.cost + "\n" + Loc.text("1 G per new tile · click to build"))
+		place_world_tip()
+		return
 	var cell: Dictionary = session.rules.cells[session.selection.hovered]
 	var owner_name: String = session.names[cell["owner"]] if cell["owner"] >= 0 else Loc.text("Neutral")
 	var mountain: bool = session.rules.is_mountain(session.selection.hovered)
@@ -233,11 +241,15 @@ func show_world_tip() -> void:
 		feature = "Bridge"
 	elif cell["capital"] >= 0:
 		feature = "Capital"
+	elif preload("res://src/game/event_sites.gd").protected(cell):
+		feature = preload("res://src/game/event_sites.gd").structure_name(cell)
 	elif cell["building"] != "":
 		feature = cell["building"].capitalize()
 	elif cell["tree"] or cell["grave"]:
 		feature = "Tree" if cell["tree"] else "Grave"
 	var rows := PackedStringArray([Loc.text("%s · %s") % [owner_name, Loc.text(feature)]])
+	if preload("res://src/game/logistics.gd").recruitment_hub(cell) and cell.get("settlement_name", "") != "":
+		rows.append(cell.settlement_name)
 	if cell.get("animal", "") != "":
 		var animal: Dictionary = Rules.Wildlife.DEFINITIONS[cell.animal]
 		rows.append(Loc.text(animal.name) + " · " + Loc.text("Requires a Knight" if cell.animal == "bear" else "Requires a Soldier or Knight"))
@@ -256,11 +268,13 @@ func show_world_tip() -> void:
 		rows.append(Loc.text("Impassable"))
 	else:
 		if not filtered and cell["unit"] > 0:
+			rows.append(Loc.text("Movement %d · connected roads cost half") % Catalog.MOVEMENT[cell["unit"]])
 			rows.append(Loc.text("%s · upkeep −%d G / turn") % [Loc.text("Ready" if board.unit_presentation.is_ready(cell) else "Moved"), session.rules.unit_upkeep(cell["unit"], session.rules.unit_faction(session.selection.hovered))])
 			rows.append("")
 		var income: int = 0 if bridge or cell["tree"] or cell["grave"] else cell.get("value", 1)
-		if cell["building"] == "house":
-			income += Rules.HOUSE_INCOME
+		if cell["building"] == "city":
+			income += Rules.CITY_INCOME
+		if cell.get("road", false): rows.append(Loc.text("Road · friendly road steps cost ½ movement"))
 		var earnings := Loc.text("Income %+d G / turn") % income if income > 0 else Loc.text("Income 0 G")
 		rows.append(Loc.text("Province · Value %d") % board.value_heatmap.tile_value(cell))
 		rows.append(earnings)
@@ -319,6 +333,7 @@ func refresh_hud(economy = null) -> void:
 		hud.update_gold(kingdom["gold"], net, kingdom["capital"])
 		hud.income_label.add_theme_color_override("font_color", Color("bed099") if net >= 0 else Color("dfa08e"))
 		hud.gold_control.tooltip_text = Loc.text("Kingdom · %d tiles\nTreasury %d G\nIncome +%d G · upkeep −%d G\nNet %+d G / turn") % [kingdom["hexes"].size(), kingdom["gold"], income, wages, net]
+		hud.gold_control.tooltip_text += "\n" + Loc.text("Infrastructure upkeep: %d G / turn") % model.infrastructure_upkeep(kingdom)
 	else:
 		hud.reset_gold_feedback()
 		hud.money_label.text = "—"
@@ -331,7 +346,7 @@ func refresh_hud(economy = null) -> void:
 	if board.wildlife != null and board.wildlife.is_playing: hud.round_label.text += " · " + Loc.text("World")
 	hud.update_turn_color(session.colors[session.active_faction])
 	hud.recruit_button.text = Loc.text(Catalog.UNIT_NAMES[session.selection.recruit_tier]) + " ×" if session.selection.action_mode == "recruit" and session.selection.recruit_tier > 0 else "Recruit"
-	hud.build_button.text = Loc.text(session.selection.action_mode.capitalize()) + " ×" if session.selection.action_mode in ["tower", "house", "bridge"] else "Build"
+	hud.build_button.text = Loc.text(session.selection.action_mode.capitalize()) + " ×" if session.selection.action_mode in ["tower", "city", "road", "bridge"] else "Build"
 	hud.spell_button.text = Loc.text(Spells.SPELLS[session.selection.chosen_spell]["name"]) + " ×" if session.selection.action_mode == "spell" and Spells.SPELLS.has(session.selection.chosen_spell) else "Spells"
 	for button in [hud.recruit_button, hud.build_button, hud.spell_button]:
 		button.disabled = actions["commands_locked"].call()

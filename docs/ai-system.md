@@ -1,5 +1,9 @@
 # Enemy AI — 12 October 2026
 
+**Unified policy, 28 October:** new games use strategic assignments on every map size. Older `auto` configurations now select the same policy without a tile-count threshold. The beam planner remains an explicit diagnostic reference only. See [unified AI rollout](unified-ai-2026-10-28.md) for current checks and compatibility details.
+
+**28 October performance update:** [preparation reuse, stable integer pathfinding and playback overlap](ai-performance-2026-10-28.md) reduce repeated analysis without changing planner selection, scores or difficulty budgets. The current benchmark follows the active backend and measures complete worker preparation separately from movement search. Historical timings below predate logistics and these changes.
+
 **16 October bridge follow-up:** [Ember replay fixes](ai-bridge-campaign-fixes-2026-10-16.md)
 preserve useful short Hard plans, match recruitment to uncovered jobs, reward
 affordable bridge campaigns and price demolition against lost access. Movement
@@ -10,7 +14,7 @@ positions; the other search budgets and worker architecture remain unchanged.
 
 **15 October update:** both backends now share purpose-aware analytical purchases, retain useful recruitment ranks, reject hole-filling bridges, anticipate a two-unit capital breach and value supply cuts. Purchase search no longer applies the static evaluator to isolated purchases. See [replay-driven AI fixes](ai-replay-fixes-2026-10-15.md) for the current policy and measurements; older purchase descriptions and timings below are historical.
 
-This document describes the retained beam-search backend. The [large-map strategic backend](strategic-ai-2026-10-14.md) is now selected automatically for boards with at least 200 cell records; it uses different movement and difficulty policies while retaining the same authoritative rules.
+The historical sections below describe the retained diagnostic beam-search backend. Gameplay uses the [strategic backend](strategic-ai-2026-10-14.md) on every map size, with difficulty controlling tactical budgets and risk handling.
 
 The shared planner replaces the original shuffled checklist. Difficulty is selected in Quick Play, defaults to Normal and is remembered for future matches. Match difficulty remains independent of that preference: restart and rules changes preserve it. Legacy or malformed saved difficulty values load as Normal.
 

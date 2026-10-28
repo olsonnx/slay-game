@@ -16,6 +16,11 @@ static func update(camera: Camera3D, focus: Vector3) -> void:
 	var ground_depth_span := camera.size * 0.5 * Vector2(forward.x, forward.z).length() / maxf(absf(forward.y), 0.1)
 	# The lab can override this camera only; gameplay uses the shared defaults.
 	var settings: Dictionary = camera.get_meta("dof_settings", DEFAULTS)
+	var tree = Engine.get_main_loop()
+	var video = tree.root.get_node_or_null("Video") if tree is SceneTree else null
+	if not camera.has_meta("dof_settings") and video != null and not video.depth_of_field:
+		settings = DEFAULTS.duplicate()
+		settings["enabled"] = false
 	var sharp_half_width := maxf(2.0, ground_depth_span * clampf(float(settings.get("sharp_band", DEFAULTS.sharp_band)), 0.1, 0.8))
 	var transition := maxf(3.0, ground_depth_span * clampf(float(settings.get("transition", DEFAULTS.transition)), 0.2, 1.5))
 	# Only close inspection has a diorama blur. Moderate/wide views are sharp.

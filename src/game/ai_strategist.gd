@@ -15,6 +15,7 @@ var danger: Dictionary = {}
 var replies: Dictionary = {}
 var enemy_capitals: Array = []
 var enemy_armies: Dictionary = {}
+var objective_values: Dictionary = {}
 var best: Dictionary = {}
 var best_sequence: Array = []
 var best_score := 0.0
@@ -26,11 +27,11 @@ var max_step_usec := 0
 var started_usec := Time.get_ticks_usec()
 var planning_usec := 0
 
-func _init(model, owner: int, preparation := false, owns_snapshot := false, memory: Dictionary = {}) -> void:
+func _init(model, owner: int, preparation := false, owns_snapshot := false, memory: Dictionary = {}, preparation_cache: Dictionary = {}) -> void:
 	state = model if owns_snapshot else Analysis.snapshot(model)
 	faction = owner
 	spending = preparation
-	queries = Analysis.Queries.new(state)
+	queries = Analysis.Queries.new(state, preparation_cache)
 	context = memory.duplicate(true)
 
 func signature() -> Array:
@@ -42,6 +43,10 @@ func signature() -> Array:
 	return result
 
 func objective(coord: Vector2i) -> Dictionary:
+	if not objective_values.has(coord): objective_values[coord] = build_objective(coord)
+	return objective_values[coord]
+
+func build_objective(coord: Vector2i) -> Dictionary:
 	var cell: Dictionary = state.cells[coord]
 	if state.has_wildlife(coord):
 		return {"priority":40.0 if cell.get("lair", "") != "" else 27.0,"reason":"clear a wildlife lair" if cell.get("lair", "") != "" else "hunt a dangerous animal","kind":"capture"}
@@ -50,7 +55,8 @@ func objective(coord: Vector2i) -> Dictionary:
 		var distance_to_goal := 100000
 		for capital in enemy_capitals: distance_to_goal = mini(distance_to_goal, state.distance(coord, capital))
 		score += maxf(0.0, 14.0 - distance_to_goal * 1.2)
-		var reason := "expand territory"
+		if cell["building"] == "city": score += 14.0
+		var reason := "take a recruitment city" if cell["building"] == "city" else "expand territory"
 		if cell.get("treasure", 0) > 0:
 			score += cell["treasure"] * 0.6
 			reason = "collect treasure"
@@ -95,20 +101,24 @@ func initialize() -> void:
 		return a.x < b.x if a.x != b.x else a.y < b.y)
 	initialized = true
 
-func region_options(source: Vector2i) -> Array:
+func region_options(source: Vector2i, limit := 0) -> Array:
 	var region: Dictionary = queries.region(source)
-	var key := Vector2i(region["id"], state.cells[source]["unit"])
+	var key := Vector3i(source.x, source.y, limit)
 	if options_by_region.has(key): return options_by_region[key]
 	var result: Array = []
+	var before := distance_to_front(source, region)
+	if not region.has("merge_strengths"):
+		region["merge_strengths"] = {}
+		for border in region["boundary"]: region["merge_strengths"][queries.defense(border)] = true
 	for target in queries.candidate_targets(source):
 		var cell: Dictionary = state.cells[target]
 		var goal := objective(target)
 		if cell["unit"] > 0 and state.unit_faction(target) == faction:
-			var unlocks := false
-			for border in region["boundary"]:
-				if queries.defense(border) == cell["unit"]: unlocks = true
-			if not unlocks: continue
+			if not region["merge_strengths"].has(cell["unit"]): continue
 			goal = {"priority": 18.0, "reason": "combine units to breach frontier", "kind": "merge"}
+		if goal["priority"] <= 0 and cell["owner"] == faction:
+			var after := distance_to_front(target, region)
+			if after < before: goal = {"priority":4.0 + (before - after) * 2.0, "reason":"advance toward the front", "kind":"advance"}
 		if goal["priority"] <= 0: continue
 		# Refresh local defence needs without discarding faction objectives. New
 		# frontier sites extend the plan; captured goals retire naturally.
@@ -123,12 +133,32 @@ func region_options(source: Vector2i) -> Array:
 			var disruption: float = queries.cut_value(target)
 			goal["priority"] += disruption + queries.campaign_value(target,faction)
 			if disruption >= 12.0 and cell["capital"] < 0: goal["reason"] = "cut enemy supply"
-		result.append([target, goal])
-	result.sort_custom(func(a, b):
-		if a[1]["priority"] != b[1]["priority"]: return a[1]["priority"] > b[1]["priority"]
-		return a[0].x < b[0].x if a[0].x != b[0].x else a[0].y < b[0].y)
+		var option := [target, goal]
+		if limit <= 0:
+			result.append(option)
+		else:
+			var index := result.bsearch_custom(option, option_before)
+			if index < limit:
+				result.insert(index, option)
+				if result.size() > limit: result.pop_back()
+	if limit <= 0: result.sort_custom(option_before)
 	options_by_region[key] = result
 	return result
+
+func option_before(a: Array, b: Array) -> bool:
+	if a[1]["priority"] != b[1]["priority"]: return a[1]["priority"] > b[1]["priority"]
+	return a[0].x < b[0].x if a[0].x != b[0].x else a[0].y < b[0].y
+
+func distance_to_front(coord: Vector2i, region: Dictionary) -> int:
+	if not region.has("front_distances"): region["front_distances"] = {}
+	var distances: Dictionary = region["front_distances"]
+	if not distances.has(coord):
+		var nearest := 10000
+		for border in region["boundary"]:
+			if state.is_bridge(border) and state.cells[border]["unit"] == 0: continue
+			nearest = mini(nearest, state.distance(coord, border))
+		distances[coord] = nearest
+	return distances[coord]
 
 func defence_without(source: Vector2i, protected: Vector2i) -> int:
 	var value := 0
@@ -140,6 +170,10 @@ func defence_without(source: Vector2i, protected: Vector2i) -> int:
 		if cell["building"] == "tower": local = maxi(local, 2)
 		if next != protected: local = mini(local, 2)
 		value = maxi(value, local)
+	var defended: Dictionary = state.cells[protected]
+	if defended["owner"] != faction: return value
+	if defended.get("site_defense_aura", false) and defended.get("building", "") == "monument": return value + 1
+	if source != protected: return preload("res://src/game/event_sites.gd").defense_bonus(state, protected, value)
 	return value
 
 func exposure(source: Vector2i, target: Vector2i) -> float:
@@ -205,7 +239,7 @@ func tactical_score(source: Vector2i, target: Vector2i, goal: Dictionary) -> flo
 				for coord in enemy_armies[region["id"]]:
 					# Settlement precedes movement: troops in a newly bankrupt
 					# detached bank cannot make the imagined counterattack.
-					if coord != target and coord not in removed and not queries.cut_starves(target,coord): strength = maxi(strength, state.cells[coord]["unit"])
+					if coord != target and coord not in removed and queries.attack_reach(coord, target) and not queries.cut_starves(target,coord): strength = maxi(strength, state.cells[coord]["unit"])
 			replies[target] = strength
 		var reply: int = replies[target]
 		var after_defence := rank
@@ -219,7 +253,10 @@ func assign_unit(source: Vector2i) -> void:
 	var value := 0.5
 	var limit: int = 16 if state.ai_difficulty == "easy" else 40 if state.ai_difficulty == "normal" else 64
 	var checked := 0
-	for option in region_options(source):
+	# At most reserved.size() targets and the departure square can be skipped.
+	# This retains exactly the same first `limit` eligible tactical candidates
+	# without storing/sorting the remainder. Objective memory is still refreshed.
+	for option in region_options(source, limit + reserved.size() + 1):
 		var target: Vector2i = option[0]
 		if target == source or reserved.has(target) or reserved.has(source): continue
 		var score := tactical_score(source, target, option[1])

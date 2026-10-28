@@ -7,6 +7,7 @@ var running := false
 var entering := true
 var destinations: Dictionary = {}
 var moving_batches
+var departure_far := -1.0
 
 func _init(owner_board) -> void:
 	board = owner_board
@@ -23,17 +24,28 @@ func start(arriving: bool) -> void:
 	board.stop_camera_pan()
 	var travel: float = board.camera.size + 18.0
 	var offset: Vector3 = board.camera.global_basis.y * travel
+	var departure_move := Vector3.ZERO
+	if not entering:
+		for tile in board.tile_nodes.values():
+			var home: Vector3 = board.coord_position(tile.get_meta("hex"))
+			var candidate := departure_offset(tile.get_parent().global_transform * home)
+			if candidate.length_squared() > departure_move.length_squared(): departure_move = candidate
 	# As in the menu, water becomes a backdrop only while tiles fall below it.
 	board.water.material_override.set_shader_parameter("backdrop_depth", not entering)
 	for coord in board.tile_nodes:
 		var tile: Node3D = board.tile_nodes[coord]
 		var home: Vector3 = board.coord_position(coord)
-		destinations[tile] = home if entering else home + departure_offset(tile.get_parent().global_transform * home)
+		# One displacement keeps neighboring tiles from converging on a common
+		# screen-edge endpoint. Only their existing stagger changes the fall timing.
+		destinations[tile] = home if entering else home + departure_move
 		if entering:
 			tile.position = home + offset
-	if not Video.level_transitions or destinations.is_empty():
+	if not Video.level_transitions or Video.reduced_motion or destinations.is_empty():
 		finish()
 		return
+	if not entering:
+		departure_far = board.camera.far
+		extend_departure_depth()
 	moving_batches = preload("res://src/rendering/transition_batches.gd").new(board)
 	board.board_root.add_child(moving_batches)
 	moving_batches.capture()
@@ -54,14 +66,32 @@ func start(arriving: bool) -> void:
 func departure_offset(world_home: Vector3) -> Vector3:
 	var camera: Camera3D = board.camera
 	var screen_height := camera.global_basis.y.dot(world_home - camera.global_position)
-	# Preserve X/Z so a rear tile cannot slide through foreground land. Include
-	# the tallest props when clearing the lower screen edge, just like the menu.
-	var screen_distance := (screen_height + camera.size * 0.5 + 4.0) / maxf(camera.global_basis.y.y, 0.0001)
-	var depth := -camera.to_local(world_home).z
-	# In overhead view gravity projects almost entirely into depth. Stop beyond
-	# the far plane rather than sending tiles tens of thousands of units away.
-	var depth_distance := (camera.far - depth + 4.0) / maxf(camera.global_basis.z.y, 0.0001)
-	return Vector3.DOWN * minf(maxf(camera.size * 0.5, screen_distance), maxf(0.0, depth_distance))
+	# Normal views keep gravity and each tile's footprint. Near overhead, blend
+	# toward screen-down so the island leaves the frame instead of a depth plane.
+	var pitch := asin(clampf(camera.global_basis.z.y, -1.0, 1.0))
+	var overhead := smoothstep(deg_to_rad(65.0), deg_to_rad(85.0), pitch)
+	var direction := Vector3.DOWN.lerp(-camera.global_basis.y, overhead * 0.8).normalized()
+	var screen_speed := -camera.global_basis.y.dot(direction)
+	# Include the full tile and its tallest scenery beyond the bottom edge.
+	var screen_distance := (screen_height + camera.size * 0.5 + 4.0) / maxf(screen_speed, 0.1)
+	return direction * maxf(camera.size * 0.5, screen_distance)
+
+func extend_departure_depth() -> void:
+	for tile in destinations:
+		var endpoint: Vector3 = tile.get_parent().global_transform * destinations[tile]
+		board.camera.far = maxf(board.camera.far, -board.camera.to_local(endpoint).z + 6.0)
+
+func camera_changed() -> void:
+	if departure_far < 0.0: return
+	# Navigation recomputed the normal depth range, e.g. after resizing or a
+	# paused video-setting change. Retain that range for restoration afterwards.
+	departure_far = board.camera.far
+	extend_departure_depth()
+
+func restore_camera_depth() -> void:
+	if departure_far < 0.0: return
+	board.camera.far = departure_far
+	departure_far = -1.0
 
 func _departing_position(amount: float, tile: Node3D, destination: Vector3) -> void:
 	var home: Vector3 = board.coord_position(tile.get_meta("hex"))
@@ -93,6 +123,7 @@ func finish() -> void:
 		if is_instance_valid(tile):
 			tile.position = destinations[tile]
 	destinations.clear()
+	restore_camera_depth()
 	board.water.material_override.set_shader_parameter("backdrop_depth", false)
 	running = false
 	board.birds.update_visibility()
@@ -112,6 +143,7 @@ func cancel() -> void:
 		if is_instance_valid(tile):
 			tile.position = board.coord_position(tile.get_meta("hex"))
 	destinations.clear()
+	restore_camera_depth()
 	board.water.material_override.set_shader_parameter("backdrop_depth", false)
 	running = false
 	board.controls_enabled = true

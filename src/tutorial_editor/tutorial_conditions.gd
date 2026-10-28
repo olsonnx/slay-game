@@ -37,7 +37,7 @@ static func check(rules, round_number: int, condition: Dictionary) -> bool:
 			return total >= int(value)
 		"owner": return not cell.is_empty() and cell.owner == int(value)
 		"unit": return not cell.is_empty() and cell.unit >= int(value) and rules.unit_faction(at) == faction
-		"building": return not cell.is_empty() and cell.building == value
+		"building": return not cell.is_empty() and (cell.get("road",false) if value == "road" else cell.building == value)
 		"value": return not cell.is_empty() and cell.value >= int(value)
 		"clear": return not cell.is_empty() and not cell.tree and not cell.grave
 		"entrenched": return not cell.is_empty() and cell.get("entrenched_by",-1) == faction

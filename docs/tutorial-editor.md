@@ -12,7 +12,7 @@ You can also run `godot --path . --script tools/tutorial_editor.gd` directly. Op
 
 ## A quick workflow
 
-1. Choose a category and **Load template**, or use **New** for a blank sequence. All seven current topics are also available in `tools/tutorial-editor/examples`.
+1. Choose a category and **Load template**, or use **New** for a blank sequence. All eight current topics, including Cities and supply lines, are also available in `tools/tutorial-editor/examples`.
 2. **Import map** loads a JSON map saved by the game's level editor. It embeds a copy, so the tutorial does not depend on the original file staying in the same folder. Existing step text and coordinates are retained; exercise-specific prepared positions are removed so every exercise uses the imported map. Validate the targets against it.
 3. Use **Course** for the title, category description, opening gold and opponent mode (scripted orders, normal AI, or waiting). Fern (owner 0) is the player. Use **Text** for each step's heading, explanation, objective and optional highlighted tile.
 4. Set the **Goal**. Use Pick and then click a map hex to assign a target or source. Scroll to zoom; middle-drag to pan. Water coordinates can be selected as bridge targets.
@@ -27,6 +27,8 @@ You can also run `godot --path . --script tools/tutorial_editor.gd` directly. Op
 | continue | Show a Continue button. Additional conditions must pass before it is enabled. |
 | any | Allow free play and advance when the board conditions pass. Requires at least one condition. |
 | recruit, move, build, spell | Wait for that committed action; optionally constrain the tile, source, rank, building, spell or move result. |
+| road | Wait for a structure-to-structure or structure-to-road connection; the source field names its starting structure. |
+| rename_settlement | Wait for the player to name the city or capital on the target tile using its editable title. |
 | end_turn | Wait for a completed round, including enemy orders and income/upkeep. |
 | finance, status | Wait until the gold tooltip or the specified status icon tooltip opens. Status uses its effect ID (for example `income_bonus` or `stainless_steel`). |
 | kingdom, animal | Wait for selection of a friendly kingdom or inspection of a predator. |
@@ -49,7 +51,7 @@ For an open-ended final battle, choose **any**, add a **victory** condition for 
 
 ## Opponent orders
 
-Orders run in sequence on the selected End turn step, grouped by faction turn. Factions 1 through 5 must exist on the loaded map. Supported orders: move, recruit, build, spell, entrench and develop. Move uses From and To; other orders use To. Parameter is a unit rank (1/2/3), building (`house`, `tower`, `bridge`), or spell (`trailblaze`, `summon`, `shatter`) as appropriate.
+Orders run in sequence on the selected End turn step, grouped by faction turn. Factions 1 through 5 must exist on the loaded map. Supported orders: move, recruit, build, spell, entrench and develop. Move uses From and To; other orders use To. Parameter is a unit rank (1/2/3), building (`city`, `tower`, `bridge`), or spell (`trailblaze`, `summon`, `shatter`) as appropriate.
 
 All orders use the real costs, movement, defense and upkeep rules. An impossible order reports a failure in playtest; Retry restores the current checkpoint. No units or resources are secretly injected to complete an objective.
 
@@ -57,7 +59,7 @@ All orders use the real costs, movement, defense and upkeep rules. An impossible
 
 - **Save / Save as** writes a portable `slay-tutorial` version 1 JSON document, with an embedded `slay-level` map. Invalid input reports a specific step error and preserves the last saved file.
 - **Undo / Redo** retains up to 80 editing snapshots. Draft changes autosave after a short pause to `user://tutorial-editor-autosave.json`; **Recover autosave** restores them after a crash. Save the recovered draft to a normal file.
-- **Use in game** writes `tutorials/<topic>.json`, where the topic is `armies`, `economy`, `construction`, `conquest`, `magic`, `exploration`, or `practice`. It asks before replacing a category and backs up the previous installed file as `.json.bak`. It does not publish the other categories.
+- **Use in game** writes `tutorials/<topic>.json`, where the topic is `armies`, `economy`, `construction`, `logistics`, `conquest`, `magic`, `exploration`, or `practice`. It asks before replacing a category and backs up the previous installed file as `.json.bak`. It does not publish the other categories.
 - Remove the installed category JSON to return to the built-in lesson. The export preset includes `tutorials/*.json` in game builds. Re-export an existing executable to include edits.
 
 The templates contain focused exercises with freely chosen placements and a final normal match. **Check script** reports a manual-playtest boundary when a goal allows multiple choices. **Play this step** can jump directly to the first objective of any prepared exercise, even when earlier exercises had free choices. Later objectives still need a reproducible preceding path. Script checking proves one authored path, not every possible decision or AI outcome. Long explanations scroll inside the in-game card.
@@ -68,6 +70,10 @@ Each prepared exercise stores an embedded `setup` level on its first objective. 
 
 ## Verification
 
+`tools/export_tutorial_examples.gd -- --update-examples` refreshes all eight portable chapter examples. Run the script without the flag to verify that the shipped examples match the current lessons. `tests/test_logistics_tutorial.gd` plays every guided chapter through real game commands; `tests/test_tutorial.gd` also checks menu completion, retry, cancellation, saved progress and the final practice match.
+
 Run `godot --headless --path . --script tests/test_tutorial_editor.gd`. The suite covers serialization, invalid-file preservation, predicates, simulation, installation loading, UI editing, undo/redo, map import, autosave recovery, real game playtests, manual/state/action conditions, normal AI, and starting from an authored checkpoint. Add `-- --preview` with a graphical renderer to save UI screenshots under `artifacts/tutorial-editor-*.png`.
 
 Keyboard shortcuts: Ctrl+S saves, Ctrl+Shift+S opens Save as, and Ctrl+Z / Ctrl+Y undo and redo when a text editor is not consuming those keys.
+
+Reading objectives of kind **inspect**, **stats**, or **finance** can require confirmation. The normal interaction opens the information first; **Continue** then acknowledges it without dismissing the lesson early.

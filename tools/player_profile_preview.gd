@@ -34,6 +34,10 @@ func run() -> void:
 	await capture("profile-main-menu")
 	for index in range(18):
 		profile.record_match("preview-%d" % index, "victory" if index % 3 != 0 else "defeat", 600 + index * 20, 12 + index)
+	await capture("profile-main-menu-xp")
+	root.size = Vector2i(960, 620)
+	await capture("profile-main-menu-xp-small")
+	root.size = Vector2i(1280, 820)
 	app.menus.open_profile(false)
 	await capture("profile-record")
 	root.size = Vector2i(960, 620)

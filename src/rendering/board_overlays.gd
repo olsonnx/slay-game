@@ -2,6 +2,7 @@ extends RefCounted
 const Strokes = preload("res://src/rendering/flat_strokes.gd")
 const Movement = preload("res://src/game/kingdom_movement.gd")
 const PROTECTION_COLOR := Color("edbd75")
+const RECRUITMENT_COLOR := Color("a9d994")
 ## Selection, routes and command previews; owned by a single board's lifetime.
 var board
 var signature: Array = []
@@ -9,6 +10,7 @@ var overlay_count := -1
 var land_by_kingdom: Dictionary = {}
 var board_order: Dictionary = {}
 var reachable_signature: Array = []
+var recruitment_signature: Array = []
 var kingdom_signature: Array = []
 var kingdom_batch: MultiMeshInstance3D
 var kingdom_slots: Dictionary = {}
@@ -23,13 +25,13 @@ func prepare_building_previews() -> void:
 	building_storage.name = "BuildingPreviewCache"
 	board.add_child(building_storage)
 	var color: Color = intent_color({"kind":"tower"})
-	for kind in ["tower", "house", "bridge"]:
+	for kind in ["tower", "city", "bridge"]:
 		var ghost := Node3D.new()
 		ghost.name = kind
 		ghost.set_meta("preview_kind", kind)
 		match kind:
 			"tower": board.add_tower(ghost, Vector3.ZERO, color)
-			"house": board.add_house(ghost, Vector3.ZERO)
+			"city": board.add_city(ghost, Vector3.ZERO)
 			"bridge": board.add_bridge(ghost)
 		for node in ghost.find_children("*", "MeshInstance3D", true, false):
 			var source: StandardMaterial3D = node.material_override
@@ -75,6 +77,7 @@ func invalidate() -> void:
 	board_order.clear()
 	signature.clear()
 	reachable_signature.clear()
+	recruitment_signature.clear()
 	kingdom_signature.clear()
 
 func outline(coord: Vector2i, color: Color) -> void:
@@ -85,24 +88,27 @@ func outline(coord: Vector2i, color: Color) -> void:
 	node.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	board.overlay_root.add_child(node)
 
-func show_overlays(selected: Vector2i, hovered: Vector2i, valid: Dictionary, path: Array, active_capital: Vector2i, intent: Dictionary = {}, protector: Vector2i = Vector2i(999, 999), inspected: Vector2i = Vector2i(999, 999)) -> void:
+func show_overlays(selected: Vector2i, hovered: Vector2i, valid: Dictionary, path: Array, active_capital: Vector2i, intent: Dictionary = {}, protector: Vector2i = Vector2i(999, 999), inspected: Vector2i = Vector2i(999, 999), recruitment := false) -> void:
 	if board.value_heatmap != null and board.value_heatmap.active:
 		return
 	var protected_tiles := Movement.unit_protection(board.cells, protector)
 	var protection_strength: int = board.cells.get(protector, {}).get("unit", 0)
 	var inspection := inspection_region(inspected) if intent.is_empty() and selected == board.NONE else {}
-	var next_signature := [selected, hovered, valid.keys(), path.duplicate(), active_capital, intent.duplicate(true), Gameplay.clear_indicators, protector, protected_tiles.keys(), protection_strength, inspected, inspection]
+	var next_signature := [selected, hovered, valid.keys(), path.duplicate(), active_capital, intent.duplicate(true), Gameplay.clear_indicators, protector, protected_tiles.keys(), protection_strength, inspected, inspection, recruitment]
 	if signature == next_signature and board.overlay_root.get_child_count() == overlay_count:
 		update_upgrade_indicator()
 		return
 	signature = next_signature
-	var clear_move: bool = Gameplay.clear_indicators and selected != board.NONE
+	var clear_move: bool = Gameplay.clear_indicators and selected != board.NONE and not recruitment
 	var next_reachable := [selected, valid.keys()]
 	var retain_reachable: bool = clear_move and reachable_signature == next_reachable and board.overlay_root.has_node("ReachableArea") and board.overlay_root.has_node("ReachWash")
-	var show_kingdom: bool = not clear_move and protected_tiles.is_empty() and active_capital != board.NONE
+	var retain_recruitment: bool = recruitment and recruitment_signature == valid.keys() and board.overlay_root.has_node("RecruitmentArea") and board.overlay_root.has_node("RecruitmentWash")
+	var show_kingdom: bool = not clear_move and not recruitment and protected_tiles.is_empty() and active_capital != board.NONE
 	var retain_kingdom: bool = show_kingdom and kingdom_signature == [active_capital] and is_instance_valid(kingdom_batch) and kingdom_batch.get_parent() == board.overlay_root
 	store_building_previews()
 	for child in board.overlay_root.get_children():
+		if retain_recruitment and child.name in ["RecruitmentBacking", "RecruitmentArea", "RecruitmentWash"]:
+			continue
 		if retain_reachable and child.name in ["ReachBacking", "ReachableArea", "ReachWash"]:
 			continue
 		if retain_kingdom and child == kingdom_batch:
@@ -113,6 +119,10 @@ func show_overlays(selected: Vector2i, hovered: Vector2i, valid: Dictionary, pat
 	if clear_move and not retain_reachable:
 		show_reachable_area(selected, valid)
 	reachable_signature = next_reachable if clear_move else []
+	if recruitment and not retain_recruitment and not valid.is_empty():
+		var region := show_area(valid, RECRUITMENT_COLOR, "RecruitmentBacking", "RecruitmentArea", "RecruitmentWash")
+		region.set_meta("recruitable", valid.keys())
+	recruitment_signature = valid.keys() if recruitment else []
 	if not protected_tiles.is_empty():
 		show_protection(protector, protected_tiles, protection_strength)
 	# Pointer motion should not rescan every neutral province to find the same
@@ -126,7 +136,7 @@ func show_overlays(selected: Vector2i, hovered: Vector2i, valid: Dictionary, pat
 				if not land_by_kingdom.has(kingdom):
 					land_by_kingdom[kingdom] = []
 				land_by_kingdom[kingdom].append(coord)
-	var candidates: Dictionary = {} if clear_move else valid.duplicate()
+	var candidates: Dictionary = {} if clear_move or recruitment else valid.duplicate()
 	for coord in [selected, hovered]:
 		if board.cells.has(coord):
 			candidates[coord] = true
@@ -151,6 +161,8 @@ func show_overlays(selected: Vector2i, hovered: Vector2i, valid: Dictionary, pat
 				tile_marker(coord, Color("fff0c2"), true)
 			else:
 				board.outline(coord, Color("ffe2a1"))
+		elif recruitment and valid.has(coord):
+			if coord == hovered: tile_marker(coord, RECRUITMENT_COLOR, true)
 		elif clear_move and valid.has(coord):
 			if coord == hovered:
 				tile_marker(coord, destination_color(coord), true)
@@ -164,9 +176,12 @@ func show_overlays(selected: Vector2i, hovered: Vector2i, valid: Dictionary, pat
 		if not board.cells.has(coord):
 			board.outline(coord, Color("95c9ee"))
 	var path_color: Color = board.intent_color(intent) if not intent.is_empty() else Color("ffdea0")
-	if clear_move and path.size() > 1:
+	var road_preview: bool = intent.get("kind", "") == "road" and intent.get("valid", false)
+	if road_preview and path.size() > 1:
+		board.roads.show_preview(board, path)
+	elif clear_move and path.size() > 1:
 		show_route(path, path_color)
-	for index in range(0 if clear_move else path.size() - 1):
+	for index in range(0 if clear_move or road_preview else path.size() - 1):
 		var a: Vector3 = board.coord_position(path[index])
 		var b: Vector3 = board.coord_position(path[index + 1])
 		for step in range(1, 5):
@@ -217,7 +232,7 @@ func intent_color(intent: Dictionary) -> Color:
 		"attack": return Color("f09b79")
 		"capture": return Color("f2d08c")
 		"recruit": return Color("a1e7b1")
-		"tower", "house", "bridge": return Color("95c9ee")
+		"tower", "city", "bridge", "road": return Color("95c9ee")
 		"merge", "upgrade": return Color("c9adf1")
 		"spell": return Color("bda2fa")
 	return Color("8ee1dc")
@@ -380,6 +395,8 @@ func show_intent(coord: Vector2i, intent: Dictionary, path: Array) -> void:
 	board.intent_preview.set_meta("valid", intent["valid"])
 	board.intent_preview.set_meta("hex", coord)
 	board.overlay_root.add_child(board.intent_preview)
+	if intent["valid"] and intent["kind"] == "road":
+		return # The road-shaped preview already marks the destination.
 	if clear_move and intent["valid"] and intent["kind"] in ["move", "capture", "attack"]:
 		return
 	var fill := MeshInstance3D.new()
@@ -432,7 +449,7 @@ func show_intent(coord: Vector2i, intent: Dictionary, path: Array) -> void:
 			for size in [Vector3(0.34, 0.015, 0.075), Vector3(0.075, 0.015, 0.34)]:
 				var stroke: MeshInstance3D = board.box(board.intent_preview, Vector3(0, 0.06, 0.58), size, color)
 				stroke.material_override = board.material(color, true)
-		"tower", "house", "bridge":
+		"tower", "city", "bridge":
 			show_building_preview(intent["kind"], board.intent_preview)
 		"merge", "upgrade":
 			for size in [Vector3(0.36, 0.015, 0.08), Vector3(0.08, 0.015, 0.36)]:

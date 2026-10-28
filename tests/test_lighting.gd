@@ -26,13 +26,11 @@ func run() -> void:
 	options.theme = preload("res://src/ui/ui_theme.gd").create_theme()
 	root.add_child(options)
 	await process_frame
-	expect(options.lighting_toggle.button_pressed,"Atmospheric lighting is enabled by default")
-	expect(options.lighting_toggle.get_rect().end.x <= 432 and options.stylized_water_toggle.get_rect().end.x <= options.lighting_toggle.position.x,"New video toggle fits the existing minimum-width options layout")
-	options.lighting_toggle.button_pressed = false
+	video.set_preference(&"atmospheric_lighting", false, false)
 	expect(not video.atmospheric_lighting and view.lighting.style == "simple","Options switches the live board to Simple immediately")
 	expect(view.sun.rotation_degrees.is_equal_approx(Vector3(-52,-32,0)) and is_equal_approx(view.sun.light_energy,0.94) and is_equal_approx(scene_env.ambient_light_energy,0.48) and scene_env.ambient_light_color == Color("b8c8d1") and not scene_env.adjustment_enabled,"Simple uses the brighter sun and ambient fill without atmospheric grading")
 	expect(view.unit_batches.shadow_material.albedo_texture == view.shadow_texture,"Simple restores original unit contact shadows")
-	options.lighting_toggle.button_pressed = true
+	video.set_preference(&"atmospheric_lighting", true, false)
 	expect(video.atmospheric_lighting and scene_env.adjustment_enabled and scene_env.adjustment_color_correction != null and scene_env.ambient_light_energy < 0.42,"Atmospheric restores directional contrast and shared colour grading")
 	expect(view.unit_batches.shadow_material.albedo_texture != view.shadow_texture,"Atmospheric uses deeper contact shadows")
 	expect(Snapshot.capture(game.rules) == before and tiles == view.tile_nodes and view.unit_batches.upload_count == unit_uploads,"Switching styles preserves gameplay, tiles, RNG and army instance buffers")

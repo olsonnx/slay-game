@@ -7,6 +7,11 @@ func _init(controller) -> void:
 	game = controller
 
 func _input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed:
+		var editor = game.get_viewport().gui_get_focus_owner()
+		if editor is LineEdit and not editor.get_global_rect().has_point(event.position):
+			editor.release_focus()
+	if event is InputEventKey and game.get_viewport().gui_get_focus_owner() is LineEdit: return
 	if not game.pending_capital_relocation.is_empty() and game.event_shade.visible:
 		if event is InputEventKey and event.pressed and not event.echo and (event.keycode == KEY_ESCAPE or Keys.matches(event, "cancel")) or event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_RIGHT:
 			game.resolve_capital_relocation(1)
@@ -57,6 +62,7 @@ func _notification(what: int) -> void:
 		reset_camera_gesture()
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventKey and game.get_viewport().gui_get_focus_owner() is LineEdit: return
 	if game.input_suspended():
 		return
 	if event is InputEventMouseButton:
@@ -111,7 +117,7 @@ func select_shop_choice(event: InputEventKey) -> bool:
 		if not Keys.matches(event, "choice_%d" % (slot + 1)):
 			continue
 		var index: int = slot
-		if (game.hud.shop_kind == "spells" or slot < 3) and index < game.hud.shop_items.get_child_count():
+		if (game.hud.shop_kind in ["spells", "build"] or slot < 3) and index < game.hud.shop_items.get_child_count():
 			game.hud.shop_items.get_child(index).pressed.emit()
 		return true
 	return false

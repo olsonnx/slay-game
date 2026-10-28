@@ -2,6 +2,7 @@ extends RefCounted
 ## Strategic candidate generation; no hidden event IDs or random rolls are read.
 const Analysis = preload("res://src/game/ai_analysis.gd")
 const Catalog = preload("res://src/game/game_catalog.gd")
+const Infrastructure = preload("res://src/game/ai_logistics.gd")
 
 static func add(result: Array, kind: String, coord: Vector2i, score: float, extra := {}) -> void:
 	var action := {"kind": kind, "coord": coord, "priority": score}
@@ -11,7 +12,9 @@ static func add(result: Array, kind: String, coord: Vector2i, score: float, extr
 static func preparation(model, faction: int, queries = null) -> Array:
 	queries = Analysis.Queries.new(model) if queries == null else queries
 	var result: Array = []
+	var city_reserves := {}
 	var danger: Dictionary = queries.defense_needs(faction)
+	var tower_price: int = model.tower_cost(faction)
 	var trail_useful := false
 	for source in model.cells:
 		if model.unit_faction(source) != faction or model.cells[source]["unit"] == 0 or model.cells[source]["moved"]:
@@ -35,6 +38,8 @@ static func preparation(model, faction: int, queries = null) -> Array:
 			continue
 		var capital: Vector2i = kingdom["capital"]
 		var border: Dictionary = queries.frontier(capital)
+		var city_sites := Infrastructure.city_sites(model, kingdom, border, danger)
+		if not city_sites.is_empty(): city_reserves[capital] = true
 		var needed := 1
 		for target in border:
 			needed = maxi(needed, mini(3, queries.defense(target) + 1))
@@ -46,7 +51,8 @@ static func preparation(model, faction: int, queries = null) -> Array:
 				if model.cells[site]["unit"] == 0 and not model.is_barrier(site): open_deployment += 1
 		var reserve := mini(6, maxi(2, ceili(kingdom["hexes"].size() * 0.25)))
 		var finances: Dictionary = queries.bank_summary(kingdom)
-		var reinforcement_budget: int = model.unit_upkeep(needed, faction) + 2 * model.unit_upkeep(1, faction)
+		var tower_affordable: bool = kingdom["gold"] >= tower_price and Analysis.safe_spending(kingdom, tower_price, -model.Catalog.TOWER_UPKEEP, queries)
+		var reinforcement_budget: int = queries.unit_upkeep(needed, faction) + 2 * queries.unit_upkeep(1, faction)
 		var needs_income: bool = finances["income"] - finances["upkeep"] < reinforcement_budget
 		for coord in kingdom["hexes"]:
 			var cell: Dictionary = model.cells[coord]
@@ -59,7 +65,7 @@ static func preparation(model, faction: int, queries = null) -> Array:
 				if border.is_empty() and not urgent:
 					continue
 				var cost: int = model.recruitment_cost(coord, faction, tier, capital)
-				var wages: int = model.unit_upkeep(tier, faction) - model.unit_upkeep(cell["unit"], faction)
+				var wages: int = queries.unit_upkeep(tier, faction) - queries.unit_upkeep(cell["unit"], faction)
 				if cost < 0 or not Analysis.sustainable(model, kingdom, wages, cost, queries):
 					continue
 				var utility: float = queries.recruitment_value(coord,tier) - wages * 0.85 - cost * 0.16
@@ -73,23 +79,26 @@ static func preparation(model, faction: int, queries = null) -> Array:
 						utility += queries.supply_risk(next) * 0.8
 				if utility > 0:
 					add(result, "recruit", coord, utility, {"tier": tier, "capital": capital})
-			if model.can_build(coord, faction, "tower", capital) and Analysis.safe_spending(kingdom,model.TOWER_COST,0,queries):
+			# Most tiles cannot contribute useful tower cover. Avoid scanning every
+			# tower on the board for their escalating price at every such tile.
+			if tower_affordable and cell["unit"] == 0 and cell["capital"] < 0 and cell["building"] == "" and not cell["tree"] and not cell["grave"]:
 				var cover := 0.0
 				for next in [coord] + model.neighbors(coord):
 					if model.cells[next]["owner"] == faction and Analysis.endangered(model, next, danger) and danger[next]["strength"] <= 2:
 						cover += 65.0 if model.cells[next]["capital"] >= 0 else 12.0
 						cover += queries.supply_risk(next) * 0.8
-				if cover > 0:
+				if cover > 0 and model.can_build(coord, faction, "tower", capital):
 					add(result, "tower", coord, cover, {"capital": capital})
-			if deployment > reserve and open_deployment > 2 and needs_income and model.can_build(coord, faction, "house", capital) and not urgent and Analysis.safe_spending(kingdom,model.HOUSE_COST,model.HOUSE_INCOME,queries):
-				add(result, "house", coord, 2.0, {"capital": capital})
+			if city_sites.has(coord) and model.can_build(coord, faction, "city", capital) and Analysis.safe_spending(kingdom, model.CITY_COST, 0, queries):
+				add(result, "city", coord, city_sites[coord], {"capital":capital})
 			if model.can_develop(coord, faction) and not cell["tree"] and not cell["grave"] and not urgent and Analysis.safe_spending(kingdom,model.development_cost(coord),1,queries):
 				add(result, "develop", coord, 2.0 / maxf(1.0, model.development_cost(coord)), {"capital": capital})
-		for site in model.bridge_targets(faction, capital):
-			if kingdom["gold"] < model.BRIDGE_COST + 10 or not Analysis.safe_spending(kingdom,model.BRIDGE_COST,0,queries): continue
-			var benefit: float = queries.bridge_value(site,capital) + queries.bridge_campaign(site,capital) - model.BRIDGE_COST * 0.16
-			if benefit > 0:
-				add(result, "bridge", site, benefit, {"capital": capital})
+		result.append_array(Infrastructure.roads(model, kingdom, border, queries))
+		if kingdom["gold"] >= model.BRIDGE_COST + 10 and Analysis.safe_spending(kingdom,model.BRIDGE_COST,-model.Catalog.BRIDGE_UPKEEP,queries):
+			for site in model.bridge_targets(faction, capital):
+				var benefit: float = queries.bridge_value(site,capital) + queries.bridge_campaign(site,capital) - model.BRIDGE_COST * 0.16
+				if benefit > 0:
+					add(result, "bridge", site, benefit, {"capital": capital})
 	# Mana opportunities compete faction-wide, rather than kingdom iteration order.
 	for spell in model.Spells.SPELLS:
 		for coord in model.spell_targets(spell, faction):
@@ -98,7 +107,7 @@ static func preparation(model, faction: int, queries = null) -> Array:
 			match spell:
 				"summon":
 					var kingdom: Dictionary = model.kingdom_at(coord)
-					if Analysis.sustainable(model, kingdom, model.unit_upkeep(1, faction), 0, queries):
+					if Analysis.sustainable(model, kingdom, queries.unit_upkeep(1, faction), 0, queries):
 						utility = 4.0 if queries.recruitment_value(coord,1) > 0 else 0.0
 						if Analysis.endangered(model, coord, danger) and danger[coord]["strength"] == 1:
 							utility += 15.0
@@ -114,6 +123,10 @@ static func preparation(model, faction: int, queries = null) -> Array:
 					utility = 7.0 if trail_useful else 0.0
 			if utility > 0:
 				add(result, "spell", coord, utility, {"spell": spell})
+	# Save toward a needed forward city rather than spending every spare coin.
+	# Urgent defence still takes precedence over infrastructure.
+	result = result.filter(func(action):
+		return not city_reserves.has(action.get("capital")) or action.kind == "city" or action.priority >= 55.0 or Analysis.endangered(model, action.coord, danger))
 	result.sort_custom(func(a, b): return a["priority"] > b["priority"])
 	return diverse(result, int(Analysis.profile(model)["candidates"]), false)
 
@@ -195,6 +208,14 @@ static func movement_value(model, source: Vector2i, target: Vector2i, faction: i
 		score += cell["value"] * 2.0 + 3.0
 		reason = "restore income"
 	if cell["owner"] == faction:
+		var before := 10000
+		var after := 10000
+		for border in frontiers.get(support_capital, {}):
+			before = mini(before, model.distance(source, border))
+			after = mini(after, model.distance(target, border))
+		if after < before:
+			score += (before - after) * 2.0
+			reason = "advance toward the front"
 		for next in [target] + queries.neighbors(target):
 			if model.cells[next]["owner"] == faction and Analysis.endangered(model, next, danger):
 				score += 35.0 if model.cells[next]["capital"] >= 0 else 4.0
@@ -267,6 +288,7 @@ static func apply(model, action: Dictionary, faction: int) -> bool:
 	match action["kind"]:
 		"entrench": return model.entrench(action["coord"], faction)
 		"move": return model.move_unit(action["source"], action["coord"])
+		"road": return model.build_road(action["source"], action["coord"], faction)
 		"recruit": return model.recruit(action["coord"], faction, action["tier"], action["capital"])
 		"spell": return model.cast_spell(action["spell"], action["coord"], faction)
 		"develop": return model.develop(action["coord"], faction)
