@@ -17,18 +17,18 @@ func run() -> void:
 	game.set_process(false)
 	await process_frame
 	var a := Vector2i(0, 0)
-	var house := Vector2i(1, 0)
+	var tower := Vector2i(1, 0)
 	var province := Vector2i(2, 0)
 	var f := Vector2i(1, -1)
 	var g := Vector2i(2, -1)
 	game.rules.cells.clear()
 	game.rules.kingdoms.clear()
-	for coord in [a, house, province, Vector2i(0, 1), Vector2i(1, 1)]:
+	for coord in [a, tower, province, Vector2i(0, 1), Vector2i(1, 1)]:
 		game.cells[coord] = game.rules.make_cell(0)
 	for coord in [f, g]:
 		game.cells[coord] = game.rules.make_cell(1)
 	game.rules.rebuild_kingdoms()
-	game.cells[house]["building"] = "house"
+	game.cells[tower]["building"] = "tower"
 	game.cells[f]["unit"] = 3
 	game.cells[g]["unit"] = 2
 	for kingdom in game.rules.kingdoms.values():
@@ -36,7 +36,7 @@ func run() -> void:
 	game.active_hex = a
 	game.view.render_cells(game.cells)
 	game.refresh_ui()
-	expect(game.income_label.text == "+9 G", "Forecast initially includes owned provinces and the house bonus")
+	expect(game.income_label.text == "+3 G", "Forecast initially subtracts tower upkeep from province income")
 	# Let scene construction finish before timing concurrent tweens. Otherwise a
 	# large first-frame delta can process both arrivals in insertion order.
 	await process_frame
@@ -44,20 +44,20 @@ func run() -> void:
 	game.busy = true
 	game.active_faction = 1
 	game.playback_kingdoms = game.rules.kingdoms.duplicate(true)
-	var attack: Dictionary = game.rules.perform_move(f, house)
+	var attack: Dictionary = game.rules.perform_move(f, tower)
 	var capture: Dictionary = game.rules.perform_move(g, province)
-	expect(game.income_label.text == "+9 G", "Preplanned AI commands do not reveal future losses before playback")
+	expect(game.income_label.text == "+3 G", "Preplanned AI commands do not reveal future losses before playback")
 	var observed: Dictionary = {}
 	game.view.motion_stage.connect(func(action: Dictionary, stage: String):
-		if action["target"] == house and stage == "impact":
-			observed["house_impact"] = game.income_label.text)
+		if action["target"] == tower and stage == "impact":
+			observed["tower_impact"] = game.income_label.text)
 	game.view.action_finished.connect(func(action: Dictionary):
 		if action.has("target"):
 			observed[action["target"]] = game.income_label.text)
 	await game.view.animate_moves([attack, capture], game.cells)
-	expect(observed.get(province) == "+8 G", "Province loss updates forecast immediately on visible arrival (observed %s)" % observed.get(province))
-	expect(observed.get("house_impact") == "+4 G", "Destroyed house removes its income bonus at jab impact (observed %s)" % observed.get("house_impact"))
-	expect(observed.get(house) == "+3 G" and game.income_label.text == "+3 G", "House province capture removes base income and final forecast matches surviving land")
+	expect(observed.get(province) == "+2 G", "Province loss updates forecast immediately on visible arrival (observed %s)" % observed.get(province))
+	expect(observed.get("tower_impact") == "+4 G", "Destroyed tower removes its upkeep at jab impact (observed %s)" % observed.get("tower_impact"))
+	expect(observed.get(tower) == "+3 G" and game.income_label.text == "+3 G", "Tower province capture removes base income and final forecast matches surviving land")
 	expect(game.money_label.text == "50 G", "Losing income does not invent an immediate treasury deduction")
 	var video = root.get_node("Video")
 	var original_follow: bool = video.follow_turn_camera

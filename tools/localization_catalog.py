@@ -13,6 +13,7 @@ EXTRA = {
     "src/game/replay_summary.gd",
     "src/game/event_sites.gd",
     "src/game/logistics_tutorial.gd",
+    "src/game/encirclement_tutorial.gd",
     "src/game/wildlife.gd",
     "src/game/game.gd", "src/game/game_catalog.gd", "src/game/spell_catalog.gd",
     "src/game/authored_event_runtime.gd",
@@ -29,10 +30,10 @@ EXTRA = {
 EXCLUDE = {
     "English", "Fern", "Ember", "Tide", "Ochre", "Aster", "Cove", "Master", "UI", "SFX",
     "Ruby", "Dawn", "Moss", "Frost", "Slate", "Iris",
-    "Label", "Button", "OptionButton", "CheckButton", "LineEdit", "RichTextLabel",
+    "Label", "Button", "OptionButton", "CheckButton", "CheckBox", "LineEdit", "TextEdit", "RichTextLabel",
     "Control", "Panel", "PopupMenu", "TooltipPanel", "TooltipLabel", "Tree", "ItemList",
-    "HSlider", "HScrollBar", "VScrollBar", "TabBar", "PopupPanel", "AcceptDialog",
-    "Theme", "Selection", "Shortcut", "TextureRect", "Node3D", "CapitalBanner",
+    "HSlider", "HScrollBar", "VScrollBar", "TabBar", "TabContainer", "PopupPanel", "AcceptDialog",
+    "Theme", "Window", "Selection", "Shortcut", "TextureRect", "Node3D", "CapitalBanner",
 }
 
 def files():

@@ -23,3 +23,20 @@ static func from_world(point: Vector3) -> Vector2i:
 	else:
 		rounded.z = -rounded.x - rounded.y
 	return Vector2i(int(rounded.x), int(rounded.z))
+
+## Exposed hex sides only, including the contours around holes and separate islands.
+static func boundary_edges(region: Dictionary) -> Array:
+	var edges: Array = []
+	for coord in region:
+		for side in range(6):
+			if not region.has(coord+DIRECTIONS[side]): edges.append([coord,side])
+	return edges
+
+static func boundary_segment(coord: Vector2i, side: int) -> PackedVector2Array:
+	var center := to_world(coord)
+	var normal := to_world(DIRECTIONS[side])
+	var angle := atan2(normal.z,normal.x)
+	return PackedVector2Array([
+		Vector2(center.x,center.z)+Vector2.from_angle(angle-PI/6),
+		Vector2(center.x,center.z)+Vector2.from_angle(angle+PI/6)
+	])

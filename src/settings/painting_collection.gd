@@ -14,7 +14,9 @@ func _ready() -> void:
 
 func entries() -> Array[Dictionary]:
 	var unique := {}
-	add_entry(unique, Events.DEFAULT_PAINTING)
+	# Keep previously discovered fallback art, without adding an unreachable
+	# locked slot when every installed event now has a dedicated painting.
+	if is_collected(Events.DEFAULT_PAINTING.painting): add_entry(unique, Events.DEFAULT_PAINTING)
 	for definition in Events.EVENTS.values(): add_entry(unique, Events.artwork(definition))
 	var result: Array[Dictionary] = []
 	for entry in unique.values(): result.append(entry)
@@ -37,7 +39,10 @@ func is_collected(path: String) -> bool:
 func discover(definition: Dictionary) -> bool:
 	var artwork: Dictionary = Events.artwork(definition)
 	var path := String(artwork.get("painting", "")).simplify_path()
-	if not valid_path(path) or Events.painting_texture(path) == null: return false
+	if not valid_path(path) or (not ResourceLoader.exists(path) and not FileAccess.file_exists(path)): return false
+	# The event has already prepared the small banner. Do not decode the full
+	# Collection original again on its reveal frame just to validate discovery.
+	if Events.event_texture(artwork) == null: return false
 	if is_collected(path):
 		if dirty: flush_settings()
 		return false

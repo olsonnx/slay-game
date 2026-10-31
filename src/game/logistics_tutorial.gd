@@ -16,7 +16,7 @@ static func map_data(category: String, exercise := "") -> Dictionary:
 			doc.cells[Vector2i(q, r)] = cell
 	doc.cells[Vector2i(-4, 0)].capital = 0
 	doc.cells[Vector2i(-4, 0)].mana_source = true
-	doc.cells[Vector2i.ZERO].unit = 2 if category == "conquest" else 1
+	doc.cells[Vector2i.ZERO].unit = 1
 	for at in [Vector2i(1, 0), Vector2i(1, -1), Vector2i(1, 1)]: doc.cells[at] = Rules.new().make_cell(-1)
 	for at in [Vector2i(2, 0), Vector2i(2, -1), Vector2i(3, 0)]: doc.cells[at] = Rules.new().make_cell(1)
 	doc.cells[Vector2i(2, 0)].capital = 1
@@ -30,11 +30,6 @@ static func map_data(category: String, exercise := "") -> Dictionary:
 				doc.cells[at].value = 2
 			doc.cells[Vector2i(5, -1)].capital = 0
 		else: doc.cells[Vector2i(-1, 0)].tree = true
-	if category == "conquest":
-		doc.cells[Vector2i(1, 0)].owner = 1
-		doc.cells[Vector2i(1, 0)].building = "city"
-		doc.cells[Vector2i(1, 0)].unit = 1
-		doc.cells[Vector2i(1, -1)].owner = 0
 	if category == "magic" and exercise == "shatter":
 		doc.cells[Vector2i(1, 0)].building = "bridge"
 		doc.cells[Vector2i(1, 0)].value = 0
@@ -74,7 +69,8 @@ static func steps(category: String) -> Array:
 			step("second_tower", Loc.text("Build a second tower"), Loc.text("Your next Tower costs 20 G. Each tower you control adds 5 G to the next one's price across all your kingdoms. Every tower still costs 2 G per turn."), "build", Vector2i(-3, 1), {"building":"tower"}),
 			step("first_bridge", Loc.text("Build a bridge"), Loc.text("Choose Bridge in Build and place it on the marked water tile. Each segment costs 15 G plus 2 G per turn from its builder's treasury. Bridges are neutral crossings, so opponents can use them too."), "build", Vector2i(-1, 2), {"building":"bridge"}),
 			step("second_bridge", Loc.text("Build another bridge segment"), Loc.text("Choose Bridge again and click the gold-ringed water tile. This segment also costs 15 G and 2 G per turn: bridge prices stay flat. The builder pays its upkeep even when an opponent uses the crossing."), "build", Vector2i(-2, 2), {"building":"bridge"}),
-			step("remove_bridge", Loc.text("Remove the empty bridge"), Loc.text("Click the gold-ringed bridge, then Dismantle bridge in its details. Your empty sponsored bridges can be removed without a refund. Roads and towers cannot. Removing this segment stops its 2 G upkeep."), "dismantle", Vector2i(-2, 2)),
+			step("bridge_mana", Loc.text("Prepare Shatter"), Loc.text("Bridges cannot be dismantled. End your turn to reach 2 mana for Shatter, the only way to remove a bridge. Roads and towers cannot be dismantled either."), "end_turn"),
+			step("remove_bridge", Loc.text("Shatter the bridge"), Loc.text("Open Spells, choose Shatter, then click the gold-ringed bridge. Shatter costs 2 mana and removes the crossing without refunding its construction cost. Removing this segment stops its 2 G upkeep. Any unit on a shattered bridge is lost too."), "spell", Vector2i(-2, 2), {"spell":"shatter"}),
 			reading("infrastructure_forecast", Loc.text("Check infrastructure upkeep"), Loc.text("Hover over gold in the bottom-left dock. The forecast now includes two towers and one bridge, plus your Scout's wages. Roads have no upkeep. Read the income, upkeep and net change, then click Continue."))]
 		"logistics": result = [
 			step("forward_city", Loc.text("Build a forward city"), Loc.text("Choose City in Build, then the marked province. A city costs 25 G and adds no income. It recruits on its own tile and all neighboring owned land. Captured cities survive and serve their new owner."), "build", Vector2i(3, 0), {"building":"city"}),
@@ -96,11 +92,6 @@ static func steps(category: String) -> Array:
 				reading("separate_bank", Loc.text("Select the other kingdom"), Loc.text("This new position has two disconnected friendly kingdoms. Click the gold-ringed province to select the right-hand treasury and open its details. Each kingdom keeps its own gold. Read the panel, then click Continue."), "inspect", Vector2i(4, -1)),
 				step("develop_other_bank", Loc.text("Spend from the right-hand treasury"), Loc.text("Use Develop on this province. Its local treasury pays the 8 G cost; the disconnected kingdom on the left keeps all its gold. The two kingdoms share a color, not a treasury."), "develop", Vector2i(4, -1)),
 				reading("bank_forecast", Loc.text("Read the selected kingdom's budget"), Loc.text("Hover over gold. This is the right-hand kingdom's remaining gold and forecast, not a faction-wide total. Selecting land in another connected kingdom changes the treasury you use. Click Continue when ready."))]))
-		"conquest": result = [
-			step("approach", Loc.text("Take the defended city"), Loc.text("Click the blue-ringed Soldier, then the gold-ringed enemy Scout in the city. Strength 2 beats strength 1; capturing defended land requires greater strength. Soldiers move 4 hexes, but this capture spends the action."), "move", Vector2i(1, 0), {"source":Vector2i.ZERO}),
-			step("captured_city_recruit", Loc.text("Use the captured city"), Loc.text("The city survived and now recruits for you. Open Recruit, choose Scout, and click the gold-ringed friendly tile beside it. The new Scout is ready immediately even though the Soldier that captured the city is spent."), "recruit", Vector2i(1, -1), {"tier":1}),
-			step("ready", Loc.text("End turn"), Loc.text("Commitment matters: the Soldier must wait for its next turn to attack again."), "end_turn"),
-			step("capital", Loc.text("Capture the enemy capital"), Loc.text("Click the blue-ringed Soldier, then the gold-ringed capital. Capturing it destroys that treasury's stored gold and makes neighboring provinces from that kingdom surrender. You win a normal match when no enemy capitals remain."), "move", Vector2i(2, 0), {"source":Vector2i(1, 0)})]
 		"magic":
 			result = sequence(category, "summoning", [
 				step("mana", Loc.text("End turn to gain mana"), Loc.text("The mana display is beside gold. You start with 1 mana; click End turn to gain another and afford Summon's 2-mana cost. Mana is shared by your faction, while mana sources increase its storage capacity."), "end_turn"),

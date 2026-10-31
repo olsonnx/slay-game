@@ -17,7 +17,7 @@ func expect(ok: bool, message: String) -> void:
 		push_error(message)
 
 # Independent reference for exact distances, discovery order and parent ties.
-func reference_routes(model, source: Vector2i) -> Dictionary:
+static func reference_routes(model, source: Vector2i, predict_expiry := false) -> Dictionary:
 	var parents := {source: Rules.NONE}
 	var costs := {source:0}
 	var faction: int = model.unit_faction(source)
@@ -31,7 +31,8 @@ func reference_routes(model, source: Vector2i) -> Dictionary:
 		for next in model.neighbors(current):
 			var cell: Dictionary = model.cells[next]
 			if not (cell.owner == faction or cell.building == "bridge" and (cell.unit == 0 or cell.get("unit_owner",-1) == faction)): continue
-			if model.is_mountain(next) or model.is_barrier(next) or model.has_wildlife(next): continue
+			var barrier: bool = model.is_barrier(next) and not (predict_expiry and cell.get("barrier_by",-1) == faction)
+			if model.is_mountain(next) or barrier or model.has_wildlife(next): continue
 			var cost: int = costs[current] + Logistics.step_cost(model,current,next,faction)
 			if cost > budget or cost >= costs.get(next,2147483647): continue
 			costs[next] = cost
@@ -39,12 +40,12 @@ func reference_routes(model, source: Vector2i) -> Dictionary:
 			if next not in pending: pending.append(next)
 	return {"parents":parents,"costs":costs,"budget":budget}
 
-func reference_threats(model, faction: int) -> Dictionary:
+static func reference_threats(model, faction: int) -> Dictionary:
 	var result := {}
 	for source in model.cells:
 		var unit: Dictionary = model.cells[source]
 		if unit.unit == 0 or model.unit_faction(source) == faction: continue
-		var travel := reference_routes(model,source)
+		var travel := reference_routes(model,source,true)
 		var touched := {}
 		for approach in travel.parents:
 			if travel.costs[approach] + 2 > travel.budget: continue

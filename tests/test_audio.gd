@@ -26,7 +26,7 @@ func run() -> void:
 	sound.set_volume(&"Master", 1.0, false)
 	sound.set_volume(&"UI", 1.0, false)
 	sound.set_volume(&"SFX", 1.0, false)
-	expect(sound.bank.cues.size() == 6 and sound.voices.size() == sound.VOICE_COUNT, "Registry loads all six assets and a fixed voice pool")
+	expect(sound.bank.cues.size() == 8 and sound.voices.size() == sound.VOICE_COUNT, "Registry loads all eight assets and a fixed voice pool")
 	expect(sound.bank.cues[&"gold_develop"].streams[0].resource_path == "res://assets/sfx/gold_develop.ogg" and sound.bank.cues[&"event_popup"].streams[0].resource_path == "res://assets/sfx/event_popup.ogg", "New cues use the supplied development and event recordings")
 	for id in sound.bank.cues:
 		var cue: Resource = sound.bank.cues[id]
@@ -34,6 +34,42 @@ func run() -> void:
 		expect(AudioServer.get_bus_index(cue.bus) >= 0, "Cue routes to an existing mix bus")
 		expect(sound.play(id), "Registered cue starts playback")
 		sound.stop_all()
+	# Seed only this isolated manager; gameplay randomness remains independent.
+	sound.rng.seed = 42
+	for id in [&"capital_collapse", &"sword_slash"]:
+		var pitches: Array[float] = []
+		for index in range(12):
+			sound.stop_all()
+			expect(sound.play(id), "New combat cue plays repeatedly")
+			var pitch: float = sound.voices[0].pitch_scale
+			expect(pitch >= 0.95 and pitch <= 1.05, "Combat pitch stays within subtle five-percent range")
+			pitches.append(pitch)
+		expect(pitches.min() < pitches.max(), "Repeated combat playback varies pitch")
+	sound.stop_all()
+	var test_camera := Camera3D.new()
+	root.add_child(test_camera)
+	test_camera.projection = Camera3D.PROJECTION_ORTHOGONAL
+	test_camera.position = Vector3(0, 42, 32)
+	test_camera.look_at(Vector3.ZERO)
+	test_camera.size = 8.0
+	for id in [&"sword_slash", &"capital_collapse"]:
+		expect(sound.play_at(id, Vector3.ZERO, test_camera), "Combat sound supports positioned playback")
+		var voice: AudioStreamPlayer = sound.voices[0]
+		var near_db := voice.volume_db
+		test_camera.size = 32.0
+		sound._process(0.0)
+		expect(voice.volume_db < near_db - 20.0, "Zooming out attenuates an already playing combat sound")
+		test_camera.size = 8.0
+		test_camera.position.x += 60.0
+		sound._process(0.0)
+		expect(voice.volume_db < near_db - 30.0, "Panning away attenuates the actual sound location")
+		test_camera.position.x -= 60.0
+		sound._process(0.0)
+		expect(is_equal_approx(voice.volume_db, near_db), "Returning the camera restores the original mix")
+		sound.stop_all()
+		expect(sound.play(&"ui_click") and not sound.voices[0].has_meta("source_camera") and is_equal_approx(sound.voices[0].volume_db, sound.bank.cues[&"ui_click"].volume_db), "Voice reuse leaves interface sounds at their normal volume")
+		sound.stop_all()
+	test_camera.free()
 	expect(sound.play(&"ui_hover") and not sound.play(&"ui_hover"), "Hover cooldown suppresses rapid retriggers")
 	sound.stop_all()
 	sound.bank.cues[&"ui_hover"].cooldown_seconds = 0
@@ -103,6 +139,19 @@ func run() -> void:
 	game.set_process(false)
 	await process_frame
 	var board = game.view
+	global_sound.stop_all()
+	events.clear()
+	var sound_target: Vector2i = board.cells.keys()[0]
+	board.motion_stage.emit({"kind":"attack", "target":sound_target, "capture":true, "before_target":{"capital":1}}, "impact")
+	expect(events == [&"sword_slash", &"capital_collapse"], "Capital capture plays slash and collapse at visible impact")
+	global_sound.stop_all()
+	events.clear()
+	board.motion_stage.emit({"kind":"blocked_attack", "target":sound_target, "capture":false}, "blocked")
+	expect(events == [&"sword_slash"], "Blocked attack plays slash without a collapse")
+	global_sound.stop_all()
+	events.clear()
+	board.motion_stage.emit({"kind":"move", "capture":false}, "travel")
+	expect(events.is_empty(), "Travel does not trigger combat effects")
 	var ambience = board.land_ambience
 	ambience.set_process(false)
 	var saved_focus: Vector3 = board.focus

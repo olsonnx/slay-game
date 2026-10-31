@@ -1,6 +1,6 @@
 extends RefCounted
 ## Bounded, object-free messages. Steam identities come from the transport only.
-const VERSION := 2
+const VERSION := 3
 const GAME := "slay-and-reign"
 const CHANNEL := 17
 const MAX_PACKET := 262144

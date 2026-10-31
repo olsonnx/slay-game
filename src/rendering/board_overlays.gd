@@ -287,13 +287,7 @@ func tile_marker(coord: Vector2i, color: Color, emphasized: bool) -> void:
 	flat_piece(marker, marker_mesh(0.915, 0.815 if emphasized else 0.84), Vector3(0, 0.085, 0), color, "Border")
 
 func area_edges(region: Dictionary) -> Array:
-	var edges: Array = []
-	var grid = preload("res://src/game/hex_grid.gd")
-	for coord in region:
-		for edge in range(6):
-			if not region.has(coord + grid.DIRECTIONS[edge]):
-				edges.append([coord, edge])
-	return edges
+	return preload("res://src/game/hex_grid.gd").boundary_edges(region)
 
 func show_protection(source: Vector2i, region: Dictionary, strength: int) -> void:
 	# Shared area geometry; gold takes precedence on coincident reach edges.
@@ -308,14 +302,15 @@ func show_reachable_area(selected: Vector2i, valid: Dictionary) -> void:
 	var node := show_area(region, Color("8ee1dc"), "ReachBacking", "ReachableArea", "ReachWash")
 	node.set_meta("reachable", valid.keys())
 
-func show_area(region: Dictionary, color: Color, backing_name: String, border_name: String, wash_name: String, elevation := 0.0) -> MeshInstance3D:
+func show_area(region: Dictionary, color: Color, backing_name: String, border_name: String, wash_name: String, elevation := 0.0, parent: Node3D = null, line_width := 0.09) -> MeshInstance3D:
 	var grid = preload("res://src/game/hex_grid.gd")
 	var edges := area_edges(region)
+	var area_parent: Node3D = board.overlay_root if parent == null else parent
 	var border: MeshInstance3D
 	for layer in range(2):
 		var builder := SurfaceTool.new()
 		builder.begin(Mesh.PRIMITIVE_TRIANGLES)
-		var width := 0.14 if layer == 0 else 0.09
+		var width := line_width+0.05 if layer == 0 else line_width
 		for edge in edges:
 			var normal: Vector3 = grid.to_world(grid.DIRECTIONS[edge[1]]).normalized()
 			var angle := atan2(normal.z, normal.x)
@@ -324,7 +319,7 @@ func show_area(region: Dictionary, color: Color, backing_name: String, border_na
 			var center: Vector3 = board.coord_position(edge[0])
 			Strokes.segment(builder, center + a, center + b, width, 0.060 + layer * 0.03 + elevation, Color.WHITE)
 		if not edges.is_empty():
-			var node := flat_piece(board.overlay_root, builder.commit(), Vector3.ZERO, Color("253d43") if layer == 0 else color, backing_name if layer == 0 else border_name)
+			var node := flat_piece(area_parent, builder.commit(), Vector3.ZERO, Color("253d43") if layer == 0 else color, backing_name if layer == 0 else border_name)
 			if layer == 1:
 				border = node
 				node.set_meta("boundary_edges", edges)
@@ -335,7 +330,7 @@ func show_area(region: Dictionary, color: Color, backing_name: String, border_na
 		for edge in range(6):
 			for vertex in [Vector3.ZERO, Vector3(sin(edge * TAU / 6), 0, cos(edge * TAU / 6)), Vector3(sin((edge + 1) * TAU / 6), 0, cos((edge + 1) * TAU / 6))]:
 				wash.add_vertex(center + vertex)
-	var fill := flat_piece(board.overlay_root, wash.commit(), Vector3.ZERO, color, wash_name)
+	var fill := flat_piece(area_parent, wash.commit(), Vector3.ZERO, color, wash_name)
 	var mat := board.material(color, true, true).duplicate() as StandardMaterial3D
 	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	mat.albedo_color.a = 0.09

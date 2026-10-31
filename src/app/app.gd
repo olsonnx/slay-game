@@ -8,6 +8,7 @@ var startup_complete := false
 var startup_warmup
 var startup_viewport: SubViewport
 var startup_warmup_ms := 0.0
+var event_art_warmup
 var game
 var menus
 var retiring_games := 0
@@ -51,6 +52,7 @@ func _ready() -> void:
 	menus.results_requested.connect(pause_game)
 	menus.editor_requested.connect(open_editor)
 	menus.replays_requested.connect(open_replays)
+	menus.collection_requested.connect(open_collection)
 	menus.tutorial_requested.connect(start_tutorial)
 	menus.onboarding_finished.connect(func(): accept_online_invitation.call_deferred())
 	get_tree().paused = false
@@ -85,6 +87,7 @@ func start_online_match(config: Dictionary, roster: Array) -> void:
 		return
 	var online_match = preload("res://src/network/network_match.gd").new(SteamOnline, game, roster)
 	game.add_child(online_match)
+	game.begin_opening_camera(online_match.local_faction)
 	# Only the host records authoritative actions; clients render its snapshots.
 	if not SteamOnline.is_host(): game.rules.replay_log = null
 	menus.restart_button.disabled = true
@@ -132,14 +135,35 @@ func prepare_application() -> CanvasLayer:
 	board.add_child(startup_warmup)
 	preparation.set_progress(0.05)
 	await startup_warmup.prepare(board, range(board.COLORS.size()), func(value: float):
-		preparation.set_progress(0.05 + 0.95 * value))
+		preparation.set_progress(0.05 + 0.70 * value))
 	board.hide()
 	startup_viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
+	event_art_warmup = preload("res://src/ui/event_art_warmup.gd").new()
+	add_child(event_art_warmup)
+	await event_art_warmup.prepare(func(value: float): preparation.set_progress(0.75+0.25*value))
 	startup_warmup_ms = (Time.get_ticks_usec() - started) / 1000.0
 	preparation.set_progress(1.0)
 	await get_tree().process_frame
 	if DisplayServer.get_name() != "headless": await RenderingServer.frame_post_draw
 	return preparation
+
+func open_collection() -> void:
+	if transitioning or menus.navigation_locked: return
+	if not menus.collection_panel.needs_preparation():
+		menus.show_screen(Menus.Screen.COLLECTION)
+		return
+	transitioning = true
+	menus.lock_navigation(true)
+	var preparation = preload("res://src/ui/preparation_screen.gd").new()
+	add_child(preparation)
+	preparation.caption.text = Loc.text("Loading collection...")
+	await get_tree().process_frame
+	if DisplayServer.get_name() != "headless": await RenderingServer.frame_post_draw
+	await menus.collection_panel.prepare_thumbnails(func(value: float): preparation.set_progress(value))
+	menus.show_screen(Menus.Screen.COLLECTION)
+	await preparation.reveal()
+	menus.lock_navigation(false)
+	transitioning = false
 
 func open_replays() -> void:
 	if transitioning or is_instance_valid(game) or is_instance_valid(editor) or is_instance_valid(replay_viewer): return
@@ -229,10 +253,13 @@ func start_new_game(seed_value := -1, size_id := "small", difficulty := "", king
 	game.hud.ui_root.hide()
 	game.view.controls_enabled = false
 	game.view.birds.set_loading(true)
+	game.view.clouds.set_loading(true)
 	var loading_camera_mask: int = game.view.camera.cull_mask
 	game.view.camera.cull_mask = 0
 	preparation.set_progress(0.05)
 	await game.prepare_board(func(value: float): preparation.set_progress(0.05 + 0.85 * value))
+	# Reuses boot preparation, and covers any newly installed editor-event art.
+	await event_art_warmup.prepare(func(value: float): preparation.set_progress(0.90+0.02*value))
 	if custom_level.get("tutorial",false):
 		game.tutorial = preload("res://src/game/tutorial.gd").new(game)
 		game.tutorial.next_requested.connect(start_next_tutorial)
@@ -256,9 +283,11 @@ func start_new_game(seed_value := -1, size_id := "small", difficulty := "", king
 	await get_tree().process_frame
 	game.play_level_entry()
 	game.view.birds.set_loading(false)
+	game.view.clouds.set_loading(false)
 	await preparation.reveal()
 	game.match_clock.resume()
 	game.process_mode = Node.PROCESS_MODE_PAUSABLE
+	game.begin_opening_camera()
 	game.hud.ui_root.show()
 	transitioning = false
 	menus.lock_navigation(false)

@@ -21,7 +21,9 @@ func run() -> void:
 	Rules.Events.WEIGHTS.assign(Rules.Events.BUILTIN_WEIGHTS)
 	for mode in ["modern"]:
 		for size_id in Sizes.IDS:
-			for count in [0, 2, 6]:
+			var counts := [0, 2, mini(6, Sizes.MAX_KINGDOMS[size_id])]
+			if Sizes.MAX_KINGDOMS[size_id] > 6: counts.append(Sizes.MAX_KINGDOMS[size_id])
+			for count in counts:
 				for seed_value in [42, 71, 123, 7, 999, 0, 1, 2, 3, 4]:
 					var rules = Rules.new()
 					rules.rule_mode = mode

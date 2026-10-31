@@ -89,6 +89,12 @@ static func validate(data) -> PackedStringArray:
 	if numeric(data.get("gold_roll_min",0),0,100000) and numeric(data.get("gold_roll_max",0),0,100000) and data.get("gold_roll_min",0) > data.get("gold_roll_max",0): errors.append("Reveal gold minimum exceeds its maximum.")
 	var painting: String = data.get("painting","") if data.get("painting","") is String else ""
 	if painting != "" and (not painting.begins_with("res://assets/") or painting.contains("..") or painting.get_extension().to_lower() not in ["png","jpg","jpeg","webp","svg"]): errors.append("Painting must be an image under res://assets/.")
+	if data.has("painting_focus"):
+		var focus = data.painting_focus
+		if not focus is Array or focus.size() != 2:
+			errors.append("Painting focus must contain two percentages from 0 to 100.")
+		elif not numeric(focus[0],0,100) or not numeric(focus[1],0,100):
+			errors.append("Painting focus must contain two percentages from 0 to 100.")
 	errors.append_array(condition_errors(data.get("requires",[]),"Event requirements"))
 	errors.append_array(choice_errors(data.get("choices"),"Default story"))
 	var variants = data.get("variants",[])

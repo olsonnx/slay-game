@@ -4,6 +4,7 @@ const Lessons = preload("res://src/game/tutorial_lessons.gd")
 const Conditions = preload("res://src/tutorial_editor/tutorial_conditions.gd")
 const Actions = preload("res://src/tutorial_editor/tutorial_actions.gd")
 const Snapshots = preload("res://src/game/state_snapshot.gd")
+const Document = preload("res://src/tutorial_editor/tutorial_document.gd")
 const Level = preload("res://src/editor/level_document.gd")
 const Loc = preload("res://src/localization/text.gd")
 signal next_requested(category: String)
@@ -11,10 +12,12 @@ var game
 var category := "armies"
 var steps: Array = []
 var index := 0
+var text_page := 0
 var completed := false
 var failed := false
 var exercise_done := false
 var awaiting_confirmation := false
+var confirmation_action: Dictionary = {}
 var goal_count := 0
 var counted_targets: Dictionary = {}
 var checkpoint: Dictionary = {}
@@ -70,6 +73,7 @@ func exercise_indices() -> Array:
 	return result
 
 func enter_step() -> void:
+	text_page = 0
 	goal_count = 0
 	counted_targets.clear()
 	awaiting_confirmation = false
@@ -102,6 +106,7 @@ func enter_step() -> void:
 	game.refresh_ui()
 	show_lesson()
 	var target: Vector2i = current().get("focus",current().get("highlight",current().target))
+	if target == game.NONE and current().has("targets") and not current().targets.is_empty(): target = current().targets[0]
 	if target == game.NONE and current().kind == "move":
 		for source in game.cells:
 			if game.rules.unit_faction(source) != 0 or game.cells[source].unit == 0 or game.cells[source].moved: continue
@@ -130,7 +135,7 @@ func _process(_delta: float) -> void:
 	panel.visible = not game.hud.stats_shade.visible
 	var locked: bool = game.busy or game.closing or game.view.level_transitioning or game.get_tree().paused
 	retry.disabled = locked
-	continue_button.disabled = locked or not Conditions.matches(game.rules,game.round_number,current().get("conditions",[]),current().get("condition_mode","all"))
+	continue_button.disabled = locked or not reading_substeps() and not Conditions.matches(game.rules,game.round_number,current().get("conditions",[]),current().get("condition_mode","all"))
 	if not completed and not failed and not exercise_done and not locked:
 		if opponent_mode == "ai" and not game.rules.has_capital(0):
 			failed = true
@@ -140,7 +145,7 @@ func _process(_delta: float) -> void:
 	marker_root.visible = not completed and not failed and not exercise_done and not locked and not game.hud.stats_shade.visible and not game.event_shade.visible
 
 func matches(step: Dictionary, kind: String, target: Vector2i, details: Dictionary, before: Dictionary, committed: bool) -> bool:
-	if step.kind != "any" and (kind != step.kind or step.target != game.NONE and target != step.target): return false
+	if step.kind != "any" and (kind != step.kind or not Document.target_matches(step,target)): return false
 	for key in step.details:
 		if key == "outcome" and not committed: continue
 		if (details.get("kind") if key == "outcome" else details.get(key)) != step.details[key]: return false
@@ -171,6 +176,9 @@ func permits(kind: String, target: Vector2i, details: Dictionary = {}) -> bool:
 	if completed or failed: return false
 	if kind in ["inspect","select","kingdom","animal","finance","status","view","heatmap","stats"]: return true
 	if exercise_done: return false
+	if reading_substeps():
+		game.announce(Loc.text("Read the tutorial text, then press Continue before taking an action."))
+		return false
 	var step := current()
 	var allowed: bool = not step.get("restrict_actions",true) or step.kind in ["any","continue"] or kind == "end_turn" and step.get("allow_turns",false) or matches(step,kind,target,details,game.cells.get(target,{}),false)
 	if not allowed:
@@ -184,10 +192,12 @@ func observe(kind: String, target: Vector2i, details: Dictionary = {}) -> void:
 	if completed or failed or exercise_done or game.closing or game.busy or game.get_tree().paused: return
 	var step := current()
 	var before: Dictionary = details.get("before_target",action_before.get("cell",{}) if action_before.get("kind") == kind and action_before.get("target") == target else game.cells.get(target,{}))
+	if reading_substeps(): return
 	if not matches(step,kind,target,details,before,true): return
 	if not Conditions.matches(game.rules,game.round_number,step.get("conditions",[]),step.get("condition_mode","all")): return
 	if step.get("confirm",false) and not details.get("confirmed",false):
 		awaiting_confirmation = true
+		confirmation_action = {"target":target,"details":details.duplicate(true).merged({"before_target":before})}
 		show_lesson()
 		return
 	if step.get("count",1) > 1:
@@ -214,10 +224,16 @@ func observe(kind: String, target: Vector2i, details: Dictionary = {}) -> void:
 
 func continue_lesson() -> void:
 	if game.busy or game.closing or game.get_tree().paused or game.view.level_transitioning: return
+	if reading_substeps():
+		text_page += 1
+		explanation_scroll.scroll_vertical = 0
+		if not reading_substeps() and current().kind == "continue": observe("continue",game.NONE)
+		show_lesson()
+		return
 	if exercise_done and not completed:
 		index += 1
 		enter_step()
-	elif awaiting_confirmation: observe(current().kind,current().target,current().details.merged({"confirmed":true}))
+	elif awaiting_confirmation: observe(current().kind,confirmation_action.target,confirmation_action.details.merged({"confirmed":true}))
 	else: observe("continue",game.NONE)
 
 func next_topic() -> void:
@@ -235,12 +251,24 @@ func refresh_marker() -> void:
 	if marker_root == null: return
 	var target: Vector2i = current().get("highlight",current().target)
 	var source: Vector2i = current().details.get("source",game.NONE)
-	var signature := [target,source,completed,exercise_done]
+	var targets: Array = Document.target_hexes(current()) if current().has("targets") else ([] if target == game.NONE else [target])
+	var signature := [targets,source,completed,exercise_done]
 	if signature == marker_signature: return
 	marker_signature = signature
 	for child in marker_root.get_children(): child.free()
 	if completed or exercise_done: return
-	for entry in [[target,Color("ffd66e")],[source,Color("79e1f2")]]:
+	var entries: Array = []
+	if current().has("targets") and not targets.is_empty():
+		var region := {}
+		for at in targets: region[at] = true
+		# A broad gold band sits below normal reach borders so both remain visible.
+		var border: MeshInstance3D = game.view.overlays.show_area(region,Color("ffd66e"),"TutorialAreaBacking","TutorialArea","TutorialAreaWash",-0.01,marker_root,0.24)
+		border.set_meta("role","target_area")
+		border.set_meta("targets",targets)
+	else:
+		for at in targets: entries.append([at,Color("ffd66e")])
+	entries.append([source,Color("79e1f2")])
+	for entry in entries:
 		if entry[0] == game.NONE: continue
 		var marker := MeshInstance3D.new()
 		marker.mesh = game.view.overlays.marker_mesh(1.03,0.79)
@@ -257,6 +285,7 @@ func restart_lesson() -> void:
 	failed = false
 	game.game_over = false
 	index = checkpoint.index
+	text_page = 0
 	goal_count = 0
 	counted_targets.clear()
 	awaiting_confirmation = false
@@ -330,3 +359,16 @@ func settle(faction: int) -> void:
 	if not actions.is_empty():
 		await game.view.play_preparation(actions,game.cells)
 		game.announce(Loc.text("%d soldiers starved in %s.") % [deaths,game.NAMES[faction]])
+
+func reading_substeps() -> bool:
+	return not completed and not failed and not exercise_done and (current().get("read_before_action",false) or not current().get("substeps",[]).is_empty()) and text_page <= current().get("substeps",[]).size()
+
+func reading_title() -> String:
+	if reading_substeps() and text_page > 0:
+		var title: String = current().substeps[text_page-1].get("title","")
+		if title != "": return title
+	return current().title
+
+func reading_text() -> String:
+	if reading_substeps() and text_page > 0: return current().substeps[text_page-1].text
+	return current().text

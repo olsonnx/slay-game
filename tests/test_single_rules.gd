@@ -45,11 +45,13 @@ func run() -> void:
 	doc.generate("small", "modern", true)
 	for x in [0, 1, 4, 5]: doc.paint(Vector2i(x, 0), "Land", 0 if x < 2 else 1, 2)
 	doc.paint(Vector2i.ZERO, "Player start", 0, 2)
-	doc.paint(Vector2i(1, 0), "House", 0, 2)
+	doc.paint(Vector2i(1, 0), "City", 0, 2)
 	var legacy: Dictionary = doc.state()
 	legacy.rules = "classic"
+	for row in legacy.cells:
+		if row.q == 1 and row.r == 0: row.building = "house"
 	var loaded = Document.new()
-	expect(loaded.read_data(legacy) == "" and loaded.state().rules == "modern" and loaded.cells == doc.cells, "Older authored maps retain their layout and objects under current rules")
+	expect(loaded.read_data(legacy) == "" and loaded.state() == doc.state(), "Older authored maps retain their serialized layout with houses migrated to cities")
 	var playtest = loaded.build_rules()
 	expect(playtest.unit_upkeep(2, 0) == 12, "Migrated maps use the same wages as Quick Play")
 	root.get_node("Video").set_preference(&"level_transitions", false, false)

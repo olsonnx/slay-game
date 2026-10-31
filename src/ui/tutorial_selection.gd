@@ -18,7 +18,7 @@ func _ready() -> void:
 	offset_right = 480
 	offset_top = -250
 	offset_bottom = 250
-	Ui.label_at(self,Loc.text("Learn by playing"),Vector2(24,16),28)
+	Ui.label_at(self,Loc.text("Tutorial"),Vector2(24,16),28)
 	var index := 0
 	for course in Lessons.categories():
 		var button := preload("res://src/ui/tooltip_button.gd").new()

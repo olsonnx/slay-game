@@ -38,6 +38,9 @@ Use an absolute `--log-file` path when supplying one on Windows. The benchmark w
 
 ## Verification and existing failures
 
+The later [30 October reconciliation](playtest/test-reconciliation-2026-10-30.md)
+addresses the historical failures listed here against the current game rules.
+
 The new optimization suite passes 374 checks: reference route distances/parents/order on randomized roads, obstacles and occupied bridges; threat equivalence without the distance rejection; cached versus fresh purchases for all difficulties; animal-defense refresh; projected capital breaches after recruitment; conservative invalidation; and bounded versus full-sort strategic assignment.
 
 The simulation-worker suite passes 1,114 checks, including private completed prefetch, ordered replay equivalence, scoped presentation reconstruction, cancellation/draining, pause/resume and the serial fallback. Strategic AI passes 878, logistics 373, core AI 107, animation 47, replay 131, architecture 78, playback speed 33 and hotseat 40 checks.

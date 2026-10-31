@@ -8,6 +8,21 @@
 [ext_resource type="AudioStream" uid="uid://b3ikgd5j4nc6p" path="res://assets/sfx/action_place.mp3" id="6"]
 [ext_resource type="AudioStream" path="res://assets/sfx/gold_develop.ogg" id="7"]
 [ext_resource type="AudioStream" path="res://assets/sfx/event_popup.ogg" id="8"]
+[ext_resource type="AudioStream" path="res://assets/sfx/capital_collapse.ogg" id="9"]
+[ext_resource type="AudioStream" path="res://assets/sfx/sword_slash.mp3" id="10"]
+
+[sub_resource type="Resource" id="CapitalCollapse"]
+script = ExtResource("2")
+streams = Array[AudioStream]([ExtResource("9")])
+pitch_min = 0.95
+pitch_max = 1.05
+priority = 30
+
+[sub_resource type="Resource" id="SwordSlash"]
+script = ExtResource("2")
+streams = Array[AudioStream]([ExtResource("10")])
+pitch_min = 0.95
+pitch_max = 1.05
 
 [sub_resource type="Resource" id="Develop"]
 script = ExtResource("2")
@@ -56,6 +71,8 @@ priority = 5
 script = ExtResource("1")
 cues = Dictionary[StringName, Resource]({
 &"action_place": SubResource("Place"),
+&"capital_collapse": SubResource("CapitalCollapse"),
+&"sword_slash": SubResource("SwordSlash"),
 &"gold_develop": SubResource("Develop"),
 &"event_popup": SubResource("EventPopup"),
 &"ui_click": SubResource("Click"),

@@ -1,0 +1,189 @@
+{
+	"paintings": {
+		"res://assets/paintings/Franz_Steinfeld_-_Landscape_with_Group_of_Trees_and_Woodcutters.png|50,50": {
+			"focus": [
+				50,
+				50
+			],
+			"preview": "res://assets/paintings/previews/9b153ab1f370aa5e.webp",
+			"source": "res://assets/paintings/Franz_Steinfeld_-_Landscape_with_Group_of_Trees_and_Woodcutters.png",
+			"thumbnail": "res://assets/paintings/thumbnails/92f2ae675b4544ee.webp"
+		},
+		"res://assets/paintings/Jozef_Chełmoński_-_Landscape_-_Forest.png|50,50": {
+			"focus": [
+				50,
+				50
+			],
+			"preview": "res://assets/paintings/previews/df0f4e49648a9db2.webp",
+			"source": "res://assets/paintings/Jozef_Chełmoński_-_Landscape_-_Forest.png",
+			"thumbnail": "res://assets/paintings/thumbnails/c5fe08f2ca989652.webp"
+		},
+		"res://assets/paintings/Quentin_Massys,_The_Tax_Collectors,_Kunstmuseum_Liechtenstein.webp|50,38": {
+			"focus": [
+				50,
+				38
+			],
+			"preview": "res://assets/paintings/previews/0584756197359ed6.webp",
+			"source": "res://assets/paintings/Quentin_Massys,_The_Tax_Collectors,_Kunstmuseum_Liechtenstein.webp",
+			"thumbnail": "res://assets/paintings/thumbnails/13f2d260daf8f666.webp"
+		},
+		"res://assets/paintings/events/William_Turner_of_Oxford_-_Donati's_Comet_1792598893_116.png|50,50": {
+			"focus": [
+				50,
+				50
+			],
+			"preview": "res://assets/paintings/previews/d39facf111e12178.webp",
+			"source": "res://assets/paintings/events/William_Turner_of_Oxford_-_Donati's_Comet_1792598893_116.png",
+			"thumbnail": "res://assets/paintings/thumbnails/3a48d860ec156952.webp"
+		},
+		"res://assets/paintings/events/altar.jpg|50,58": {
+			"focus": [
+				50,
+				58
+			],
+			"preview": "res://assets/paintings/previews/4e13a840c5dd2f13.webp",
+			"source": "res://assets/paintings/events/altar.jpg",
+			"thumbnail": "res://assets/paintings/thumbnails/281d0c51cf2b4e13.webp"
+		},
+		"res://assets/paintings/events/barracks.jpg|50,56": {
+			"focus": [
+				50,
+				56
+			],
+			"preview": "res://assets/paintings/previews/dbd63775d3ee8350.webp",
+			"source": "res://assets/paintings/events/barracks.jpg",
+			"thumbnail": "res://assets/paintings/thumbnails/ba0ed0971c952e05.webp"
+		},
+		"res://assets/paintings/events/builders_guild.jpg|50,62": {
+			"focus": [
+				50,
+				62
+			],
+			"preview": "res://assets/paintings/previews/7897c246f481f44b.webp",
+			"source": "res://assets/paintings/events/builders_guild.jpg",
+			"thumbnail": "res://assets/paintings/thumbnails/9b7e2bae0ac0bbbb.webp"
+		},
+		"res://assets/paintings/events/cartographer.jpg|50,48": {
+			"focus": [
+				50,
+				48
+			],
+			"preview": "res://assets/paintings/previews/d49c2ee969cc4e86.webp",
+			"source": "res://assets/paintings/events/cartographer.jpg",
+			"thumbnail": "res://assets/paintings/thumbnails/967281ff9cdfe0ed.webp"
+		},
+		"res://assets/paintings/events/duel.jpg|50,42": {
+			"focus": [
+				50,
+				42
+			],
+			"preview": "res://assets/paintings/previews/5c6369db56bde9f1.webp",
+			"source": "res://assets/paintings/events/duel.jpg",
+			"thumbnail": "res://assets/paintings/thumbnails/cdaae7477dff1493.webp"
+		},
+		"res://assets/paintings/events/gold.jpg|50,47": {
+			"focus": [
+				50,
+				47
+			],
+			"preview": "res://assets/paintings/previews/4a68880e2127db07.webp",
+			"source": "res://assets/paintings/events/gold.jpg",
+			"thumbnail": "res://assets/paintings/thumbnails/459d0c0b2507085e.webp"
+		},
+		"res://assets/paintings/events/goose.jpg|50,60": {
+			"focus": [
+				50,
+				60
+			],
+			"preview": "res://assets/paintings/previews/594ff4855c9023e9.webp",
+			"source": "res://assets/paintings/events/goose.jpg",
+			"thumbnail": "res://assets/paintings/thumbnails/8ea32486b1e1b4a9.webp"
+		},
+		"res://assets/paintings/events/innkeeper.jpg|50,50": {
+			"focus": [
+				50,
+				50
+			],
+			"preview": "res://assets/paintings/previews/5a5fbbde9c37d6ac.webp",
+			"source": "res://assets/paintings/events/innkeeper.jpg",
+			"thumbnail": "res://assets/paintings/thumbnails/941437f7cef40341.webp"
+		},
+		"res://assets/paintings/events/pit.png|50,62": {
+			"focus": [
+				50,
+				62
+			],
+			"preview": "res://assets/paintings/previews/0318b690e890ffbe.webp",
+			"source": "res://assets/paintings/events/pit.png",
+			"thumbnail": "res://assets/paintings/thumbnails/c1258201bf6eeea1.webp"
+		},
+		"res://assets/paintings/events/ransom.jpg|50,31": {
+			"focus": [
+				50,
+				31
+			],
+			"preview": "res://assets/paintings/previews/4682519f8da1443d.webp",
+			"source": "res://assets/paintings/events/ransom.jpg",
+			"thumbnail": "res://assets/paintings/thumbnails/ada54c23fe373cfa.webp"
+		},
+		"res://assets/paintings/events/regroup.jpg|50,62": {
+			"focus": [
+				50,
+				62
+			],
+			"preview": "res://assets/paintings/previews/dca5cfe4d87b4368.webp",
+			"source": "res://assets/paintings/events/regroup.jpg",
+			"thumbnail": "res://assets/paintings/thumbnails/3f15fcdbbfe28969.webp"
+		},
+		"res://assets/paintings/events/revolt.jpg|50,56": {
+			"focus": [
+				50,
+				56
+			],
+			"preview": "res://assets/paintings/previews/1acfb5d7a1b85088.webp",
+			"source": "res://assets/paintings/events/revolt.jpg",
+			"thumbnail": "res://assets/paintings/thumbnails/43eb0dc4d89a842e.webp"
+		},
+		"res://assets/paintings/events/scout_lodge.jpg|50,56": {
+			"focus": [
+				50,
+				56
+			],
+			"preview": "res://assets/paintings/previews/48204f84b99f381e.webp",
+			"source": "res://assets/paintings/events/scout_lodge.jpg",
+			"thumbnail": "res://assets/paintings/thumbnails/16819349ba10541c.webp"
+		},
+		"res://assets/paintings/events/stainless_steel.jpg|50,56": {
+			"focus": [
+				50,
+				56
+			],
+			"preview": "res://assets/paintings/previews/2faf881f8d6a407b.webp",
+			"source": "res://assets/paintings/events/stainless_steel.jpg",
+			"thumbnail": "res://assets/paintings/thumbnails/cc4f40548ca872f2.webp"
+		},
+		"res://assets/paintings/events/watchtower.jpg|50,40": {
+			"focus": [
+				50,
+				40
+			],
+			"preview": "res://assets/paintings/previews/59aa361b4ae4711e.webp",
+			"source": "res://assets/paintings/events/watchtower.jpg",
+			"thumbnail": "res://assets/paintings/thumbnails/5d280f5b3fcfa4d2.webp"
+		},
+		"res://assets/paintings/events/wizard.jpg|50,48": {
+			"focus": [
+				50,
+				48
+			],
+			"preview": "res://assets/paintings/previews/f2c7b3d51adfb1f1.webp",
+			"source": "res://assets/paintings/events/wizard.jpg",
+			"thumbnail": "res://assets/paintings/thumbnails/ae7ef668a4419a24.webp"
+		}
+	},
+	"quality": 0.9,
+	"size": [
+		1024,
+		512
+	]
+}

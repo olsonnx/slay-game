@@ -7,7 +7,7 @@ scroll independently, while Back and the category reset stay accessible.
 | Tab | Controls |
 | --- | --- |
 | Audio | Overall, interface, effects, ambience and music volumes; master mute; mute when unfocused; output device |
-| Video | Windowed/fullscreen; 720p through 4K; VSync; active and unfocused FPS limits; MSAA; shadows; contact shadows; depth of field; brightness; island background; animated menu |
+| Video | Windowed/fullscreen; 720p through 4K; VSync; active and unfocused FPS limits; MSAA; shadows; contact shadows; depth of field; distant clouds; brightness; island background; animated menu |
 | Game | Camera following; island transitions; movement playback speed; pause on focus loss; pan, rotation and zoom sensitivity; inverted scroll and vertical rotation |
 | Controls | Rebindable action, camera and contextual keys; restore key defaults |
 | Interface | UI scaling; tooltip delay; FPS display; reduced motion; clear movement indicators; internal border visibility; language |
@@ -57,6 +57,9 @@ enlarged UI and a 960x620 window. Reproduce with `tools/settings_preview.gd`.
 Focused regression logs are under `artifacts/settings-test_*.log`. The existing
 broad game-suite failures from the playtest preparation report are separate;
 the complete regression runner was not run for this change.
+
+The subsequent [playtest test reconciliation](playtest/test-reconciliation-2026-10-30.md)
+addresses those older suite expectations under the current rules.
 
 Thirteen focused suites passed (1,807 checks) for the settings update, covering
 display, menus, audio, keys, music, playback speed, depth blur, lighting, tile

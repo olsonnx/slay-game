@@ -51,12 +51,12 @@ func run() -> void:
 	for index in range(3):
 		expect(game.shop_items.get_child(index).get_node("Cost").text == "%d G" % [10, 20, 40][index], "Each recruitment card shows its purchase price")
 	game.open_shop("build")
-	expect(game.shop_items.get_child(0).get_node("Cost").text == "15 G" and game.shop_items.get_child(1).get_node("Cost").text == "20 G", "Building cards show tower and house costs")
+	expect(game.shop_items.get_child(0).get_node("Cost").text == "15 G" and game.shop_items.get_child(1).get_node("Cost").text == "25 G", "Building cards show tower and city costs")
 	game.cancel_action()
 	game.choose_unit(1)
 	var destination := game.NONE as Vector2i
 	for coord in game.active_kingdom()["hexes"]:
-		if game.cells[coord]["unit"] == 0 and game.cells[coord]["capital"] < 0:
+		if game.rules.can_recruit(coord,game.player_faction,1) and game.cells[coord]["unit"] == 0 and not game.cells[coord]["tree"] and not game.cells[coord]["grave"]:
 			destination = coord
 			break
 	game.click_hex(destination)

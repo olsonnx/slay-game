@@ -144,6 +144,17 @@ func run() -> void:
 	var long_height: float = game.toast_panel.size.y
 	game.announce("Your turn.")
 	expect(game.toast_panel.size.y < long_height, "Notification shrinks again for short text")
+	game.announce(" \n\t")
+	expect(not game.toast_panel.visible, "Blank announcements hide their panel immediately")
+	game.game_over = true
+	game._process(0.0)
+	expect(not game.toast_panel.visible, "Completing a game without a message keeps the banner hidden")
+	game.announce("Victory!")
+	game._process(5.0)
+	expect(game.toast_panel.visible, "A real result message remains visible after its timer expires")
+	game.game_over = false
+	game._process(0.0)
+	expect(not game.toast_panel.visible, "Ordinary notifications hide after their timer expires")
 	game.toast_panel.hide()
 	var capital: Vector2i = game.active_capital()
 	var original: Dictionary = game.cells[capital].duplicate(true)
@@ -221,10 +232,10 @@ func run() -> void:
 		expect(painting != null, "Every encounter has dedicated or fallback art: " + id)
 		if painting != null:
 			var artwork: Dictionary = definition if definition.get("painting", "") != "" else game.rules.Events.DEFAULT_PAINTING
-			expect(painting.texture.resource_path == artwork["painting"], "Dedicated art takes precedence over the fallback: " + id)
+			expect(painting.texture.resource_path == game.rules.Events.event_texture_path(artwork), "Prepared event art takes precedence over the full-size source: " + id)
 			expect(painting.mouse_filter != Control.MOUSE_FILTER_IGNORE and painting.tooltip_text.contains(artwork["painting_title"]) and painting.tooltip_text.contains(artwork["painting_artist"]), "Painting tooltip includes title and artist: " + id)
 			expect(painting.texture != null and painting.material is ShaderMaterial and painting.material.get_shader_parameter("corner_radius") == 8.0, "Event paintings share the rounded sepia treatment: " + id)
-			expect(is_equal_approx(painting.size.x / painting.size.y, float(painting.texture.get_width()) / painting.texture.get_height()), "Painting preserves its authored crop: " + id)
+			expect(is_equal_approx(painting.size.x / painting.size.y, 2.0), "Painting uses the consistent 2:1 event frame: " + id)
 			expect(painting.position.y + painting.size.y < game.event_panel.get_node("EventStory").position.y, "Painting stays above event text: " + id)
 		var event_title: RichTextLabel = game.event_panel.get_node("EventTitle")
 		var event_story: RichTextLabel = game.event_panel.get_node("EventStory")

@@ -10,7 +10,7 @@ func _initialize() -> void:
 			"title":Lessons.category_title(category), "category":category,
 			"opponent_mode":"ai" if category == "practice" else "scripted",
 			"require_victory":category == "practice", "map":Lessons.Scenarios.map_data(category),
-			"steps":Lessons.builtin_lessons(category)})
+			"steps":Lessons.authored_steps(category)})
 		var error := Document.validate(data)
 		if error != "":
 			push_error(category + ": " + error)

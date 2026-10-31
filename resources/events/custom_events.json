@@ -129,9 +129,9 @@
 			"gold_roll_min": 0,
 			"id": "revolt",
 			"modern_only": true,
-			"painting": "",
-			"painting_artist": "",
-			"painting_title": "",
+			"painting": "res://assets/paintings/events/revolt.jpg",
+			"painting_artist": "Adriaen Brouwer",
+			"painting_title": "Peasant Brawl",
 			"requirements": "An unused kingdom identity is available, and this province has neighbouring passable land.",
 			"requires": [
 				{
@@ -150,7 +150,11 @@
 			"text": "The peasants have formed a representative assembly. Every representative carries a pitchfork, and their first motion is that we should leave immediately.",
 			"title": "The Pitchfork Parliament",
 			"variants": [],
-			"weight": 1
+			"weight": 1,
+			"painting_focus": [
+				50,
+				56
+			]
 		},
 		{
 			"choices": [
@@ -183,9 +187,9 @@
 			"gold_roll_min": 10,
 			"id": "gold",
 			"modern_only": false,
-			"painting": "",
-			"painting_artist": "",
-			"painting_title": "",
+			"painting": "res://assets/paintings/events/gold.jpg",
+			"painting_artist": "Rembrandt",
+			"painting_title": "The Parable of the Rich Fool",
 			"requirements": "",
 			"requires": [
 				{
@@ -198,7 +202,11 @@
 			"text": "Beneath a crumbling milestone, your army discovers a chest of coins. Nobody remains to claim it.",
 			"title": "A forgotten fortune",
 			"variants": [],
-			"weight": 8
+			"weight": 8,
+			"painting_focus": [
+				50,
+				47
+			]
 		}
 	],
 	"version": 1

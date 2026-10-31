@@ -1,6 +1,5 @@
 extends SceneTree
 
-const Navigation = preload("res://src/rendering/board_navigation.gd")
 const Rules = preload("res://src/game/kingdom_rules.gd")
 const Grid = preload("res://src/game/hex_grid.gd")
 var failures := 0
@@ -20,13 +19,15 @@ func finish_zoom(nav) -> void:
 		nav._process(1.0 / 60.0)
 
 func run() -> void:
+	# This standalone SceneTree is parsed before the Gameplay autoload exists.
+	var navigation = load("res://src/rendering/board_navigation.gd")
 	var viewport := SubViewport.new()
 	viewport.size = Vector2i(1200, 800)
 	root.add_child(viewport)
 	var camera := Camera3D.new()
 	camera.projection = Camera3D.PROJECTION_ORTHOGONAL
 	viewport.add_child(camera)
-	var nav := Navigation.new()
+	var nav = navigation.new()
 	nav.camera = camera
 	viewport.add_child(nav)
 	nav.set_process(false)

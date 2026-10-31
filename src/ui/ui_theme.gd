@@ -82,6 +82,12 @@ static func create_theme() -> Theme:
 	theme.set_color("caret_color","LineEdit",ACCENT)
 	theme.set_color("selection_color","LineEdit",Color("45635d"))
 	theme.set_constant("outline_size","LineEdit",0)
+	for state in ["normal","read_only"]: theme.set_stylebox(state,"TextEdit",theme.get_stylebox(state,"LineEdit"))
+	theme.set_stylebox("focus","TextEdit",focus_style())
+	theme.set_color("font_color","TextEdit",TEXT)
+	theme.set_color("font_readonly_color","TextEdit",MUTED)
+	theme.set_color("caret_color","TextEdit",ACCENT)
+	theme.set_color("selection_color","TextEdit",Color("45635d"))
 	for state in BUTTON_STATES:
 		theme.set_stylebox(state,"CheckButton",control_style(Color(0,0,0,0),Vector2(0,6)))
 	theme.set_stylebox("focus","CheckButton",focus_style(Vector2(0,6)))
@@ -95,12 +101,26 @@ static func create_theme() -> Theme:
 			var icon := svg_texture('<svg xmlns="http://www.w3.org/2000/svg" width="34" height="20"><rect x="1" y="1" width="32" height="18" rx="9" fill="%s"/><circle cx="%d" cy="10" r="6" fill="%s"/></svg>' % [track,24 if checked else 10,"#80968a" if disabled else "#ede7d4"])
 			var key := ("checked" if checked else "unchecked") + ("_disabled" if disabled else "")
 			theme.set_icon(key,"CheckButton",icon)
+	for state in BUTTON_STATES:
+		theme.set_stylebox(state,"CheckBox",control_style(Color(0,0,0,0),Vector2(0,6)))
+	theme.set_stylebox("focus","CheckBox",focus_style(Vector2(0,6)))
+	for state in ["font_color","font_hover_color","font_pressed_color","font_hover_pressed_color","font_focus_color"]: theme.set_color(state,"CheckBox",TEXT)
+	theme.set_color("font_disabled_color","CheckBox",MUTED)
+	theme.set_constant("h_separation","CheckBox",10)
+	for checked in [true,false]:
+		for disabled in [true,false]:
+			var fill := "#677c62" if disabled and checked else "#c8d3a1" if checked else "#283b3e"
+			var mark := '<path d="m6 10 3 3 5-6" fill="none" stroke="#20332d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' if checked else ""
+			var icon := svg_texture('<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"><rect x="2" y="2" width="16" height="16" rx="4" fill="%s" stroke="#52736d"/>%s</svg>' % [fill,mark])
+			theme.set_icon(("checked" if checked else "unchecked")+("_disabled" if disabled else ""),"CheckBox",icon)
 	for state in ["tab_selected","tab_unselected","tab_hovered","tab_disabled"]:
 		var color := Color("3c5654") if state == "tab_selected" else SURFACE.lightened(0.07) if state == "tab_hovered" else SURFACE
-		theme.set_stylebox(state,"TabBar",control_style(color))
-	for state in ["font_selected_color","font_hovered_color","font_unselected_color"]: theme.set_color(state,"TabBar",TEXT)
-	theme.set_color("font_disabled_color","TabBar",MUTED)
-	theme.set_stylebox("tab_focus","TabBar",focus_style())
+		for kind in ["TabBar","TabContainer"]: theme.set_stylebox(state,kind,control_style(color))
+	for kind in ["TabBar","TabContainer"]:
+		for state in ["font_selected_color","font_hovered_color","font_unselected_color"]: theme.set_color(state,kind,TEXT)
+		theme.set_color("font_disabled_color",kind,MUTED)
+		theme.set_stylebox("tab_focus",kind,focus_style())
+	theme.set_stylebox("panel","TabContainer",control_style(Color("17252a"),Vector2(12,12),9))
 	theme.set_stylebox("panel","PopupMenu",style(Color("17252a"),9,true))
 	theme.set_stylebox("hover","PopupMenu",control_style(Color("3c5654"),Vector2(8,4),6))
 	theme.set_color("font_color","PopupMenu",TEXT)
@@ -120,6 +140,16 @@ static func create_theme() -> Theme:
 			theme.set_stylebox(state,kind,control_style(Color("52736d") if state == "grabber" else Color("759286"),Vector2(4,4),4))
 	theme.set_stylebox("panel","PopupPanel",style(Color("17252a"),12,true))
 	theme.set_stylebox("panel","AcceptDialog",style(Color("17252a"),12,true))
+	# Embedded file/authoring windows need their own chrome and content theme.
+	var window_frame := style(Color("17252a"),13,true)
+	window_frame.expand_margin_top = 36
+	window_frame.expand_margin_left = 8
+	window_frame.expand_margin_right = 8
+	window_frame.expand_margin_bottom = 8
+	theme.set_stylebox("embedded_border","Window",window_frame)
+	theme.set_color("title_color","Window",TEXT)
+	theme.set_font_size("title_font_size","Window",18)
+	theme.set_constant("title_height","Window",36)
 	theme.set_stylebox("panel","TooltipPanel",style(Color("17252a"),8,true))
 	theme.set_color("font_color","TooltipLabel",TEXT)
 	theme.set_font_size("font_size","TooltipLabel",14)

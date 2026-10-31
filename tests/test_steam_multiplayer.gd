@@ -90,7 +90,7 @@ func run() -> void:
 	host.handle(101, {"kind":"develop","coord":develop_coord,"request":1,"revision":previous})
 	expect(Snapshot.capture(host_game.rules) == after_purchase, "Duplicate and stale requests cannot charge a treasury twice")
 	# Exercise each purchase/status command through the same public command path.
-	for kind in ["recruit", "entrench", "house", "tower", "bridge", "spell", "relocate"]:
+	for kind in ["recruit", "entrench", "city", "tower", "bridge", "spell", "relocate"]:
 		var command := find_command(host_game, kind)
 		expect(not command.is_empty(), "Fixture offers a legal online " + kind + " command")
 		if command.is_empty(): continue
@@ -196,7 +196,7 @@ func find_command(game, kind: String) -> Dictionary:
 				"recruit": valid = game.rules.can_recruit(coord, faction, 1, capital) and game.cells[coord].unit == 0
 				"entrench": valid = game.rules.can_entrench(coord, faction)
 				"relocate": valid = game.rules.can_relocate_capital(coord, faction)
-				"house", "tower", "bridge": valid = game.rules.can_build(coord, faction, kind, capital)
+				"city", "tower", "bridge": valid = game.rules.can_build(coord, faction, kind, capital)
 				"spell": valid = game.rules.can_cast("trailblaze", coord, faction, capital)
 			if valid: return {"kind":kind,"coord":coord,"capital":capital,"tier":1,"spell":"trailblaze"}
 	return {}

@@ -44,6 +44,7 @@ try {
     New-Item -ItemType Directory -Path $licenses | Out-Null
     Copy-Item -LiteralPath (Join-Path $projectPath "addons/godotsteam/license.md") -Destination (Join-Path $licenses "GodotSteam.txt")
     Copy-Item -LiteralPath (Join-Path $projectPath "resources/shaders/water.LICENSE.md") -Destination (Join-Path $licenses "Water-shader.txt")
+    Copy-Item -LiteralPath (Join-Path $projectPath "resources/shaders/clouds.LICENSE.md") -Destination (Join-Path $licenses "Cloud-shaders.txt")
     Copy-Item -Path (Join-Path $projectPath "docs/playtest/licenses/*.txt") -Destination $licenses
     @("Slay & Reign $version / $Label", "Packaged UTC: $([DateTime]::UtcNow.ToString('o'))", "Engine: $(& $engine --version)", "Source revision: $(git -C $projectPath rev-parse HEAD)", "Working tree modified: $([bool](git -C $projectPath status --porcelain))") | Set-Content (Join-Path $output "BUILD.txt")
     Compress-Archive -LiteralPath $output -DestinationPath $archive -CompressionLevel Optimal

@@ -105,6 +105,8 @@ static func fit(box: Control, label: RichTextLabel, text_value: String, padding 
 	return true
 
 static func create(text_value: String, event_outcome := false) -> Control:
+	# Godot may request custom content even when a control has no tooltip.
+	if Loc.text(text_value).strip_edges().is_empty(): return null
 	# Godot supplies the native TooltipPanel around custom tooltip content.
 	# Returning another styled panel would draw a second box inside it.
 	var box := Control.new()

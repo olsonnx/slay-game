@@ -25,7 +25,7 @@ var language_note: Label
 var status_label: Label
 var tabs
 var reset_button: Button
-var reset_dialog: ConfirmationDialog
+var reset_dialog
 var pending_reset := 0
 var rows: Dictionary = {}
 var heights: Dictionary = {}
@@ -61,12 +61,23 @@ func _ready() -> void:
 	reset_button.size = Vector2(432,32)
 	add_child(reset_button)
 	Sound.bind_button(reset_button)
-	reset_dialog = ConfirmationDialog.new()
+	var reset_layer := CanvasLayer.new()
+	reset_layer.layer = 100
+	add_child(reset_layer)
+	reset_dialog = preload("res://src/ui/confirmation_panel.gd").new()
 	reset_dialog.title = Loc.text("Restore defaults")
 	reset_dialog.dialog_text = Loc.text("Restore settings in this tab? Your profile, progress and other tabs will be kept.")
+	reset_dialog.cancel_text = "Keep settings"
+	reset_dialog.confirm_text = "Restore defaults"
 	reset_dialog.confirmed.connect(func(): restore_tab(pending_reset))
-	add_child(reset_dialog)
-	reset_button.pressed.connect(func(): pending_reset = tabs.current_tab; reset_dialog.popup_centered(Vector2i(400,160)))
+	reset_layer.add_child(reset_dialog)
+	reset_button.pressed.connect(func():
+		controls_page.cancel_capture()
+		pending_reset = tabs.current_tab
+		reset_dialog.title = Loc.text("Restore %s defaults?") % tabs.get_tab_title(pending_reset)
+		reset_dialog.popup_centered())
+	visibility_changed.connect(func():
+		if not is_visible_in_tree(): reset_dialog.hide())
 	Sound.settings_save_failed.connect(func(_error): status_label.text = Loc.text("Audio settings could not be saved."))
 	Video.save_failed.connect(func(_error): status_label.text = Loc.text("Video settings could not be saved."))
 	Gameplay.save_failed.connect(func(_error): status_label.text = Loc.text("Gameplay settings could not be saved."))
@@ -205,6 +216,7 @@ func build_video() -> void:
 	shadow_toggle = preference_toggle(video_page,"Shadows",Video,"shadows")
 	preference_toggle(video_page,"Contact shadows",Video,"ambient_occlusion","Adds shading where objects meet. Disabling this can improve GPU performance.")
 	preference_toggle(video_page,"Depth of field",Video,"depth_of_field","Diorama blur when viewing the board up close. Turn off for a consistently sharp board.")
+	preference_toggle(video_page,"Clouds",Video,"clouds","Show distant clouds when zoomed out, keeping the island clear.")
 	preference_slider(video_page,"Brightness",Video,"brightness",0.7,1.3,0.05)
 	background_choice = choose(video_page,"Background",["Water","Sky"])
 	background_choice.item_selected.connect(func(index): Video.set_preference(&"background","water" if index == 0 else "sky"))
@@ -248,7 +260,6 @@ func build_interface() -> void:
 func show_tab(index: int) -> void:
 	var pages := [audio_page,video_page,gameplay_page,controls_page,interface_page]
 	for i in range(pages.size()): pages[i].visible = i == index
-	if reset_button != null: reset_button.visible = index != 3
 
 func refresh() -> void:
 	if language_choice == null: return
@@ -296,12 +307,15 @@ func restore_tab(index: int) -> void:
 			Sound.set_mute_unfocused(false)
 			Sound.set_output_device("Default")
 		1:
-			for key in ["frame_limit","background_frame_limit","menu_animation","depth_of_field","ambient_occlusion","brightness"]: Video.set_preference(key,Video.EXTRA_DEFAULTS[key])
+			for key in ["frame_limit","background_frame_limit","menu_animation","depth_of_field","ambient_occlusion","brightness","clouds"]: Video.set_preference(key,Video.EXTRA_DEFAULTS[key])
 			for pair in [["fullscreen",false],["resolution",Video.BASE_SIZE],["vsync",true],["antialiasing",2],["shadows",true],["background","water"],["plastic_tiles",true],["atmospheric_lighting",true],["stylized_water",false]]: Video.set_preference(pair[0],pair[1])
 		2:
 			for key in Gameplay.PRESENTATION_DEFAULTS: Gameplay.set_preference(key,Gameplay.PRESENTATION_DEFAULTS[key])
 			Video.set_preference(&"follow_turn_camera",true)
 			Video.set_preference(&"level_transitions",true)
+		3:
+			controls_page.cancel_capture()
+			Keys.reset_defaults()
 		4:
 			for key in ["ui_scale","tooltip_delay","show_fps","reduced_motion"]: Video.set_preference(key,Video.EXTRA_DEFAULTS[key])
 			Video.set_preference(&"internal_borders",0.5)

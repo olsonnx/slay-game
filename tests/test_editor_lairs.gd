@@ -64,7 +64,7 @@ func run() -> void:
 	editor.refresh(true)
 	for frame in range(3): await process_frame
 	editor.open_tools("Build")
-	expect(editor.ui.tool_buttons.size() == 5,"Build palette contains the two buildings and three lairs")
+	expect(editor.ui.tool_buttons.size() == 6 and editor.ui.tool_buttons.any(func(button): return button.get_meta("tool") == "Road"),"Build palette contains cities, roads, towers and three lairs")
 	for tool in Document.LAIR_TOOLS:
 		var index: int = editor.TOOL_GROUPS.Build.find(tool)
 		if not editor.ui.tool_panel.visible: editor.open_tools("Build")

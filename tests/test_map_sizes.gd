@@ -121,7 +121,7 @@ func run() -> void:
 			expect(distances.size() >= 8, "Inter-kingdom distances vary across seeds on " + size_id)
 			expect(silhouettes.size() >= 16, "Overall island silhouettes vary across seeds on " + size_id)
 			expect(quadrants.size() == 4, "Player faction can start in every screen quadrant on " + size_id)
-		averages[size_id] = total / 48.0
+		averages[size_id] = total / 24.0 # Twenty-four seeds in the single current ruleset.
 		expect(counts.has(Sizes.spec(size_id)["min_factions"]) and counts.has(Sizes.spec(size_id)["max_factions"]), "Variable profiles generate both supported kingdom counts")
 	print("Average tiles by size: ", averages)
 	for index in range(1, Sizes.IDS.size()):
@@ -149,10 +149,12 @@ func run() -> void:
 	expect(app.menus.size_choice.item_count == 5, "Quick Play offers the five revised map sizes")
 	for index in range(Sizes.IDS.size()):
 		expect(app.menus.size_choice.get_popup().get_item_tooltip(index) == Sizes.tile_tooltip(Sizes.IDS[index]), "Every size explains its approximate tile count")
-	app.menus.kingdom_choice.select(4)
+	app.menus.size_choice.select(Sizes.IDS.find("large"))
+	app.menus.size_choice.item_selected.emit(Sizes.IDS.find("large"))
+	app.menus.kingdom_choice.select(6)
 	app.menus.size_choice.select(0)
 	app.menus.size_choice.item_selected.emit(0)
-	expect(app.menus.kingdom_choice.item_count == 5 and app.menus.kingdom_choice.get_selected_metadata() == 6, "Small retains all six selected kingdoms")
+	expect(app.menus.kingdom_choice.item_count == 3 and app.menus.kingdom_choice.get_selected_metadata() == 4, "Tiny clamps a larger roster to four kingdoms")
 	var escape := InputEventKey.new()
 	escape.keycode = KEY_ESCAPE
 	escape.pressed = true

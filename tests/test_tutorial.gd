@@ -144,10 +144,6 @@ func perform(game, step: Dictionary) -> bool:
 		"develop":
 			await game.click_hex(target,"terrain")
 			game.province_view.develop_button.pressed.emit()
-		"dismantle":
-			await game.click_hex(target,"terrain")
-			expect(game.province_view.dismantle_button.visible and not game.province_view.dismantle_button.disabled,"An empty sponsored bridge exposes Dismantle")
-			game.province_view.dismantle_button.pressed.emit()
 		"entrench":
 			await game.click_hex(target,"terrain")
 			game.entrench_province()
@@ -182,7 +178,7 @@ func perform(game, step: Dictionary) -> bool:
 		"develop_other_bank":
 			expect(game.active_kingdom().gold == gold_before-8 and game.rules.kingdom_at(Vector2i(-4,0)).gold == 100,"Development spends only the selected disconnected treasury")
 		"supply_road": expect(game.active_kingdom().gold == gold_before-8,"The eight newly paved tiles cost exactly 8 G")
-		"remove_bridge": expect(not game.cells.has(target) and game.active_kingdom().gold == gold_before and game.rules.upkeep(game.active_kingdom()) == upkeep_before-2,"Dismantling removes the crossing and its upkeep without a refund")
+		"remove_bridge": expect(not game.cells.has(target) and game.active_kingdom().gold == gold_before and game.rules.get_mana(0) == 0 and game.rules.upkeep(game.active_kingdom()) == upkeep_before-2,"Shatter spends 2 mana and removes the crossing and its upkeep without a refund")
 		"trail_capture": expect(not game.cells[target].moved and not game.rules.has_effect(0,"trailblaze"),"Trailblaze is consumed and grants one extra action")
 		"trail_followup": expect(game.cells[target].moved,"The unblessed second capture spends the action")
 		"shatter_bridge": expect(not game.cells.has(target) and game.rules.get_mana(0) == 0,"Shatter spends 2 mana and removes the crossing")
@@ -221,9 +217,17 @@ func play_topic(category: String) -> void:
 			await capture(category+"_"+tutor.exercise_key(tutor.index)+"_done")
 			tutor.continue_lesson()
 			continue
+		if tutor.reading_substeps():
+			tutor.continue_lesson()
+			await process_frame
+			continue
 		var step: Dictionary = tutor.current()
 		var before: int = tutor.index
 		for marker in tutor.marker_root.get_children():
+			if marker.get_meta("role","") == "target_area":
+				expect(marker.get_meta("targets") == step.targets,"The tutorial area covers every authored destination")
+				continue
+			if not marker.has_meta("hex"): continue # Area backing and fill share the perimeter's region.
 			var marked: Vector2i = marker.get_meta("hex")
 			var expected: Vector2i = step.details.get("source",game.NONE) if marker.get_meta("role") == "source" else step.get("highlight",step.target)
 			expect(marked == expected and (game.cells.has(marked) or step.kind == "build" and game.rules.can_build(marked,0,step.details.building)),"The instructional ring marks the actual source or destination: %s/%s %s expected %s" % [category,step.id,marked,expected])
@@ -238,6 +242,8 @@ func play_topic(category: String) -> void:
 			print("STUCK ",step.id," mode ",game.action_mode," target ",target_for(game,step)," before ",tutor.action_before," units ",game.cells.values().filter(func(cell): return cell.owner == 0 and cell.unit > 0))
 			break
 	expect(game.tutorial.completed,"All exercises are playable: "+category)
+	await process_frame
+	expect(not game.hud.toast_panel.visible or not game.message.strip_edges().is_empty(),"Completing a tutorial never opens an empty notification box: "+category)
 	expect(root.get_node("Gameplay").completed_tutorials.get(category,false) and app.menus.tutorial_panel.completion_checks[category].button_pressed,"Completing the whole topic ticks its menu checkbox immediately")
 	await capture(category+"_complete")
 	await app.return_to_main_menu()

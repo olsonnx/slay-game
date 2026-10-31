@@ -26,8 +26,13 @@ func _ready() -> void:
 	status_label = Hud.label_at(self, "", Vector2(24, 70), 16, Color("c5cdbb"))
 	status_label.size = Vector2(552, 66)
 	status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	roster_label = Hud.label_at(self, "", Vector2(24, 142), 17)
-	roster_label.size = Vector2(552, 170)
+	var roster_scroll := ScrollContainer.new()
+	roster_scroll.position = Vector2(24,142)
+	roster_scroll.size = Vector2(552,170)
+	roster_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	add_child(roster_scroll)
+	roster_label = Hud.label_at(roster_scroll, "", Vector2.ZERO, 17)
+	roster_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	Hud.label_at(self, "Map size", Vector2(24, 322), 14)
 	size_choice = OptionButton.new()
 	size_choice.position = Vector2(24, 348)
@@ -42,8 +47,8 @@ func _ready() -> void:
 	count_choice = OptionButton.new()
 	count_choice.position = Vector2(308, 348)
 	count_choice.size = Vector2(268, 38)
-	for count in range(2, 7): count_choice.add_item(str(count), count)
 	add_child(count_choice)
+	size_choice.item_selected.connect(func(_index): refresh())
 	Sound.bind_button(count_choice)
 	host_button = action("Host friends-only game", Rect2(24, 404, 268, 42), connection.host)
 	invite_button = action("Invite friends…", Rect2(24, 404, 268, 42), connection.invite)
@@ -80,7 +85,7 @@ func refresh() -> void:
 	for member in connection.members:
 		var title: String = Loc.text("Host") if member.id == connection.host_id else Loc.text("Ready") if member.ready else Loc.text("Not ready")
 		lines.append("%s   ·   %s" % [member.name, title])
-	roster_label.text = "\n".join(lines) if not lines.is_empty() else Loc.text("Play with 2–6 friends, or fill spare kingdoms with computer players.\n\nJoin a friend by accepting their invitation in Steam.")
+	roster_label.text = "\n".join(lines)
 	var in_lobby: bool = connection.phase == "lobby"
 	host_button.visible = not in_lobby
 	host_button.disabled = connection.phase != "idle"
@@ -93,9 +98,20 @@ func refresh() -> void:
 	leave_button.visible = connection.lobby_id != 0
 	size_choice.disabled = not connection.is_host() or not in_lobby
 	count_choice.disabled = size_choice.disabled
-	for index in range(count_choice.item_count):
-		count_choice.set_item_disabled(index, count_choice.get_item_id(index) < connection.members.size())
-	if count_choice.get_selected_id() < connection.members.size(): count_choice.select(connection.members.size() - 2)
+	for index in range(size_choice.item_count):
+		size_choice.set_item_disabled(index, Sizes.MAX_KINGDOMS[size_choice.get_item_metadata(index)] < connection.members.size())
+	if Sizes.MAX_KINGDOMS[size_choice.get_selected_metadata()] < connection.members.size():
+		for index in range(size_choice.item_count):
+			if Sizes.MAX_KINGDOMS[size_choice.get_item_metadata(index)] >= connection.members.size():
+				size_choice.select(index)
+				break
+	var previous := count_choice.get_selected_id() if count_choice.item_count else Sizes.DEFAULT_KINGDOMS
+	var maximum: int = Sizes.MAX_KINGDOMS[size_choice.get_selected_metadata()]
+	count_choice.clear()
+	for count in range(2,maximum+1):
+		count_choice.add_item(str(count),count)
+		count_choice.set_item_disabled(count_choice.item_count-1,count < connection.members.size())
+	count_choice.select(clampi(maxi(previous,connection.members.size()),2,maximum)-2)
 
 func toggle_ready() -> void:
 	for member in connection.members:

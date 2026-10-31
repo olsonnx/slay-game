@@ -29,6 +29,8 @@ var map_tab: Button
 var advanced_button: Button
 var difficulty_heading: Label
 var player_tools: PopupPanel
+var roster_scroll: ScrollContainer
+var roster_content: Control
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_CENTER)
@@ -51,27 +53,36 @@ func _ready() -> void:
 	action("Player options…",Rect2(596,0,176,34),func(): player_tools.popup_centered(Vector2i(352,208)),players_group)
 	for field in [["Name",0],["Control",260],["Colour",428]]:
 		Hud.label_at(players_group,field[0],Vector2(field[1],56),13,Color("adbdaf"))
-	difficulty_heading = Hud.label_at(players_group,"AI difficulty",Vector2(628,56),13,Color("adbdaf"))
-	for index in range(6):
-		var y := 82 + index * 42
-		var number = Hud.label_at(players_group,str(index+1),Vector2.ZERO,15)
+	difficulty_heading = Hud.label_at(players_group,"AI difficulty",Vector2(608,56),13,Color("adbdaf"))
+	roster_scroll = ScrollContainer.new()
+	roster_scroll.position = Vector2(0,82)
+	roster_scroll.size = Vector2(772,252)
+	roster_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	roster_scroll.follow_focus = true
+	players_group.add_child(roster_scroll)
+	roster_content = Control.new()
+	roster_content.custom_minimum_size = Vector2(752,0)
+	roster_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	roster_scroll.add_child(roster_content)
+	for index in range(Sizes.MAX_NATIONS):
+		var y := index * 42
 		var name_input := LineEdit.new()
 		name_input.position = Vector2(0,y)
 		name_input.size = Vector2(244,36)
 		name_input.max_length = 18
 		name_input.placeholder_text = Loc.text("Player %d") % (index+1)
-		players_group.add_child(name_input)
-		var controller = choice(Vector2(260,y),152,["Player","Computer"],players_group)
-		var color_choice = choice(Vector2(428,y),184,[],players_group)
+		roster_content.add_child(name_input)
+		var controller = choice(Vector2(260,y),152,["Player","Computer"],roster_content)
+		var color_choice = choice(Vector2(428,y),164,[],roster_content)
 		color_choice.tooltip_text = Loc.text("Starting colour · choosing an occupied colour swaps the two seats.")
 		for color in range(Catalog.FACTIONS.size()):
 			var swatch := Image.create(14,14,false,Image.FORMAT_RGBA8)
 			swatch.fill(Catalog.UI_COLORS[color])
 			color_choice.add_icon_item(ImageTexture.create_from_image(swatch), Catalog.FACTIONS[color])
 		color_choice.get_popup().max_size.y = 360
-		var difficulty = choice(Vector2(628,y),144,["Easy","Normal","Hard"],players_group)
+		var difficulty = choice(Vector2(608,y),144,["Easy","Normal","Hard"],roster_content)
 		difficulty.tooltip_text = Loc.text("Difficulty for this computer opponent.")
-		rows.append({"number":number,"name":name_input,"controller":controller,"color":color_choice,"difficulty":difficulty})
+		rows.append({"name":name_input,"controller":controller,"color":color_choice,"difficulty":difficulty})
 		controller.item_selected.connect(func(_value): refresh_summary())
 		difficulty.item_selected.connect(func(_value): refresh_summary())
 		color_choice.item_selected.connect(func(selected): select_color(index,selected))
@@ -193,7 +204,7 @@ func load_config(saved: Dictionary) -> void:
 	refresh_counts()
 	count_choice.select(clampi(config["count"]-2,0,count_choice.item_count-1))
 	var colors: Array = []
-	for index in range(6):
+	for index in range(rows.size()):
 		var seat: Dictionary = config["slots"][index] if index < config["count"] else {}
 		var color: int = seat.get("color",-1)
 		if color < 0:
@@ -223,6 +234,7 @@ func refresh_counts() -> void:
 	refresh_rows()
 
 func refresh_rows() -> void:
+	roster_content.custom_minimum_size.y = seat_count() * 42 - 6
 	for index in range(rows.size()):
 		for control in rows[index].values(): control.visible = index < seat_count()
 	refresh_summary()
@@ -230,7 +242,7 @@ func refresh_rows() -> void:
 func select_color(seat: int, color: int) -> void:
 	# Swapping prevents duplicates without rejecting a player's choice.
 	var old: int = rows[seat]["color"].get_meta("previous",seat)
-	for index in range(6):
+	for index in range(rows.size()):
 		if index != seat and rows[index]["color"].selected == color:
 			rows[index]["color"].select(old)
 	for row in rows: row["color"].set_meta("previous",row["color"].selected)
@@ -238,7 +250,7 @@ func select_color(seat: int, color: int) -> void:
 func shuffle_colors() -> void:
 	var colors: Array = range(Catalog.FACTIONS.size())
 	colors.shuffle()
-	for index in range(6):
+	for index in range(rows.size()):
 		rows[index]["color"].select(colors[index])
 		rows[index]["color"].set_meta("previous",colors[index])
 
@@ -267,7 +279,6 @@ func refresh_summary() -> void:
 	Hud.UiTheme.fit_text(summary,summary.text,772)
 	var has_computer := false
 	for index in range(rows.size()):
-		rows[index]["number"].hide()
 		var computer: bool = index < seat_count() and rows[index]["controller"].selected == 1
 		rows[index]["difficulty"].visible = computer
 		has_computer = has_computer or computer
@@ -307,7 +318,7 @@ func load_editor_map(path: String, preserve_roster := false) -> void:
 		var colors: Array = loaded["factions"].duplicate()
 		for color in range(Catalog.FACTIONS.size()):
 			if color not in colors: colors.append(color)
-		for index in range(6):
+		for index in range(rows.size()):
 			rows[index]["color"].select(colors[index])
 			rows[index]["color"].set_meta("previous",colors[index])
 			if rows[index]["name"].text in Catalog.FACTIONS: rows[index]["name"].text = Catalog.FACTIONS[colors[index]]

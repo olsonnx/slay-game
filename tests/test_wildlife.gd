@@ -378,7 +378,8 @@ func ai_hunting() -> void:
 		var s = Rules.new()
 		s.rule_mode = "modern"
 		s.ai_difficulty = "hard"
-		for q in [-2,-1,0,5,6]: s.cells[Vector2i(q,0)] = s.make_cell(0 if q < 0 else 1 if q >= 5 else -1)
+		# Keep a neutral frontier beyond the reward for the legacy evaluation probe.
+		for q in [-2,-1,0,1,5,6]: s.cells[Vector2i(q,0)] = s.make_cell(0 if q < 0 else 1 if q >= 5 else -1)
 		s.cells[Vector2i(-2,0)].capital = 0
 		s.cells[Vector2i(5,0)].capital = 1
 		s.cells[Vector2i(-1,0)].unit = 3 if kind == "bear" else 2
@@ -387,7 +388,7 @@ func ai_hunting() -> void:
 		for bank in s.kingdoms.values(): bank.gold = 100
 		for backend in [planner,strategy]:
 			var action: Dictionary = backend.new(s,0).run()
-			expect(action.get("kind") == "move" and action.get("coord") == Vector2i.ZERO,"Both AI backends recognize a profitable reachable lair")
+			expect(action.get("kind") == "move" and action.get("coord") == Vector2i.ZERO,"Both AI backends recognize a profitable reachable %s lair (chosen %s)" % [kind,action])
 			var copy = Analysis_copy(s)
 			expect(not action.is_empty() and candidates.apply(copy,action,0),"AI lair-hunting commands pass authoritative validation")
 			expect(not copy.has_wildlife(Vector2i.ZERO),"AI clears the lair and receives its reward through normal movement")

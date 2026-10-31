@@ -26,7 +26,15 @@ func run() -> void:
 	await process_frame
 	var panel = app.menus.multiplayer_panel
 	expect(app.menus.main_panel.find_children("*","Button",true,false).any(func(node): return node.text == "Multiplayer"),"The main menu contains a separate Multiplayer option")
-	panel.load_config({"size":"small","count":6})
+	app.menus.show_screen(app.menus.Screen.MULTIPLAYER)
+	panel.load_config({"size":"very_large","count":10})
+	await process_frame
+	expect(panel.rows.size() == 10 and panel.config().slots.size() == 10,"Ten-seat setup preserves the entire roster")
+	expect(panel.roster_content.size.y > panel.roster_scroll.size.y,"Ten players use a scrollable roster inside the existing panel")
+	panel.roster_scroll.ensure_control_visible(panel.rows[9].name)
+	await process_frame
+	expect(panel.rows[9].name.get_global_rect().end.y <= panel.roster_scroll.get_global_rect().end.y,"The tenth seat is reachable by scrolling at minimum window size")
+	panel.load_config({"size":"medium","count":6})
 	app.menus.show_screen(app.menus.Screen.MULTIPLAYER)
 	await process_frame
 	expect(panel.visible and not app.menus.setup_panel.visible,"Multiplayer opens its own setup")
@@ -51,12 +59,12 @@ func run() -> void:
 	expect(panel.rows[5]["color"].selected == old,"Picking an occupied colour swaps seats")
 	var colors: Array = []
 	for row in panel.rows: colors.append(row["color"].selected)
-	expect(colors.duplicate().size() == 6 and unique(colors).size() == 6,"All six colours stay distinct")
+	expect(colors.duplicate().size() == 10 and unique(colors).size() == 10,"All ten colours stay distinct")
 	panel.shuffle_colors()
 	colors.clear()
 	for row in panel.rows: colors.append(row["color"].selected)
-	expect(unique(colors).size() == 6,"Shuffle colours preserves a unique palette")
-	panel.size_choice.select(0)
+	expect(unique(colors).size() == 10,"Shuffle colours preserves a unique palette")
+	panel.size_choice.select(1)
 	panel.refresh_counts()
 	expect(panel.count_choice.item_count == 5 and panel.count_choice.selected+2 == 6 and panel.rows[5]["name"].visible,"Small supports all six kingdoms")
 	for row in panel.rows: row["controller"].select(1)
@@ -128,7 +136,7 @@ func run() -> void:
 	var bad := Setup.normalize({"size":"missing","count":99,"slots":[{"color":5},{"color":5},{"color":-99},{"name":false,"difficulty":"impossible"}]})
 	colors.clear()
 	for seat in bad["slots"]: colors.append(seat["color"])
-	expect(unique(colors).size() == 6 and bad["size"] == "small", "Invalid persisted configurations recover without duplicate colours")
+	expect(unique(colors).size() == 4 and bad["size"] == "small", "Invalid persisted configurations recover without duplicate colours")
 	root.get_node("Gameplay").set_rules(initial_rules)
 	root.get_node("Sound").stop_all()
 	await create_timer(1.2).timeout

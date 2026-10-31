@@ -18,7 +18,6 @@ static func apply(rules, order: Dictionary, faction: int) -> Dictionary:
 		"spell": ok = rules.cast_spell(order.get("spell","trailblaze"),target,faction)
 		"entrench": ok = rules.entrench(target,faction)
 		"develop": ok = rules.develop(target,faction)
-		"dismantle": ok = rules.dismantle(target,faction)
 		"road": ok = rules.build_road(order.get("source",rules.NONE),target,faction)
 		"rename_settlement": ok = rules.rename_settlement(target,faction,order.get("name",""))
 		"relocate_capital": ok = rules.relocate_capital(target,faction)

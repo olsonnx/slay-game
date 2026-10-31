@@ -22,9 +22,13 @@ func run() -> void:
 		game.playback_speed.speed_held = true
 		await process_frame
 		var count := 0
-		while not game.tutorial.completed and count < 30:
+		while not game.tutorial.completed and count < 60:
 			count += 1
 			if game.tutorial.exercise_done:
+				game.tutorial.continue_lesson()
+				await process_frame
+				continue
+			if game.tutorial.reading_substeps():
 				game.tutorial.continue_lesson()
 				await process_frame
 				continue
@@ -72,9 +76,6 @@ func run() -> void:
 				"end_turn": await game.end_turn()
 				"inspect": await game.click_hex(target, "terrain")
 				"develop": game.develop_province()
-				"dismantle":
-					game.inspect_province(target)
-					game.dismantle_province()
 				"finance":
 					var tip = game.hud.gold_control._make_custom_tooltip(game.hud.gold_control.tooltip_text)
 					tip.free()

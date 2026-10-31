@@ -16,7 +16,7 @@ func cells_at(coords: Array, sites: Array) -> Dictionary:
 	for coord in coords:
 		cells[coord] = rules.make_cell(0)
 		cells[coord].kingdom = Vector2i.ZERO
-		if coord in sites: cells[coord].building = "house"
+		if coord in sites: cells[coord].building = "city"
 	return cells
 func adjacency(edges: Dictionary) -> Dictionary:
 	var graph := {}
@@ -37,47 +37,59 @@ func reachable(graph: Dictionary, start: Vector2i) -> Dictionary:
 				visited[next] = true
 				pending.append(next)
 	return visited
+func fixture(coords: Array, sites: Array):
+	var model = Rules.new()
+	model.cells = cells_at(coords,sites)
+	model.cells[coords[0]].capital = 0
+	model.cells[coords[0]].building = ""
+	model.rebuild_kingdoms()
+	for bank in model.kingdoms.values(): bank.gold = 10000
+	return model
 func run() -> void:
 	var start := Vector2i.ZERO
-	var finish := Vector2i(2, -1)
-	var diamond := cells_at([start,Vector2i(1,0),Vector2i(1,-1),finish], [start,finish])
-	var edges := Roads.network(diamond)
-	expect(edges.size() == 2 and reachable(adjacency(edges), start).has(finish), "Equal-length alternatives produce one shortest route instead of a loop")
+	var finish := Vector2i(2,-1)
+	var diamond = fixture([start,Vector2i(1,0),Vector2i(1,-1),finish],[start,finish])
+	expect(Roads.network(diamond.cells).is_empty(),"Structures do not create free automatic roads")
+	var quoted: Array = diamond.road_targets(start,0)[finish].path
+	expect(diamond.build_road(start,finish,0),"Player can purchase a shortest connection across equal-length alternatives")
+	var edges := Roads.network(diamond.cells)
+	expect(edges.size() == 2 and reachable(adjacency(edges),start).has(finish),"Purchased diamond connection follows one route without an extra branch")
+	for index in range(quoted.size()-1):
+		expect(reachable(adjacency(edges),quoted[index]).has(quoted[index+1]),"Rendered connection retains the quoted route")
 	var reversed := {}
-	var keys: Array = diamond.keys()
+	var keys: Array = diamond.cells.keys()
 	keys.reverse()
-	for coord in keys: reversed[coord] = diamond[coord]
-	expect(Roads.network(reversed) == edges, "Route selection is independent of dictionary insertion order")
-	var sites := [Vector2i.ZERO,Vector2i(1,0),Vector2i(0,1)]
-	expect(Roads.network(cells_at(sites,sites)).size() == 2, "Three adjacent structures connect without a triangular road loop")
+	for coord in keys: reversed[coord] = diamond.cells[coord]
+	expect(Roads.network(reversed) == edges,"Rendering is independent of cell insertion order")
+	var triangle = fixture([start,Vector2i(1,0),Vector2i(0,1)],[start,Vector2i(1,0),Vector2i(0,1)])
+	expect(triangle.build_road(start,Vector2i(1,0),0) and triangle.build_road(start,Vector2i(0,1),0),"Two adjoining connections can be purchased independently")
+	expect(Roads.network(triangle.cells).size() == 2,"Adjacent paved endpoints do not invent an unpurchased third edge")
 	var line: Array = []
 	for x in range(9): line.append(Vector2i(x,0))
-	sites = [Vector2i.ZERO,Vector2i(1,0),Vector2i(7,0),Vector2i(8,0)]
-	edges = Roads.network(cells_at(line,sites))
-	expect(edges.size() == 8 and reachable(adjacency(edges), start).has(sites.back()), "Separate pairs of nearby buildings join one shared network")
-	# A dense set of structures exercises branch sharing and equal paths.
-	var coords: Array = []
-	sites = []
-	for q in range(-4,5):
-		for r in range(-4,5):
-			if Grid.distance(Vector2i.ZERO,Vector2i(q,r)) > 4: continue
-			coords.append(Vector2i(q,r))
-			if posmod(q * 3 + r, 4) == 0: sites.append(Vector2i(q,r))
-	var cells := cells_at(coords, sites)
-	edges = Roads.network(cells)
-	var graph := adjacency(edges)
-	var connected := reachable(graph, sites[0])
-	expect(edges.size() == graph.size() - 1, "The shared network is a tree, giving a unique route between every connected pair")
-	for site in sites: expect(connected.has(site), "All reachable structures belong to the same road network")
-	var shuffled := coords.duplicate()
-	shuffled.reverse()
-	expect(Roads.network(cells_at(shuffled,sites)) == edges, "Dense tied routes stay stable when land order changes")
-	var disjoint := cells_at([start, Vector2i(1,0), Vector2i(5,0), Vector2i(6,0)], [start, Vector2i(1,0), Vector2i(5,0), Vector2i(6,0)])
-	edges = Roads.network(disjoint)
-	expect(edges.size() == 2, "Disconnected land keeps separate trees without crossing water")
-	diamond[Vector2i(1,0)].mountain = true
-	expect(Roads.network(diamond).size() == 2, "A blocked alternative leaves one valid detour")
-	diamond[Vector2i(1,-1)].mountain = true
-	expect(Roads.network(diamond).is_empty(), "Blocked structures have no road through mountains")
-	print("Kingdom road checks: %d passed, %d failed" % [checks - failures, failures])
+	var model = fixture(line,[start,Vector2i(1,0),Vector2i(7,0),Vector2i(8,0)])
+	model.build_road(start,Vector2i(1,0),0)
+	model.build_road(Vector2i(7,0),Vector2i(8,0),0)
+	edges = Roads.network(model.cells)
+	expect(edges.size() == 2 and not reachable(adjacency(edges),start).has(Vector2i(8,0)),"Separate purchased segments remain separate until connected")
+	expect(model.build_road(start,Vector2i(8,0),0),"Player can connect the two existing paved sections")
+	edges = Roads.network(model.cells)
+	expect(edges.size() == 8 and reachable(adjacency(edges),start).has(Vector2i(8,0)),"The combined network renders the purchased shared route")
+	model.cells[Vector2i(4,0)].owner = 1
+	edges = Roads.network(model.cells)
+	expect(not reachable(adjacency(edges),start).has(Vector2i(8,0)),"Captured road land interrupts the friendly network")
+	var disjoint = fixture([start,Vector2i(1,0),Vector2i(5,0),Vector2i(6,0)],[start,Vector2i(1,0),Vector2i(5,0),Vector2i(6,0)])
+	expect(disjoint.build_road(start,Vector2i(1,0),0) and disjoint.build_road(Vector2i(5,0),Vector2i(6,0),0),"Each disconnected kingdom can buy its own local connection")
+	expect(not disjoint.build_road(start,Vector2i(6,0),0) and Roads.network(disjoint.cells).size() == 2,"Road construction does not cross missing water tiles")
+	model = fixture([start,Vector2i(1,0),Vector2i(1,-1),finish],[start,finish])
+	model.cells[Vector2i(1,0)].mountain = true
+	expect(model.build_road(start,finish,0) and Roads.network(model.cells).size() == 2,"Paid connections detour around a blocked alternative")
+	model = fixture([start,Vector2i(1,0),Vector2i(1,-1),finish],[start,finish])
+	model.cells[Vector2i(1,0)].mountain = true
+	model.cells[Vector2i(1,-1)].mountain = true
+	expect(not model.build_road(start,finish,0) and Roads.network(model.cells).is_empty(),"Blocked structures cannot purchase a road through mountains")
+	# Early authored road tiles lack edge records and retain their adjacency rule.
+	var legacy := cells_at([start,Vector2i(1,0)],[])
+	for cell in legacy.values(): cell.road = true
+	expect(Roads.network(legacy).size() == 1,"Legacy paved tiles remain readable without explicit edge records")
+	print("Kingdom road checks: %d passed, %d failed" % [checks-failures,failures])
 	quit(1 if failures else 0)

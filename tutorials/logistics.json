@@ -1,5 +1,6 @@
 {
-	"category": "conquest",
+	"category": "logistics",
+	"description": "Build forward cities, recruit nearby and connect useful roads.",
 	"format": "slay-tutorial",
 	"map": {
 		"cells": [
@@ -210,7 +211,7 @@
 				"r": 0,
 				"road": false,
 				"tree": false,
-				"unit": 2,
+				"unit": 0,
 				"value": 2
 			},
 			{
@@ -241,22 +242,7 @@
 				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
-			},
-			{
-				"building": "city",
-				"capital": -1,
-				"event": "",
-				"grave": false,
-				"mana_source": false,
-				"mountain": false,
-				"owner": 1,
-				"q": 1,
-				"r": 0,
-				"road": false,
-				"tree": false,
-				"unit": 1,
-				"value": 1
+				"value": 2
 			},
 			{
 				"building": "",
@@ -265,13 +251,208 @@
 				"grave": false,
 				"mana_source": false,
 				"mountain": false,
-				"owner": -1,
+				"owner": 0,
+				"q": 1,
+				"r": 0,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "tower",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
 				"q": 1,
 				"r": 1,
 				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 1
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": 2,
+				"r": -1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": 2,
+				"r": 0,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": 2,
+				"r": 1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": 3,
+				"r": -1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": 3,
+				"r": 0,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": 3,
+				"r": 1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": 4,
+				"r": -1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": 4,
+				"r": 0,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": 4,
+				"r": 1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": 5,
+				"r": -1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": 5,
+				"r": 0,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": 5,
+				"r": 1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
 			},
 			{
 				"building": "",
@@ -281,8 +462,8 @@
 				"mana_source": false,
 				"mountain": false,
 				"owner": 1,
-				"q": 2,
-				"r": -1,
+				"q": 7,
+				"r": 0,
 				"road": false,
 				"tree": false,
 				"unit": 0,
@@ -296,22 +477,7 @@
 				"mana_source": false,
 				"mountain": false,
 				"owner": 1,
-				"q": 2,
-				"r": 0,
-				"road": false,
-				"tree": false,
-				"unit": 0,
-				"value": 1
-			},
-			{
-				"building": "",
-				"capital": -1,
-				"event": "",
-				"grave": false,
-				"mana_source": false,
-				"mountain": false,
-				"owner": 1,
-				"q": 3,
+				"q": 8,
 				"r": 0,
 				"road": false,
 				"tree": false,
@@ -398,14 +564,11 @@
 	"steps": [
 		{
 			"details": {
-				"source": [
-					0,
-					0
-				]
+				"building": "city"
 			},
 			"exercise": "logistics",
-			"id": "approach",
-			"kind": "move",
+			"id": "forward_city",
+			"kind": "build",
 			"setup": {
 				"cells": [
 					{
@@ -615,7 +778,7 @@
 						"r": 0,
 						"road": false,
 						"tree": false,
-						"unit": 2,
+						"unit": 0,
 						"value": 2
 					},
 					{
@@ -646,22 +809,7 @@
 						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "city",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 1,
-						"r": 0,
-						"road": false,
-						"tree": false,
-						"unit": 1,
-						"value": 1
+						"value": 2
 					},
 					{
 						"building": "",
@@ -670,13 +818,208 @@
 						"grave": false,
 						"mana_source": false,
 						"mountain": false,
-						"owner": -1,
+						"owner": 0,
+						"q": 1,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "tower",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
 						"q": 1,
 						"r": 1,
 						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 1
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 2,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 2,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 2,
+						"r": 1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 3,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 3,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 3,
+						"r": 1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 4,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 4,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 4,
+						"r": 1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 5,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 5,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 5,
+						"r": 1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
 					},
 					{
 						"building": "",
@@ -686,8 +1029,8 @@
 						"mana_source": false,
 						"mountain": false,
 						"owner": 1,
-						"q": 2,
-						"r": -1,
+						"q": 7,
+						"r": 0,
 						"road": false,
 						"tree": false,
 						"unit": 0,
@@ -701,22 +1044,7 @@
 						"mana_source": false,
 						"mountain": false,
 						"owner": 1,
-						"q": 2,
-						"r": 0,
-						"road": false,
-						"tree": false,
-						"unit": 0,
-						"value": 1
-					},
-					{
-						"building": "",
-						"capital": -1,
-						"event": "",
-						"grave": false,
-						"mana_source": false,
-						"mountain": false,
-						"owner": 1,
-						"q": 3,
+						"q": 8,
 						"r": 0,
 						"road": false,
 						"tree": false,
@@ -799,59 +1127,122 @@
 				"version": 1
 			},
 			"target": [
-				1,
+				3,
 				0
 			],
-			"task": "Take the defended city",
-			"text": "Click the blue-ringed Soldier, then the gold-ringed enemy Scout in the city. Strength 2 beats strength 1; capturing defended land requires greater strength. Soldiers move 4 hexes, but this capture spends the action.",
-			"title": "Take the defended city"
+			"task": "Build a forward city",
+			"text": "Choose City in Build, then the marked province. A city costs 25 G and adds no income. It recruits on its own tile and all neighboring owned land. Captured cities survive and serve their new owner.",
+			"title": "Build a forward city"
+		},
+		{
+			"details": {
+				"tier": 3
+			},
+			"exercise": "logistics",
+			"id": "rear_knight",
+			"kind": "recruit",
+			"target": [
+				-3,
+				0
+			],
+			"task": "Recruit beside your capital",
+			"text": "Choose Knight in Recruit. The green area marks legal recruitment and upgrade tiles. Recruit on the marked tile next to your capital. New recruits can move immediately; Knights normally move 3 hexes.",
+			"title": "Recruit beside your capital"
+		},
+		{
+			"details": {
+				"source": [
+					-4,
+					0
+				]
+			},
+			"exercise": "logistics",
+			"id": "supply_road",
+			"kind": "road",
+			"target": [
+				3,
+				0
+			],
+			"task": "Connect your capital and city",
+			"text": "Click the blue-ringed capital to open its details, then press the road icon. Hover over the gold-ringed city to see the route and total cost; click to build. New pavement costs 1 G per tile, including the endpoints. Existing pavement is free. Roads cannot be removed.",
+			"title": "Connect your capital and city"
+		},
+		{
+			"allow_turns": false,
+			"condition_mode": "all",
+			"confirm": false,
+			"count": 1,
+			"details": {
+				"source": [
+					-3,
+					0
+				]
+			},
+			"exercise": "logistics",
+			"id": "road_march",
+			"kind": "move",
+			"restrict_actions": true,
+			"target": [
+				3,
+				0
+			],
+			"task": "March along the road",
+			"text": "Select your new Knight beside the capital and move it to the marked city. Connected friendly road steps cost half a movement point, so this six-hex march fits the Knight's range of 3. Bridges and attacks still cost a full point.",
+			"title": "March along the road",
+			"wildlife_turn": false
 		},
 		{
 			"details": {
 				"tier": 1
 			},
 			"exercise": "logistics",
-			"id": "captured_city_recruit",
+			"id": "forward_recruit",
 			"kind": "recruit",
 			"target": [
-				1,
-				-1
+				4,
+				0
 			],
-			"task": "Use the captured city",
-			"text": "The city survived and now recruits for you. Open Recruit, choose Scout, and click the gold-ringed friendly tile beside it. The new Scout is ready immediately even though the Soldier that captured the city is spent.",
-			"title": "Use the captured city"
+			"task": "Recruit beside the forward city",
+			"text": "Choose Scout and use the marked tile beside your city. The recruitment area has expanded to this front. Cities provide a place to deploy, not extra income; development pays for your armies.",
+			"title": "Recruit beside the forward city"
 		},
 		{
 			"details": {
-
+				"source": [
+					4,
+					0
+				]
 			},
 			"exercise": "logistics",
-			"id": "ready",
-			"kind": "end_turn",
-			"target": null,
-			"task": "End turn",
-			"text": "Commitment matters: the Soldier must wait for its next turn to attack again.",
-			"title": "End turn"
+			"id": "fresh_march",
+			"kind": "move",
+			"target": [
+				5,
+				0
+			],
+			"task": "Move the fresh Scout",
+			"text": "Move the Scout you just recruited to the marked province. You do not need to end the turn first. Scouts move 5 hexes, Soldiers 4, and Knights 3; a normal move order spends the unit's action.",
+			"title": "Move the fresh Scout"
 		},
 		{
 			"details": {
 				"source": [
 					1,
-					0
+					1
 				]
 			},
 			"exercise": "logistics",
-			"id": "capital",
-			"kind": "move",
+			"id": "road_junction",
+			"kind": "road",
 			"target": [
-				2,
+				0,
 				0
 			],
-			"task": "Capture the enemy capital",
-			"text": "Click the blue-ringed Soldier, then the gold-ringed capital. Capturing it destroys that treasury's stored gold and makes neighboring provinces from that kingdom surrender. You win a normal match when no enemy capitals remain.",
-			"title": "Capture the enemy capital"
+			"task": "Connect a tower to the road",
+			"text": "Click the blue-ringed tower and press the road icon in its details. Hover over the gold-ringed road tile, check the cost, then click. A road starts at a friendly structure and ends at a friendly structure or existing road tile. Empty unpaved land is not an endpoint.",
+			"title": "Connect a tower to the road"
 		}
 	],
-	"title": "Taking enemy territory",
+	"title": "Cities and supply lines",
 	"version": 1
 }

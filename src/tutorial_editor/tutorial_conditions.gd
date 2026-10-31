@@ -36,6 +36,8 @@ static func check(rules, round_number: int, condition: Dictionary) -> bool:
 				if bank.owner == faction: total += bank.gold
 			return total >= int(value)
 		"owner": return not cell.is_empty() and cell.owner == int(value)
+		"isolated": return not cell.is_empty() and cell.unit > 0 and rules.unit_faction(at) == faction and rules.unit_kingdom(at).is_empty()
+		"no_unit": return not cell.is_empty() and cell.unit == 0
 		"unit": return not cell.is_empty() and cell.unit >= int(value) and rules.unit_faction(at) == faction
 		"building": return not cell.is_empty() and (cell.get("road",false) if value == "road" else cell.building == value)
 		"value": return not cell.is_empty() and cell.value >= int(value)

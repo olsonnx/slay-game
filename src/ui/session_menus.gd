@@ -13,6 +13,7 @@ signal show_map_requested
 signal results_requested
 signal editor_requested
 signal replays_requested
+signal collection_requested
 signal onboarding_finished
 
 const Hud = preload("res://src/ui/game_hud.gd")
@@ -103,7 +104,7 @@ func _ready() -> void:
 	campaign_button.tooltip_text = Loc.text("Campaign is coming in a future update.")
 	button(main_panel, "Multiplayer", 214, func(): show_screen(Screen.MULTIPLAYER))
 	button(main_panel, "Tutorial", 270, func(): show_screen(Screen.TUTORIAL))
-	collection_button = button(main_panel, "Collection", 326, func(): show_screen(Screen.COLLECTION))
+	collection_button = button(main_panel, "Collection", 326, func(): collection_requested.emit())
 	build_main_utilities()
 	build_profile_ui()
 	version_label = Label.new()
@@ -138,7 +139,7 @@ func _ready() -> void:
 	kingdom_choice = preload("res://src/ui/tooltip_widgets.gd").Choice.new()
 	kingdom_choice.position = Vector2(24, 176)
 	kingdom_choice.size = Vector2(208, 44)
-	kingdom_choice.tooltip_text = Loc.text("Starting kingdoms Ă‚Â· includes yours\nAll sizes: 2Ă˘â‚¬â€ś6")
+	kingdom_choice.tooltip_text = Loc.text("Starting kingdoms, including yours. The maximum depends on map size.")
 	Sound.bind_button(kingdom_choice)
 	setup_panel.add_child(kingdom_choice)
 	refresh_kingdom_choices()
@@ -329,7 +330,8 @@ func refresh_kingdom_choices() -> void:
 	size_choice.tooltip_text = MapSizes.tile_tooltip(size_choice.get_selected_metadata())
 	if setup_hint != null:
 		var warning := MapSizes.size_warning(size_choice.get_selected_metadata())
-		setup_hint.text = Loc.text("Your kingdom against computer opponents.") if warning == "" else warning
+		setup_hint.text = warning
+		setup_hint.visible = warning != ""
 		setup_hint.add_theme_color_override("font_color",Color("adbdaf") if warning == "" else Color("efc885"))
 	var count: int = MapSizes.DEFAULT_KINGDOMS if kingdom_choice.item_count == 0 else kingdom_choice.get_selected_metadata()
 	count = MapSizes.clamp_kingdom_count(size_choice.get_selected_metadata(), count)
@@ -409,15 +411,11 @@ func build_profile_ui() -> void:
 	profile_panel.cancelled.connect(func():
 		if profile_panel.required: quit_requested.emit()
 		else: show_screen(Screen.MAIN))
-	welcome_panel = centered_panel(394)
-	Hud.label_at(welcome_panel, "Start with the tutorial", Vector2(24, 24), 26)
-	var advice := Hud.label_at(welcome_panel, "", Vector2(24, 80), 16)
-	advice.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	advice.text = Loc.text("We strongly recommend playing the tutorial before your first match. Learn how kingdoms, armies and the economy work through short, playable lessons.\n\nYou can revisit every lesson from the main menu.")
-	advice.size = Vector2(432, 132)
-	button(welcome_panel, "Play tutorial", 258, func(): finish_welcome(true), true)
-	button(welcome_panel, "Skip for now", 322, func(): finish_welcome(false))
-	welcome_status = Hud.label_at(welcome_panel, "", Vector2(24, 228), 12, Color("dfa08b"))
+	welcome_panel = centered_panel(236)
+	Hud.label_at(welcome_panel, "Play tutorial?", Vector2(24, 24), 26)
+	button(welcome_panel, "Play tutorial", 100, func(): finish_welcome(true), true)
+	button(welcome_panel, "Skip for now", 164, func(): finish_welcome(false))
+	welcome_status = Hud.label_at(welcome_panel, "", Vector2(24, 70), 12, Color("dfa08b"))
 	SteamOnline.changed.connect(refresh_profile_badge)
 	PlayerProfile.changed.connect(refresh_profile_badge)
 	refresh_profile_badge()

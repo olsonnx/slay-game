@@ -73,6 +73,7 @@ var initial_kingdom_count := 0
 var initial_difficulty := "normal"
 var deferred_startup := false
 var startup_timings: Dictionary = {}
+var opening_camera_faction := -1
 var prepared_level_document = null
 var province_view
 var playback_kingdoms: Dictionary = {}
@@ -103,6 +104,7 @@ func _ready() -> void:
 	presenter = preload("res://src/ui/game_presenter.gd").new(session, hud, view, presentation_actions())
 	view.action_started.connect(_on_visual_action_started)
 	view.action_finished.connect(_on_visual_action_finished)
+	view.motion_stage.connect(_on_visual_motion_stage)
 	view.wildlife.world_action_started.connect(_on_world_action_started)
 	view.visible_board_changed.connect(_on_visible_board_changed)
 	view.visible_board_changed.connect(presenter.invalidate_tip)
@@ -134,7 +136,6 @@ func _ready() -> void:
 	province_view.develop_requested.connect(develop_province)
 	province_view.entrench_requested.connect(entrench_province)
 	province_view.relocate_requested.connect(relocate_province_capital)
-	province_view.dismantle_requested.connect(dismantle_province)
 	province_view.road_requested.connect(begin_road)
 	province_view.rename_requested.connect(rename_province)
 	province_view.close_requested.connect(close_province)
@@ -298,7 +299,7 @@ func _process(delta: float) -> void:
 	if inspecting_results_map: return
 	advance_view_press(delta)
 	toast_time = maxf(0, toast_time - delta)
-	hud.toast_panel.visible = toast_time > 0 or game_over
+	hud.toast_panel.visible = not message.strip_edges().is_empty() and (toast_time > 0 or game_over)
 	if view.level_transitioning or completion_started:
 		view.clear_unit_hover()
 		return
@@ -344,8 +345,8 @@ func _unhandled_input(event: InputEvent) -> void:
 func announce(text_value: String) -> void:
 	message = text_value
 	UiTheme.fit_text_panel(hud.toast_panel, hud.notice_label, text_value, Vector2(14, 8))
-	toast_time = 4.0
-	hud.toast_panel.visible = true
+	toast_time = 0.0 if text_value.strip_edges().is_empty() else 4.0
+	hud.toast_panel.visible = toast_time > 0
 
 func click_hex(coord: Vector2i, hit_kind := "auto") -> void:
 	if network_match != null and network_match.route_click(coord): return
@@ -387,16 +388,6 @@ func develop_province() -> void:
 		Sound.play(&"gold_develop")
 		refresh_ui()
 		report_tutorial_action("develop",session.selection.inspected_hex)
-
-func dismantle_province() -> void:
-	if network_match != null and not network_match.executing:
-		network_match.submit({"kind":"dismantle", "coord":session.selection.inspected_hex})
-		return
-	if commands_locked() or not tutorial_permits("dismantle", session.selection.inspected_hex): return
-	if session.rules.dismantle(session.selection.inspected_hex, session.player_faction):
-		view.render_cells(cells)
-		refresh_ui()
-		report_tutorial_action("dismantle", session.selection.inspected_hex)
 
 func rename_province(coord: Vector2i, text: String) -> void:
 	if network_match != null and not network_match.executing:
@@ -594,7 +585,7 @@ func play_level_departure() -> void:
 	closing = true
 	reset_camera_gesture()
 	hud.ui_root.hide()
-	view.stop_camera_pan()
+	view.navigation.stop_camera_pan(true,true)
 	if completion_started and not view.island_transition.entering:
 		while view.level_transitioning:
 			await get_tree().process_frame
@@ -614,6 +605,18 @@ func _on_level_transition_finished() -> void:
 	if not closing:
 		refresh_ui()
 		if is_hotseat(): follow_active_faction(true)
+
+func begin_opening_camera(faction := -1) -> void:
+	if closing or tutorial != null: return
+	opening_camera_faction = player_faction if faction < 0 else faction
+	focus_starting_country()
+
+func focus_starting_country() -> void:
+	if closing or game_over: return
+	var points: Array[Vector3] = []
+	for coord in cells:
+		if cells[coord].owner == opening_camera_faction: points.append(view.coord_position(coord))
+	view.navigation.frame_starting_country(points)
 
 func open_shop(kind: String) -> void:
 	presenter.open_shop(kind)
@@ -820,8 +823,18 @@ func _on_audio_save_failed(_error: Error) -> void:
 	if is_inside_tree():
 		announce(Loc.text("Sound settings could not be saved."))
 
+func _on_visual_motion_stage(action: Dictionary, stage: String) -> void:
+	if closing or stage not in ["impact", "blocked"]:
+		return
+	if not action.has("target"): return
+	var position: Vector3 = view.coord_position(action.target)
+	if action.get("kind", "") in ["attack", "blocked_attack", "knight_duel"]:
+		Sound.play_at(&"sword_slash", position, view.camera)
+	if stage == "impact" and action.get("capture", false) and action.get("before_target", {}).get("capital", -1) >= 0:
+		Sound.play_at(&"capital_collapse", position, view.camera)
+
 func _on_visual_action_finished(action: Dictionary) -> void:
-	if not closing and action["kind"] in ["move", "attack", "merge", "blocked_attack", "knight_duel"]:
+	if not closing and action["kind"] in ["move", "merge"]:
 		Sound.play(&"action_place")
 
 func reset_camera_gesture() -> void:
@@ -844,7 +857,7 @@ func shutdown() -> void:
 	view.clear_unit_hover()
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	reset_camera_gesture()
-	view.stop_camera_pan()
+	view.navigation.stop_camera_pan(true,true)
 	view.cancel_level_transition()
 	view.set_active(false)
 	for child in view.get_children():

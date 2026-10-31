@@ -2,9 +2,10 @@ extends RefCounted
 ## Small authored practice positions. Each exercise declares its own starting board.
 const Rules = preload("res://src/game/kingdom_rules.gd")
 const Level = preload("res://src/editor/level_document.gd")
-const FIRST := {"armies":"opening","economy":"budget","construction":"city","conquest":"capital","magic":"trail","exploration":"chest","practice":"practice"}
+const FIRST := {"armies":"opening","economy":"budget","construction":"city","magic":"trail","exploration":"chest","practice":"practice"}
 
 static func map_data(category: String) -> Dictionary:
+	if category == "encirclement": return preload("res://src/game/encirclement_tutorial.gd").map_data()
 	if category != "practice": return preload("res://src/game/logistics_tutorial.gd").map_data(category)
 	return position(FIRST.get(category,"opening"))
 

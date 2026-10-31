@@ -2,17 +2,19 @@ extends RefCounted
 ## Serializable authoring document; vectors are encoded as [q, r] in files.
 const Level = preload("res://src/editor/level_document.gd")
 const NONE := Vector2i(999,999)
-const ACTIONS := ["continue","any","recruit","move","build","spell","end_turn","select","inspect","develop","entrench","relocate_capital","dismantle","road","rename_settlement","event","view","heatmap","stats","finance","status","kingdom","animal"]
-const PREDICATES := ["owner","unit","building","gold","mana","round","victory","value","clear","entrenched","territory","income"]
+const ACTIONS := ["read","continue","any","recruit","move","build","spell","end_turn","select","inspect","develop","entrench","relocate_capital","road","rename_settlement","event","view","heatmap","stats","finance","status","kingdom","animal"]
+const TILE_ACTIONS := ["recruit","move","build","spell","select","inspect","develop","entrench","relocate_capital","road","rename_settlement","kingdom","animal"]
+const PREDICATES := ["owner","unit","building","gold","mana","round","victory","value","clear","entrenched","isolated","no_unit","territory","income"]
 const ORDERS := ["move","recruit","build","spell","entrench","develop"]
+const MAX_SUBSTEPS := 20
 const MAX_BYTES := 8000000
-const CATEGORIES := ["armies","economy","construction","logistics","conquest","magic","exploration","practice"]
+const CATEGORIES := ["armies","encirclement","economy","construction","logistics","magic","exploration","practice"]
 var data: Dictionary = {}
 var path := ""
 var saved := ""
 
 static func new_step() -> Dictionary:
-	return {"id":"step_1","title":"New step","text":"","task":"","kind":"continue","target":null,"details":{},"conditions":[],"condition_mode":"all","restrict_actions":false,"opponent":[]}
+	return {"id":"step_1","title":"New step","text":"","task":"","kind":"read","target":null,"details":{},"conditions":[],"condition_mode":"all","restrict_actions":false,"opponent":[]}
 
 static func encode(value: Variant) -> Variant:
 	if value is Vector2i: return null if value == NONE else [value.x,value.y]
@@ -56,10 +58,16 @@ static func validate(value: Variant) -> String:
 		if not step is Dictionary: return prefix + "Invalid step."
 		for field in ["id","title","text","task"]:
 			if not step.get(field) is String or step[field].length() > {"id":80,"title":100,"text":4000,"task":160}[field]: return prefix + "Invalid " + field
+		if not step.get("substeps",[]) is Array or step.get("substeps",[]).size() > MAX_SUBSTEPS: return prefix + "Use up to %d reading sub-steps." % MAX_SUBSTEPS
+		for page in step.get("substeps",[]):
+			if not page is Dictionary or not page.get("title","") is String or page.get("title","").length() > 100 or not page.get("text") is String or page.text.length() > 4000: return prefix + "Each reading sub-step needs text (up to 4000 characters) and an optional heading (up to 100)."
+			for key in page:
+				if key not in ["title","text"]: return prefix + "Reading sub-steps only contain a heading and text."
 		if step.id.strip_edges().is_empty() or ids.has(step.id): return prefix + "Step IDs must be unique and nonempty."
 		if not step.get("exercise",step.id) is String: return prefix + "Exercise must have a name."
 		if not integer(step.get("count",1),1,20): return prefix + "Objective count must be between 1 and 20."
 		if not step.get("wildlife_turn",false) is bool: return prefix + "Wildlife turn must be a checkbox."
+		if not step.get("read_before_action",false) is bool: return prefix + "Read before actions must be a checkbox."
 		if not step.get("allow_turns",false) is bool: return prefix + "Turn permission must be a checkbox."
 		if step.has("setup"):
 			var setup_error := Level.new().read_data(step.setup)
@@ -83,6 +91,18 @@ static func validate(value: Variant) -> String:
 				_: return prefix + "Unknown objective criterion."
 		ids[step.id] = true
 		if step.get("kind") not in ACTIONS or not valid_coord(step.get("target")): return prefix + "Invalid action or target coordinates."
+		if step.kind == "read":
+			if step.get("target") != null or step.get("conditions",[]) != [] or step.get("criteria",{}) != {} or step.get("details",{}) != {} or step.get("count",1) != 1 or step.get("restrict_actions",false) or step.get("confirm",false) or step.get("allow_turns",false) or step.get("wildlife_turn",false):
+				return prefix + "No-condition steps must only wait for Continue. Remove action options and board conditions."
+		if step.has("targets"):
+			if step.kind not in TILE_ACTIONS or step.get("target") != null: return prefix + "Use either a single target or an area for a tile action."
+			if not step.targets is Array or step.targets.is_empty() or step.targets.size() > Level.MAX_CELLS: return prefix + "Select at least one hex for the target area (up to %d)." % Level.MAX_CELLS
+			var seen_targets := {}
+			for target in step.targets:
+				if target == null or not valid_coord(target): return prefix + "Invalid target area coordinates."
+				var at := coord(target)
+				if seen_targets.has(at): return prefix + "Target area contains duplicate hexes."
+				seen_targets[at] = true
 		if not valid_coord(step.get("highlight")): return prefix + "Invalid highlight tile."
 		if not valid_coord(step.get("focus")): return prefix + "Invalid camera focus tile."
 		if not step.get("details",{}) is Dictionary: return prefix + "Invalid action options."
@@ -93,7 +113,7 @@ static func validate(value: Variant) -> String:
 		if not step.get("conditions",[]) is Array or step.get("conditions",[]).size() > 30: return prefix + "Too many conditions."
 		for condition in step.get("conditions",[]):
 			if not condition is Dictionary or condition.get("type") not in PREDICATES or not valid_coord(condition.get("target")): return prefix + "Invalid board condition."
-			if condition.type in ["owner","unit","building","value","clear","entrenched"] and condition.get("target") == null: return prefix + "This board condition needs a tile."
+			if condition.type in ["owner","unit","building","value","clear","entrenched","isolated","no_unit"] and condition.get("target") == null: return prefix + "This board condition needs a tile."
 			if not integer(condition.get("faction",0),-1 if condition.type == "victory" else 0,rules.faction_count-1): return prefix + "Invalid condition faction."
 			if condition.type == "building":
 				if condition.get("value") not in ["","city","tower","bridge","road"]: return prefix + "Unknown condition building."
@@ -171,7 +191,13 @@ func dirty() -> bool:
 func runtime_steps() -> Array:
 	var result: Array = data.steps.duplicate(true)
 	for step in result:
+		# Reading is an explicit authoring preset for the existing Continue behavior.
+		if step.kind == "read":
+			step.kind = "continue"
+			step.read_before_action = true
 		step.target = coord(step.get("target"))
+		if step.has("targets"):
+			step.targets = step.targets.map(func(value): return coord(value))
 		if step.has("highlight"): step.highlight = coord(step.highlight)
 		if step.has("focus"): step.focus = coord(step.focus)
 		if step.get("details",{}).has("source"): step.details.source = coord(step.details.source)
@@ -191,3 +217,16 @@ func level_data() -> Dictionary:
 	result["tutorial_require_victory"] = data.get("require_victory",true)
 	result["tutorial_custom"] = true
 	return result
+
+static func target_matches(step: Dictionary, at: Vector2i) -> bool:
+	if step.has("targets"):
+		for target in step.targets:
+			if coord(target) == at: return true
+		return false
+	var target := coord(step.get("target"))
+	return target == NONE or target == at
+
+static func target_hexes(step: Dictionary) -> Array:
+	if step.has("targets"): return step.targets.map(func(value): return coord(value))
+	var target := coord(step.get("target"))
+	return [] if target == NONE else [target]

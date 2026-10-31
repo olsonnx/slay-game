@@ -18,10 +18,10 @@ func unique(values: Array) -> Array:
 func run() -> void:
 	expect(Catalog.FACTIONS.size() == 12 and unique(Catalog.FACTIONS).size() == 12, "Twelve different kingdoms are available")
 	expect(unique(Catalog.TERRAIN_COLORS).size() == 12 and unique(Catalog.UI_COLORS).size() == 12, "Every kingdom has its own terrain and UI colors")
-	for size_id in Sizes.IDS: expect(Sizes.MAX_KINGDOMS[size_id] == 6, "Map kingdom limits remain unchanged")
+	for index in range(Sizes.IDS.size()): expect(Sizes.MAX_KINGDOMS[Sizes.IDS[index]] == [4,6,8,10,10][index], "Palette availability preserves the map-specific nation caps")
 	for color in range(12):
-		for count in [2,6]:
-			var setup := Setup.quick_play("small",count,"hard",color,42,"modern")
+		for count in [2,6,10]:
+			var setup := Setup.quick_play("very_large",count,"hard",color,42,"modern")
 			var colors: Array = setup.slots.map(func(seat): return seat.color)
 			expect(colors.size() == count and unique(colors).size() == count and colors[0] == color, "A chosen kingdom is honored without duplicate opponents")
 			expect(Setup.human_count(setup) == 1 and setup.slots[0].controller == "human", "Quick Play always keeps the human in seat zero")
@@ -32,8 +32,8 @@ func run() -> void:
 		random_choices.append(setup.slots[0].color)
 		expect(setup == Setup.quick_play("small",6,"normal",-1,seed_value,"modern"), "A seed reproduces the same random lineup")
 	expect(unique(random_choices).size() == 12, "Random can choose every kingdom, including all six new ones")
-	var normalized := Setup.normalize({"count":6,"slots":[{"color":11},{"color":10},{"color":11},{"color":99}]})
-	expect(normalized.slots[0].color == 11 and normalized.slots[1].color == 10 and unique(normalized.slots.map(func(seat): return seat.color)).size() == 6, "Multiplayer accepts new colors and still repairs duplicates")
+	var normalized := Setup.normalize({"size":"very_large","count":10,"slots":[{"color":11},{"color":10},{"color":11},{"color":99}]})
+	expect(normalized.slots[0].color == 11 and normalized.slots[1].color == 10 and unique(normalized.slots.map(func(seat): return seat.color)).size() == 10, "Multiplayer accepts new colors and still repairs duplicates")
 	var settings = root.get_node("Gameplay")
 	var settings_before := {"path":settings.settings_path,"kingdom":settings.quick_play_kingdom,"rules":settings.rule_mode}
 	settings.settings_path = "res://artifacts/kingdom-palette-settings.cfg"
@@ -60,8 +60,8 @@ func run() -> void:
 	expect(app.menus.player_kingdom_choice.item_count == 13 and app.menus.player_kingdom_choice.get_selected_metadata() == 11, "Quick Play shows Random and all twelve kingdoms, restoring the preference")
 	expect(root.get_visible_rect().encloses(app.menus.setup_panel.get_global_rect()), "The Quick Play panel fits the minimum viewport")
 	expect(app.menus.difficulty_choice.get_global_rect().position.x > app.menus.kingdom_choice.get_global_rect().end.x, "Kingdom count and difficulty controls do not overlap")
-	expect(app.menus.multiplayer_panel.rows[0].color.item_count == 12 and app.menus.multiplayer_panel.rows.size() == 6, "Multiplayer offers twelve colors while retaining six seats")
-	await app.start_new_game(42,"small","normal",6)
+	expect(app.menus.multiplayer_panel.rows[0].color.item_count == 12 and app.menus.multiplayer_panel.rows.size() == 10, "Multiplayer offers twelve colors across ten available seats")
+	await app.start_new_game(42,"medium","normal",6)
 	var game = app.game
 	var cells: Dictionary = game.cells.duplicate(true)
 	var colors: Array = game.view.COLORS.duplicate()
@@ -74,7 +74,7 @@ func run() -> void:
 	expect(recorded_factions.size() == 12 and Color.html(recorded_factions[0].color) == game.COLORS[0] and Color.html(recorded_factions[0].terrain) == game.view.COLORS[0], "Replay records the exact live UI and terrain palette, including spare kingdom identities")
 	var baseline = preload("res://src/game/kingdom_rules.gd").new()
 	baseline.rule_mode = "modern"
-	baseline.generate(42,"small",6)
+	baseline.generate(42,"medium",6)
 	expect(game.cells == baseline.cells and game.rules.rng.state == baseline.rng.state, "Palette selection leaves map generation and gameplay randomness untouched")
 	settings.set_quick_play_kingdom(6,false)
 	await app.restart_current_level()
@@ -93,13 +93,14 @@ func run() -> void:
 	expect(app.game.initial_match_config == Setup.quick_play("small",2,"normal",-1,44,"modern"), "Random resolves automatically for a fresh Quick Play match")
 	await app.return_to_main_menu()
 	var document = preload("res://src/editor/level_document.gd").new()
+	document.map_size = "medium"
 	document.cells = baseline.cells.duplicate(true)
 	for cell in document.cells.values():
 		cell["event"] = ""
 		cell.erase("treasure")
 	document.player_faction = 0
 	document.factions[0] = {"name":"Authored kingdom", "color":"234567ff", "terrain":"8b4567ff"}
-	await app.start_new_game(42, "small", "normal", 6, document.state())
+	await app.start_new_game(42, "medium", "normal", 6, document.state())
 	var authored_header: Dictionary = app.game.rules.replay_log.header
 	expect(authored_header.metadata.mode == "editor" and authored_header.metadata.map_title == document.title, "Authored replays retain their custom-map mode and title")
 	expect(authored_header.names[0] == "Authored kingdom" and authored_header.metadata.factions[0].color == "234567ff" and authored_header.metadata.factions[0].terrain == "8b4567ff", "Authored-map recordings capture their exact names, UI colors and terrain colors")

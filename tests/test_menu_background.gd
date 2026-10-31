@@ -122,6 +122,8 @@ func run() -> void:
 	background._on_frame_drawn()
 	expect(background.rendered_frames == counted, "FPS counter does not count a disabled background renderer")
 	background.viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS
+	var original_show_fps: bool = video.show_fps
+	video.set_preference(&"show_fps",true,false)
 	app.fps_counter.refresh()
 	expect(app.fps_counter.readout.text.contains("Menu:") and app.fps_counter.readout.visible, "FPS counter exposes both application and menu rates")
 	var toggle := InputEventKey.new()
@@ -131,6 +133,7 @@ func run() -> void:
 	expect(not app.fps_counter.readout.visible, "F3 hides the FPS overlay")
 	app.fps_counter._input(toggle)
 	background.set_process(true)
+	video.set_preference(&"show_fps",original_show_fps,false)
 	app.menus.show_screen(app.menus.Screen.SETUP)
 	expect(background.active, "Background remains active during New Game setup")
 	app.menus.open_options(app.menus.Screen.MAIN)
@@ -288,7 +291,7 @@ func check_shared_assets(map) -> void:
 		if original["owner"] >= 0 and decorated.get("owner") != original["owner"]: matches = false
 	expect(matches, "Cosmetic kingdoms preserve generated terrain, resources, capitals and original home territories")
 	var neutral := 0
-	var buildings := {"house":0, "tower":0}
+	var buildings := {"city":0, "tower":0}
 	var claimed := 0
 	for coord in generated["cells"]:
 		var cell: Dictionary = generated["cells"][coord]
@@ -300,7 +303,7 @@ func check_shared_assets(map) -> void:
 			buildings[cell["building"]] += 1
 			expect(cell["owner"] >= 0 and cell["capital"] < 0 and not cell["tree"] and not cell["mountain"], "Decorative buildings occupy clear kingdom land")
 	expect(claimed > 0 and neutral >= 10, "Menu kingdoms grow irregular borders while substantial neutral land remains")
-	expect(buildings["house"] > 0 and buildings["tower"] > 0, "Menu kingdoms include scattered houses and towers")
+	expect(buildings["city"] > 0 and buildings["tower"] > 0, "Menu kingdoms include scattered cities and towers")
 	expect(generated["cells"].size() == expected_rules.cells.size() + generated["filled"].size(), "Only enclosed single-hex water holes are added cosmetically")
 	var original_center: Vector2i = expected_rules.kingdoms.keys()[0]
 	var center: Vector2i = map.landscape.placed_coord(original_center, generated["placement"])

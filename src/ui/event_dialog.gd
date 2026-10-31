@@ -42,11 +42,11 @@ func present(definition: Dictionary, choose: Callable) -> void:
 	var painting: TextureRect
 	var artwork := Events.artwork(definition)
 	if artwork.has("painting"):
-		var texture := Events.painting_texture(String(artwork["painting"]))
+		var texture := Events.event_texture(artwork)
 		if texture != null:
 			var caption := Loc.text(artwork.get("painting_title", String(artwork["painting"]).get_file().get_basename().replace("_", " ")))
 			if artwork.has("painting_artist"): caption += "\n" + Loc.text(artwork["painting_artist"])
-			painting = EventPainting.new(texture, 424.0, caption)
+			painting = EventPainting.new(texture, 424.0, caption,Events.event_texture_focus(artwork))
 			painting.position = Vector2(28, story_top)
 			story_top += painting.size.y + 12
 	var story := wrapped_label(definition["text"], Vector2(28, story_top), 15)

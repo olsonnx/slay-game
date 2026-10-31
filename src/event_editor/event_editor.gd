@@ -102,10 +102,12 @@ func _ready() -> void:
 	status = label(column,"",13)
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	file_dialog = FileDialog.new()
+	file_dialog.theme = theme
 	file_dialog.access = FileDialog.ACCESS_FILESYSTEM
 	file_dialog.file_selected.connect(file_selected)
 	add_child(file_dialog)
 	confirmation = ConfirmationDialog.new()
+	confirmation.theme = theme
 	confirmation.title = "Unsaved changes"
 	confirmation.dialog_text = "Discard the unsaved changes to this event?"
 	confirmation.ok_button_text = "Discard changes"

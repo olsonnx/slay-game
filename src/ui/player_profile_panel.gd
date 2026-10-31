@@ -8,7 +8,6 @@ const Flag = preload("res://src/ui/kingdom_flag.gd")
 const Profile = preload("res://src/settings/player_profile.gd")
 const Clock = preload("res://src/game/match_clock.gd")
 var title: Label
-var subtitle: Label
 var stats_view: Control
 var edit_view: Control
 var country_view: Control
@@ -55,7 +54,6 @@ func _ready() -> void:
 	title.size = Vector2(680, 36)
 	title.clip_text = true
 	title.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	subtitle = Ui.label_at(self, "Player profile", Vector2(24, 58), 14, Ui.MUTED)
 	edit_button = action(self, "", Vector2(728, 24), Vector2(48, 40))
 	edit_button.icon = preload("res://src/ui/menu_icons.gd").brush()
 	edit_button.tooltip_text = Loc.text("Customize your kingdom")
@@ -127,9 +125,6 @@ func build_editor() -> void:
 	motto_input = text_input(country_view, Vector2(24, 132), 64)
 	Ui.label_at(country_view, "Country color", Vector2(24, 200), 14, Ui.MUTED)
 	country_color = color_input(country_view, Vector2(24, 228), Vector2(320, 40))
-	var hint := Ui.label_at(country_view, "Choose a color on the wheel or enter a hex code.", Vector2(24, 284), 14, Ui.MUTED)
-	hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	hint.size = Vector2(310, 60)
 	Ui.label_at(country_view, "Your country in game", Vector2(400, 8), 14, Ui.MUTED)
 	Ui.label_at(flag_view, "Pattern", Vector2(24, 8), 14, Ui.MUTED)
 	pattern = choice(["Solid", "Horizontal halves", "Vertical halves", "Diagonal", "Cross", "Saltire", "Border"], Vector2(152, 0))
@@ -268,7 +263,6 @@ func set_editing(value: bool) -> void:
 	save_button.visible = editing
 	save_button.text = Loc.text("Save changes") if PlayerProfile.exists() else Loc.text("Create kingdom")
 	cancel_button.text = Loc.text("Quit game") if required else Loc.text("Cancel") if editing else Loc.text("Back")
-	subtitle.text = Loc.text("Create your kingdom") if not PlayerProfile.exists() else Loc.text("Customize your kingdom") if editing else Loc.text("Player profile")
 	preview.position = Vector2(400, 220) if editing else Vector2(24, 100)
 	preview.size = Vector2(376, 250.6667) if editing else Vector2(96, 64)
 	game_preview.position = Vector2(400, 188)

@@ -100,31 +100,32 @@ func key(code: int, echo := false) -> InputEventKey:
 	event.echo = echo
 	return event
 
+# Three steps keep the attack inside the Knight movement budget.
 func approach_fixture(scenario: String):
 	var model = Rules.new()
 	model.rule_mode = "modern"
 	model.faction_count = 2
-	for x in range(8):
-		model.cells[Vector2i(x,0)] = model.make_cell(0 if x < 6 else 1)
+	for x in range(5):
+		model.cells[Vector2i(x,0)] = model.make_cell(0 if x < 3 else 1)
 		model.cells[Vector2i(x,0)]["value"] = 6
 	model.cells[Vector2i.ZERO]["capital"] = 0
-	model.cells[Vector2i(7,0)]["capital"] = 1
+	model.cells[Vector2i(4,0)]["capital"] = 1
 	model.cells[Vector2i.ZERO]["unit"] = 3
-	model.cells[Vector2i(6,0)]["unit"] = 2
-	if scenario == "occupied": model.cells[Vector2i(5,0)]["unit"] = 1
-	if scenario == "building": model.cells[Vector2i(5,0)]["building"] = "house"
+	model.cells[Vector2i(3,0)]["unit"] = 2
+	if scenario == "occupied": model.cells[Vector2i(2,0)]["unit"] = 1
+	if scenario == "building": model.cells[Vector2i(2,0)]["building"] = "city"
 	if scenario == "blocked_suffix":
-		for x in range(1,6): model.cells[Vector2i(x,0)]["unit"] = 1
+		for x in range(1,3): model.cells[Vector2i(x,0)]["unit"] = 1
 	if scenario == "bridge":
-		model.cells[Vector2i(5,0)]["owner"] = -1
-		model.cells[Vector2i(5,0)]["building"] = "bridge"
+		model.cells[Vector2i(2,0)]["owner"] = -1
+		model.cells[Vector2i(2,0)]["building"] = "bridge"
 	if scenario == "capital":
 		model.cells[Vector2i.ZERO]["capital"] = -1
-		model.cells[Vector2i(5,0)]["capital"] = 0
-	if scenario == "tree": model.cells[Vector2i(5,0)]["tree"] = true
+		model.cells[Vector2i(2,0)]["capital"] = 0
+	if scenario == "tree": model.cells[Vector2i(2,0)]["tree"] = true
 	model.rebuild_kingdoms()
 	for bank in model.kingdoms.values(): bank["gold"] = 200
-	model.entrench(Vector2i(6,0),1)
+	model.entrench(Vector2i(3,0),1)
 	return model
 
 func approach_checks() -> void:
@@ -135,16 +136,16 @@ func approach_checks() -> void:
 		var log = Replay.new()
 		model.replay_log = log
 		log.start(model)
-		var action: Dictionary = model.perform_move(Vector2i.ZERO,Vector2i(6,0))
-		var landing := Vector2i(4 if scenario in ["occupied","building"] else 0 if scenario == "blocked_suffix" else 5,0)
+		var action: Dictionary = model.perform_move(Vector2i.ZERO,Vector2i(3,0))
+		var landing := Vector2i(1 if scenario == "occupied" else 0 if scenario == "blocked_suffix" else 2,0)
 		expect(action.get("kind") == "blocked_attack" and action.get("landing") == landing, "Blocked attack chooses the nearest free approach tile: "+scenario)
 		expect(model.cells[landing]["unit"] == 3 and model.cells[landing]["moved"] and (landing == Vector2i.ZERO or model.cells[Vector2i.ZERO]["unit"] == 0), "Attacker occupies its recorded approach without duplication: "+scenario)
-		expect(model.cells[Vector2i(6,0)]["owner"] == 1 and model.cells[Vector2i(6,0)]["unit"] == 2 and not model.is_entrenched(Vector2i(6,0)), "The defender survives and only loses entrenchment: "+scenario)
-		if scenario == "occupied": expect(model.cells[Vector2i(5,0)]["unit"] == 1, "Fallback never overwrites a friendly unit")
-		if scenario == "building": expect(model.cells[Vector2i(5,0)]["building"] == "house", "Fallback preserves structures passed along the route")
+		expect(model.cells[Vector2i(3,0)]["owner"] == 1 and model.cells[Vector2i(3,0)]["unit"] == 2 and not model.is_entrenched(Vector2i(3,0)), "The defender survives and only loses entrenchment: "+scenario)
+		if scenario == "occupied": expect(model.cells[Vector2i(2,0)]["unit"] == 1, "Fallback never overwrites a friendly unit")
+		if scenario == "building": expect(model.cells[Vector2i(2,0)]["building"] == "city", "Fallback preserves structures passed along the route")
 		if scenario == "bridge": expect(model.unit_faction(landing) == 0 and model.cells[landing]["unit_home"] == Vector2i.ZERO, "A stopped bridge attacker keeps its faction and supporting treasury")
 		if scenario == "tree": expect(not model.cells[landing]["tree"] and action["gold_reward"] == 1 and model.kingdom_at(landing)["gold"] == 201, "Stopping on a tree clears it and pays its normal reward once")
-		expect(simulation.move_unit(Vector2i.ZERO,Vector2i(6,0)) and simulation.cells == model.cells and simulation.kingdoms == model.kingdoms, "AI simulation and authoritative commands use the same approach landing: "+scenario)
+		expect(simulation.move_unit(Vector2i.ZERO,Vector2i(3,0)) and simulation.cells == model.cells and simulation.kingdoms == model.kingdoms, "AI simulation and authoritative commands use the same approach landing: "+scenario)
 		var rebuilt := Replay.read_records(log.records)
 		expect(rebuilt.get("error") == "" and Replay.encode(rebuilt["position"]) == Replay.position(model), "Replays reconstruct the stopped attacker exactly: "+scenario)
 		expect(before["rng"] == Replay.position(model)["rng"], "Blocked movement does not consume gameplay RNG")
@@ -155,7 +156,7 @@ func approach_checks() -> void:
 	for bank in exposed.kingdoms.values(): bank["gold"] = 200
 	var strategy = Strategy.new(exposed,0)
 	strategy.danger = strategy.queries.defense_needs(0)
-	expect(strategy.exposure(Vector2i.ZERO,Vector2i(6,0)) > 0, "Strategic AI accounts for the capital guard leaving after an absorbed attack")
+	expect(strategy.exposure(Vector2i.ZERO,Vector2i(3,0)) > 0, "Strategic AI accounts for the capital guard leaving after an absorbed attack")
 func ui_checks() -> void:
 	root.size = Vector2i(960,620)
 	root.get_node("Video").set_preference(&"level_transitions",false,false)
@@ -212,13 +213,13 @@ func ui_checks() -> void:
 		game.rules = approach_fixture(scenario)
 		game.view.render_cells(game.cells)
 		var actor: Node3D = game.view.unit_actors[Vector2i.ZERO]
-		attack = game.rules.perform_move(Vector2i.ZERO,Vector2i(6,0))
+		attack = game.rules.perform_move(Vector2i.ZERO,Vector2i(3,0))
 		var landing: Vector2i = attack["landing"]
 		await game.view.animate_moves([attack],game.cells)
 		var expected: Vector3 = game.view.coord_position(landing)
 		if game.cells[landing]["capital"] >= 0: expected += Vector3(0.35,0,0.30)
 		expect(game.view.unit_actors.get(landing) == actor and not game.view.unit_actors.has(Vector2i.ZERO) and actor.global_position.is_equal_approx(expected), "Playback retains the attacker on its actual landing tile: "+scenario)
-		expect(game.view.cells == game.cells and game.view.unit_actors.has(Vector2i(6,0)), "Playback synchronizes the new landing and surviving defender: "+scenario)
+		expect(game.view.cells == game.cells and game.view.unit_actors.has(Vector2i(3,0)), "Playback synchronizes the new landing and surviving defender: "+scenario)
 	game.rules = approach_fixture("occupied")
 	game.active_hex = Vector2i.ZERO
 	game.view.render_cells(game.cells)
@@ -229,7 +230,7 @@ func ui_checks() -> void:
 		if stage == "blocked": blocked[0] = true
 	game.view.motion_stage.connect(callback)
 	game.click_hex(Vector2i.ZERO,"unit")
-	game.click_hex(Vector2i(6,0),"unit")
+	game.click_hex(Vector2i(3,0),"unit")
 	while game.busy and not blocked[0]: await process_frame
 	game.cancel_action()
 	await process_frame

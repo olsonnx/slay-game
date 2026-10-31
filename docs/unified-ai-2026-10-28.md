@@ -14,6 +14,6 @@ The legacy beam planner remains available only through an explicit internal `leg
 - `test_simulation_worker`: 1,114 passed; `test_ai_optimization`: 374 passed; `test_replay`: 131 passed. These retain worker ownership, ordered replay, playback-boundary publication and cache/pathfinding guarantees.
 - Branch smoke checks: logistics 373, logistics tutorial 87, settings 22, music 21, video display 13 and results 75 passed. Settings/file tests run with writable, isolated `APPDATA` under ignored artifacts.
 
-The broader pre-existing failures listed in the [performance implementation report](ai-performance-2026-10-28.md) remain documented; this is not a claim that every historical suite passes. Existing difficulty policies still benefit from human playtesting, especially on small maps where the default backend has changed.
+At rollout, the broader pre-existing failures listed in the [performance implementation report](ai-performance-2026-10-28.md) remained unresolved. They were subsequently addressed in the [30 October test reconciliation](playtest/test-reconciliation-2026-10-30.md). Existing difficulty policies still benefit from human playtesting, especially on small maps where the default backend has changed.
 
 Version remains 0.2.0. No executable, export or ZIP was rebuilt for this rollout.

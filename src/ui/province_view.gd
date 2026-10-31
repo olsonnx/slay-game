@@ -5,7 +5,6 @@ const Hud = preload("res://src/ui/game_hud.gd")
 signal develop_requested
 signal entrench_requested
 signal relocate_requested
-signal dismantle_requested
 signal road_requested
 signal rename_requested(coord: Vector2i, text: String)
 signal close_requested
@@ -16,7 +15,6 @@ var mana_label: Label
 var develop_button: Button
 var relocate_button: Button
 var entrench_button: Button
-var dismantle_button: Button
 var road_button: Button
 var name_input: LineEdit
 var name_coord := Vector2i(1000000, 1000000)
@@ -74,14 +72,6 @@ func _ready() -> void:
 	entrench_button.pressed.connect(func(): entrench_requested.emit())
 	Sound.bind_button(entrench_button)
 	add_child(entrench_button)
-	dismantle_button = preload("res://src/ui/tooltip_button.gd").new()
-	dismantle_button.size = Vector2(386, 32)
-	dismantle_button.text = Loc.text("Dismantle")
-	dismantle_button.tooltip_text = Loc.text("Remove your unoccupied bridge without a refund.")
-	Hud.UiTheme.style_button(dismantle_button)
-	dismantle_button.pressed.connect(func(): dismantle_requested.emit())
-	Sound.bind_button(dismantle_button)
-	add_child(dismantle_button)
 	name_input = LineEdit.new()
 	name_input.max_length = 40
 	name_input.position = Vector2(12, 12)
@@ -195,12 +185,6 @@ func refresh(model, coord: Vector2i, can_act: bool, faction := 0) -> void:
 	entrench_button.size.x = 120 if develop_button.visible else 386
 	if develop_button.visible or entrench_button.visible:
 		content_bottom = action_y + 36
-	dismantle_button.text = Loc.text("Dismantle bridge")
-	dismantle_button.visible = model.can_dismantle(coord, faction)
-	dismantle_button.disabled = not can_act
-	if dismantle_button.visible:
-		dismantle_button.position = Vector2(16, content_bottom + 10)
-		content_bottom += 42
 	name_input.visible = model.can_rename_settlement(coord, faction)
 	title.visible = not name_input.visible
 	name_input.editable = can_act

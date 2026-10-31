@@ -23,6 +23,8 @@ static func run(document, before := -1) -> Dictionary:
 			level.read_data(step.setup)
 			rules = level.build_rules()
 			round_number = 1
+		if step.get("targets",[]).size() > 1: return {"error":prefix + "This target area allows multiple choices; use a manual playtest.","rules":rules,"round":round_number}
+		if step.get("targets",[]).size() == 1: step.target = step.targets[0]
 		if step.kind == "any" or step.kind == "event" and not step.get("details",{}).has("choice") or int(step.get("count",1)) > 1: return {"error":prefix + "This challenge allows your own plan; use a manual playtest.","rules":rules,"round":round_number}
 		if step.kind == "end_turn":
 			for faction in range(1,rules.faction_count):

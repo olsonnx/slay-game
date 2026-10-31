@@ -111,20 +111,25 @@ func run() -> void:
 		expect(Sites.protected(r.cells[target]),"Wildlife raids cannot destroy landmarks")
 	# Roads avoid foreign territory and mountains and ignore unit occupancy.
 	r = fixture()
-	r.cells[Vector2i(3,0)].building = "house"
+	r.cells[Vector2i(3,0)].building = "city"
+	expect(r.build_road(Vector2i.ZERO,Vector2i(3,0),0),"The rendering fixture purchases its capital-to-city road")
 	var edges: Dictionary = Roads.network(r.cells)
-	expect(edges.size() == 3,"A building connects to the nearest capital by a shortest path")
+	expect(edges.size() == 3,"The purchased connection renders its three adjacent edges")
 	for pair in edges:
 		expect(r.cells[pair[0]].kingdom == r.cells[pair[1]].kingdom and r.distance(pair[0],pair[1]) == 1,"Every road edge stays within its kingdom")
 	r.cells[Vector2i(1,0)].unit = 3
-	expect(Roads.network(r.cells) == edges,"Decorative roads ignore army occupancy")
+	expect(Roads.network(r.cells) == edges,"Purchased roads ignore army occupancy")
+	r = fixture()
+	r.cells[Vector2i(3,0)].building = "city"
 	r.cells[Vector2i(1,0)].mountain = true
-	expect(Roads.network(r.cells).is_empty(),"Roads do not cross impassable mountains")
+	expect(not r.build_road(Vector2i.ZERO,Vector2i(3,0),0) and Roads.network(r.cells).is_empty(),"Roads cannot be purchased through impassable mountains")
 	for coord in [Vector2i(0,1),Vector2i(1,1)]:
 		r.cells[coord] = r.make_cell(0)
 		r.cells[coord].kingdom = Vector2i.ZERO
+	r.rebuild_kingdoms()
+	expect(r.build_road(Vector2i.ZERO,Vector2i(3,0),0),"A new connection can purchase the available mountain detour")
 	var detour: Dictionary = Roads.network(r.cells)
-	expect(not detour.is_empty(),"Roads find a detour around mountains")
+	expect(not detour.is_empty(),"The purchased detour reaches the renderer")
 	for pair in detour:
 		expect(not r.cells[pair[0]].get("mountain",false) and not r.cells[pair[1]].get("mountain",false),"Detour edges avoid the mountain")
 	var tiles := {}

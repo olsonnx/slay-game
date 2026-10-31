@@ -10,6 +10,9 @@ var left := []
 var sent := []
 var incoming := []
 var joinable := true
+var lobby_capacity := 0
+
+func createLobby(_type: int, capacity: int) -> void: lobby_capacity = capacity
 
 func getLobbyOwner(_lobby: int) -> int: return owner
 func setLobbyData(_lobby: int, key: String, value: String) -> bool:

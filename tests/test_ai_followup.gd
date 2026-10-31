@@ -64,12 +64,13 @@ func reserve_checks() -> void:
 	for q in range(8): model.cells[Vector2i(q,0)]["value"] = 6
 	model.cells[Vector2i.ZERO]["capital"] = 0
 	model.cells[Vector2i(11,0)]["capital"] = 1
+	model.cells[Vector2i(6,0)]["building"] = "city" # Deploy the reserve within reach of the frontier.
 	model.cells[Vector2i(2,0)]["unit"] = 1
 	model.cells[Vector2i(11,0)]["unit"] = 3
 	finish(model)
 	for backend in [Planner,Strategy]:
 		var buy: Dictionary = backend.new(model,0,true).run()
-		expect(buy.get("tier") == 3,"Buy one reserve against the Knight beyond the neutral frontier")
+		expect(buy.get("tier") == 3,"Buy one reserve against the Knight beyond the neutral frontier (chosen %s)" % buy)
 		var copy = Analysis.snapshot(model)
 		expect(Candidates.apply(copy,buy,0),"The anticipatory Knight is affordable and legal")
 		var next: Dictionary = backend.new(copy,0,true).run()
@@ -88,9 +89,9 @@ func replay_checks() -> void:
 	var model = restore.restore(JSON.parse_string(FileAccess.get_file_as_string(path)))
 	for backend in [Planner,Strategy]:
 		var buy: Dictionary = backend.new(model,2,true).run()
-		expect(buy.get("tier") == 3,"Tide round six prepares for the player's visible Knight rather than another Scout")
+		expect(buy.get("kind") == "city","Tide establishes forward recruitment instead of buying Scouts at its distant capital")
 		var copy = Analysis.snapshot(model)
-		expect(Candidates.apply(copy,buy,2),"Tide's reserve executes through actual replay-position rules")
+		expect(Candidates.apply(copy,buy,2) and copy.can_recruit(buy.coord,2,1),"Tide creates a legal forward deployment site through current rules")
 	restore.free()
 func expiry_checks() -> void:
 	var model = base()
@@ -100,9 +101,18 @@ func expiry_checks() -> void:
 	model.cells[Vector2i(2,0)]["unit"] = 1
 	model.cells[Vector2i(6,0)]["unit"] = 2
 	model.cells[Vector2i(5,0)]["barrier_by"] = 1
+	# Keep the Scout solvent: losing an unsupported army is a different decision.
+	model.cells[Vector2i.ZERO]["value"] = 6
 	finish(model)
-	var move: Dictionary = Planner.new(model,0).run()
-	expect(move.get("coord",model.NONE) != Vector2i(3,0),"Short Hard turns still check retaliation through an expiring barrier")
+	var before: Dictionary = model.cells.duplicate(true)
+	expect(not model.can_move(Vector2i(6,0),Vector2i(3,0)),"The barrier blocks the enemy's current route")
+	expect(Analysis.Queries.new(model).reply_strength(Vector2i(3,0),0) == 2,"Retaliation predicts the Soldier's route after its own barrier expires")
+	for backend in [Planner,Strategy]:
+		var move: Dictionary = backend.new(model,0).run()
+		expect(move.get("coord",model.NONE) != Vector2i(3,0),"Hard checks retaliation through an expiring barrier (chosen %s)" % move)
+	expect(model.cells == before,"Predicting barrier expiry never changes the current board")
+	model.cells[Vector2i(5,0)]["barrier_by"] = 2
+	expect(Analysis.Queries.new(model).reply_strength(Vector2i(3,0),0) == 0,"Another faction's barrier still blocks the Soldier after its settlement")
 func run() -> void:
 	core_checks()
 	supply_checks()

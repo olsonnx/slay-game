@@ -7,9 +7,11 @@
 | `ui_hover` | `assets/sfx/ui_hover.mp3` | Entering an enabled UI button |
 | `ui_click` | `assets/sfx/ui_click.mp3` | UI activation, keyboard activation, friendly tile selection, or issuing a move |
 | `ui_close` | `assets/sfx/ui_close.mp3` | Closing a menu or cancelling an active action |
-| `action_place` | `assets/sfx/action_place.mp3` | Successful recruitment, upgrade or construction; movement/attack/merge arrival; AI recruitment and construction |
+| `action_place` | `assets/sfx/action_place.mp3` | Successful recruitment, upgrade or construction; movement/merge arrival; AI recruitment and construction |
 | `gold_develop` | `assets/sfx/gold_develop.ogg` | The player's successful province development, including playback; other factions' development is silent |
 | `event_popup` | `assets/sfx/event_popup.ogg` | An encounter dialog is revealed |
+| `sword_slash` | `assets/sfx/sword_slash.mp3` | Attack impact, including blocked attacks and knight duels |
+| `capital_collapse` | `assets/sfx/capital_collapse.ogg` | A captured capital disappears at impact |
 
 Invalid placements, disabled controls, idle mouse movement over map tiles and no-op cancellation are silent. Cancelled movement never emits arrival audio. Placement is tied to the animation's completion signal, so audio follows what is visible rather than the earlier rules commit.
 
@@ -20,7 +22,9 @@ Invalid placements, disabled controls, idle mouse movement over map tiles and no
 3. Give it a unique key in the bank's `cues` dictionary.
 4. Call `Sound.play(&"your_id")` at the meaningful gameplay event, or use `Sound.bind_button(button)` for normal UI feedback. The bank and cue fields can be edited in Godot's Inspector.
 
-`streams` supports alternative recordings of the same cue, selected randomly. `pitch_min` and `pitch_max` support optional variation (both remain 1 for the supplied effects). Future cues do not need new players or file-loading logic.
+`streams` supports alternative recordings of the same cue, selected randomly. `pitch_min` and `pitch_max` support optional variation. Sword slash and capital collapse choose a fresh pitch between 0.95 and 1.05 on every playback; other effects retain their original pitch. Future cues do not need new players or file-loading logic.
+
+Sword slash and capital collapse use `Sound.play_at()` at the impacted tile. Their volume follows camera zoom and distance from the viewed ground centre, updating throughout playback as the camera moves. Orthographic camera size acts as effective height: centred effects are full volume at size 8, about -12 dB at 16 and -24 dB at 32. Panning away reduces them further. This gain multiplies the cue's normal mix and saved SFX/master volume; UI sounds retain their normal volume. Spatial voices still share the bounded pool, cooldowns and random pitch.
 
 ## Mixing and lifecycle
 

@@ -9,7 +9,7 @@ from pathlib import Path
 import re
 
 ROOT = Path(__file__).resolve().parents[1]
-VERSION = re.compile(r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)")
+VERSION = re.compile(r"(?P<base>(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*))P?")
 
 
 def setting(text: str, key: str) -> str:
@@ -27,7 +27,7 @@ def replace(text: str, key: str, value: str) -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("version", nargs="?", help="New MAJOR.MINOR.PATCH version")
+    parser.add_argument("version", nargs="?", help="New MAJOR.MINOR.PATCH version, optionally suffixed P for playtests")
     parser.add_argument("--check", action="store_true", help="Verify build versions match")
     args = parser.parse_args()
     if args.check and args.version:
@@ -38,9 +38,11 @@ def main() -> None:
         project = project_path.read_text(encoding="utf-8")
         exports = export_path.read_text(encoding="utf-8")
         version = args.version or setting(project, "config/version")
-        if not VERSION.fullmatch(version) or any(int(part) > 65535 for part in version.split(".")):
-            raise ValueError("Use MAJOR.MINOR.PATCH with each number between 0 and 65535")
-        windows_version = version + ".0"
+        matched = VERSION.fullmatch(version)
+        if not matched or any(int(part) > 65535 for part in matched["base"].split(".")):
+            raise ValueError("Use MAJOR.MINOR.PATCH (optional P suffix) with each number between 0 and 65535")
+        # Windows requires four numeric components; the game/replays retain P.
+        windows_version = matched["base"] + ".0"
         keys = ("application/file_version", "application/product_version")
         if args.version:
             project = replace(project, "config/version", version)

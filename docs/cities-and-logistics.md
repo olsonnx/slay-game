@@ -70,10 +70,9 @@ If the builder has no surviving kingdom, the bridge is unsponsored. Neutral
 bridges authored in the level editor have no builder and no automatic bill.
 Neither bridge sponsorship nor roads contribute terrain income.
 
-Roads and towers cannot be dismantled; their placement and tower upkeep are a
-commitment. Province details still offer Dismantle for the builder's empty bridges.
-Bridge removal is immediate and gives no refund. Occupied bridges cannot be
-dismantled; Shatter retains its existing destructive behavior. Bankruptcy still kills
+Roads, towers and bridges cannot be dismantled. Bridges can only be removed
+with Shatter, which costs mana, gives no construction refund and destroys any
+unit on the crossing. Bankruptcy still kills
 unsupported armies and clears negative treasury balances; infrastructure remains
 until removed, so its upkeep continues.
 

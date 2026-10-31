@@ -490,19 +490,6 @@ func rename_settlement(coord: Vector2i, faction: int, text: String) -> bool:
 func infrastructure_upkeep(kingdom: Dictionary) -> int:
 	return preload("res://src/game/logistics.gd").infrastructure_upkeep(self, kingdom)
 
-func can_dismantle(coord: Vector2i, faction: int) -> bool:
-	if not cells.has(coord): return false
-	var cell: Dictionary = cells[coord]
-	if cell["building"] == "bridge": return cell.get("bridge_owner", -1) == faction and cell["unit"] == 0
-	return false
-
-func dismantle(coord: Vector2i, faction: int) -> bool:
-	if not can_dismantle(coord, faction): return false
-	cells.erase(coord)
-	rebuild_kingdoms()
-	record_replay("dismantle", faction, {"coord":coord})
-	return true
-
 func road_targets(source: Vector2i, faction: int) -> Dictionary:
 	return preload("res://src/game/road_construction.gd").options(self, source, faction)
 

@@ -33,9 +33,10 @@ func run() -> void:
 	var entries := model.entries()
 	expect(entries.size() >= 3 and model.collected_count() == 0, "A new album lists the event artwork with no pre-unlocked paintings")
 	var paths := entries.map(func(entry): return entry.path)
-	expect(paths.count(Events.DEFAULT_PAINTING.painting) == 1, "Events sharing the default painting occupy one album slot")
+	expect(paths.count(Events.DEFAULT_PAINTING.painting) == 0, "A fresh album has no unreachable fallback slot once every event has dedicated art")
 	expect(not model.discover({"focus_cancel":true}) and not model.discover({"painting":"res://assets/paintings/missing.png"}), "Confirmations and missing artwork never grant collection progress")
 	expect(model.discover(Events.DEFAULT_PAINTING) and not model.discover(Events.DEFAULT_PAINTING) and model.collected_count() == 1, "First discovery unlocks once, independently of event ID")
+	expect(model.entries().map(func(entry): return entry.path).count(Events.DEFAULT_PAINTING.painting) == 1,"Previously discovered fallback paintings remain in the album exactly once")
 	var reloaded := Collection.new()
 	reloaded.settings_path = path
 	expect(reloaded.load_settings() == OK and reloaded.is_collected(Events.DEFAULT_PAINTING.painting), "Collection progress survives a fresh model and file reload")
@@ -59,6 +60,7 @@ func run() -> void:
 	root.add_child(app)
 	await app.startup_finished
 	app.menus.collection_button.pressed.emit()
+	while app.transitioning: await process_frame
 	await frames()
 	var panel = app.menus.collection_panel
 	expect(app.menus.screen == app.menus.Screen.COLLECTION and panel.visible and panel.cards.size() == entries.size(), "Main menu Collection opens the complete digital album")
@@ -80,14 +82,15 @@ func run() -> void:
 	game.show_next_event()
 	var before_discovery := Snapshot.capture(game.rules)
 	await frames(5)
-	expect(album.is_collected(Events.DEFAULT_PAINTING.painting), "An actual game event unlocks the painting once it is revealed")
+	expect(album.is_collected(Events.EVENTS.wizard.painting), "An actual game event unlocks the painting once it is revealed")
 	expect(Snapshot.capture(game.rules) == before_discovery, "Collecting artwork never changes the match state or RNG")
 	game.resolve_shown_event(0)
 	await app.return_to_main_menu()
 	app.menus.collection_button.pressed.emit()
+	while app.transitioning: await process_frame
 	await frames()
-	expect(not panel.cards[Events.DEFAULT_PAINTING.painting].disabled and panel.thumbnails.size() == 1, "Returning from a match reveals only collected artwork")
-	panel.open_painting(Events.DEFAULT_PAINTING.painting)
+	expect(not panel.cards[Events.EVENTS.wizard.painting].disabled and panel.thumbnails.size() == 1, "Returning from a match reveals only collected artwork")
+	panel.open_painting(Events.EVENTS.wizard.painting)
 	await frames()
 	expect(panel.viewer.visible and panel.picture.texture != null and panel.picture.material == null and panel.picture.modulate == Color.WHITE, "Viewer uses the original full-colour texture without the event treatment")
 	panel.set_zoom(1.0)
@@ -96,10 +99,10 @@ func run() -> void:
 	panel.fit_picture()
 	await frames()
 	expect(panel.picture.custom_minimum_size.x <= panel.picture_scroll.size.x and panel.picture.custom_minimum_size.y <= panel.picture_scroll.size.y, "Fit displays the entire painting without cropping or distortion")
-	var another: Dictionary = entries.filter(func(entry): return entry.path != Events.DEFAULT_PAINTING.painting)[0]
+	var another: Dictionary = entries.filter(func(entry): return entry.path != Events.EVENTS.wizard.painting)[0]
 	album.discover({"painting":another.path})
 	panel.open_album()
-	panel.open_painting(Events.DEFAULT_PAINTING.painting)
+	panel.open_painting(Events.EVENTS.wizard.painting)
 	panel.navigate(1)
 	expect(panel.selected_path == another.path, "Viewer navigation skips locked paintings")
 	escape(app.menus)

@@ -2,6 +2,14 @@
 
 The reviews cover game rules, generation, movement, visual playback, picking, input, UI, audio, tests and resource references.
 
+## Playtest reconciliation — 30 October 2026
+
+Regression expectations now follow cities, recruitment hubs, movement budgets,
+paid road connections and infrastructure upkeep. Retaliation prediction also
+handles enemy barriers expiring at settlement in historical positions. See the
+[reconciliation report](playtest/test-reconciliation-2026-10-30.md) for the
+fixture changes, version marker and validation evidence.
+
 ## Reliability fixes — 16 October 2026
 
 - Editor saves write and flush a sibling temporary file before replacing the old
@@ -88,7 +96,7 @@ The renderer improvement is measured in tile rebuild counts and retained objects
 
 - Save/load should serialize versioned rule state (cells, kingdom treasuries/capitals, turn and RNG state), rather than scene nodes or procedural meshes. Playback and cancellable player commands already use separate visual snapshots.
 - The rules still use dictionaries and string action kinds. For substantially more unit types or multiplayer, introduce typed cell/command records and stable unit identifiers. That migration should include explicit command validation; current public commands retain it.
-- Three unit tiers remain the current limit; map profiles support two through six factions. Adding tiers requires expanding metadata, sprite generation, merging limits and the recruitment layout together; changing prices/upkeep alone is centralized.
+- Three unit tiers remain the current limit; map profiles support two through ten factions, subject to the size limits in `docs/nation-capacity.md`. Adding tiers requires expanding metadata, sprite generation, merging limits and the recruitment layout together; changing prices/upkeep alone is centralized.
 - Object picking still scans the board's buildings and soldiers. Larger maps may benefit from a spatial broad phase and instanced grass/prop rendering; the current small board does not justify that complexity yet.
 - Hover overlays still replace their small temporary node group when the target changes. Static board geometry and identical mesh/icon resources are now reused; persistent overlay instances are a separate possible improvement if profiling shows a need.
 - Separate connected kingdoms, graves and trees follow this prototype's documented rules, not every original Slay rule. Capitals may coexist with units, and replacement-capital placement can consume an existing feature if no clear cell is available. Changing those rules would be a gameplay decision, not a silent refactor.

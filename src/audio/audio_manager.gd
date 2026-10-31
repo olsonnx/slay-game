@@ -1,5 +1,5 @@
 extends Node
-## Central, bounded, non-spatial one-shot playback. Game code refers only to cue IDs.
+## Central, bounded one-shot playback, with optional camera-relative attenuation.
 signal sound_started(id: StringName, voice: int)
 signal settings_changed
 signal settings_save_failed(error: Error)
@@ -65,7 +65,38 @@ func _ready() -> void:
 	if load_saved_settings:
 		load_settings(settings_path)
 
+func camera_gain(camera: Camera3D, position: Vector3) -> float:
+	if not is_instance_valid(camera) or not camera.is_inside_tree(): return 0.0
+	if camera.projection != Camera3D.PROJECTION_ORTHOGONAL:
+		return minf(1.0, 64.0 / maxf(64.0, camera.global_position.distance_squared_to(position)))
+	# Orthographic zoom changes size, not physical camera distance. Listen from
+	# the centre of the viewed ground plane with size as the effective height.
+	var forward := -camera.global_basis.z
+	var centre := camera.global_position
+	if absf(forward.y) > 0.001:
+		centre += forward * ((position.y - centre.y) / forward.y)
+	var offset := Vector2(position.x - centre.x, position.z - centre.z)
+	return minf(1.0, 64.0 / maxf(64.0, camera.size * camera.size + offset.length_squared()))
+
+func play_at(id: StringName, position: Vector3, camera: Camera3D) -> bool:
+	var gain := camera_gain(camera, position)
+	return _play(id, gain, position, camera)
+
+func _process(_delta: float) -> void:
+	for voice in voices:
+		if not voice.playing or not voice.has_meta("source_camera"): continue
+		var camera = voice.get_meta("source_camera").get_ref()
+		if not is_instance_valid(camera):
+			voice.stop()
+			continue
+		var gain := camera_gain(camera, voice.get_meta("source_position"))
+		voice.volume_db = voice.get_meta("base_volume_db") + linear_to_db(maxf(gain, 0.0001))
+
 func play(id: StringName) -> bool:
+	return _play(id, 1.0, Vector3.ZERO, null)
+
+func _play(id: StringName, gain: float, position: Vector3, camera: Camera3D) -> bool:
+	if not is_finite(gain) or gain < 0.0001: return false
 	if not bank.cues.has(id):
 		push_warning("Unknown sound cue: %s" % id)
 		return false
@@ -102,9 +133,15 @@ func play(id: StringName) -> bool:
 			return false
 		chosen = candidate
 	chosen.stop()
+	if chosen.has_meta("source_camera"): chosen.remove_meta("source_camera")
+	if chosen.has_meta("source_position"): chosen.remove_meta("source_position")
 	chosen.stream = cue.streams[rng.randi_range(0, cue.streams.size() - 1)]
 	chosen.bus = cue.bus
-	chosen.volume_db = cue.volume_db
+	chosen.set_meta("base_volume_db", cue.volume_db)
+	if camera != null:
+		chosen.set_meta("source_position", position)
+		chosen.set_meta("source_camera", weakref(camera))
+	chosen.volume_db = cue.volume_db + linear_to_db(clampf(gain, 0.0001, 1.0))
 	chosen.pitch_scale = rng.randf_range(minf(cue.pitch_min, cue.pitch_max), maxf(cue.pitch_min, cue.pitch_max))
 	chosen.set_meta("cue", id)
 	chosen.set_meta("priority", cue.priority)

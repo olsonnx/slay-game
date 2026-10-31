@@ -4,15 +4,15 @@ const Loc = preload("res://src/localization/text.gd")
 const Scenarios = preload("res://src/game/tutorial_scenarios.gd")
 const Document = preload("res://src/tutorial_editor/tutorial_document.gd")
 const NONE := Vector2i(999,999)
-const IDS := ["armies","economy","construction","logistics","conquest","magic","exploration","practice"]
+const IDS := ["armies","encirclement","economy","construction","logistics","magic","exploration","practice"]
 
 static func categories() -> Array:
 	var result := [
 		{"id":"armies","title":Loc.text("Armies and expansion"),"description":Loc.text("Learn 5/4/3 movement, ready recruits, merging and upgrades.")},
+		{"id":"encirclement","title":Loc.text("Cutting off armies"),"description":Loc.text("Surround a Knight, cut its connection and let isolation defeat it.")},
 		{"id":"economy","title":Loc.text("Kingdoms and money"),"description":Loc.text("Understand income, wages and separate treasuries.")},
 		{"id":"construction","title":Loc.text("Defences and upkeep"),"description":Loc.text("Plan permanent towers and pay for bridges and defences.")},
 		{"id":"logistics","title":Loc.text("Cities and supply lines"),"description":Loc.text("Build forward cities, recruit nearby and connect useful roads.")},
-		{"id":"conquest","title":Loc.text("Taking enemy territory"),"description":Loc.text("Capture defended cities, recruit nearby and take capitals.")},
 		{"id":"magic","title":Loc.text("Mana and spells"),"description":Loc.text("Use Summon, Trailblaze and Shatter with shared mana.")},
 		{"id":"exploration","title":Loc.text("Exploration and rewards"),"description":Loc.text("Collect treasure and try either encounter reward.")},
 		{"id":"practice","title":Loc.text("Your first match"),"description":Loc.text("Play a small real match. Choose your own strategy.")},
@@ -40,7 +40,7 @@ static func map_data(category := "armies") -> Dictionary:
 	if category not in IDS: category = "armies"
 	var document = installed(category)
 	if document != null: return document.level_data()
-	var data: Dictionary = Scenarios.map_data(category) if category == "practice" else preload("res://src/game/logistics_tutorial.gd").map_data(category)
+	var data: Dictionary = Scenarios.map_data(category) if category in ["practice","encirclement"] else preload("res://src/game/logistics_tutorial.gd").map_data(category)
 	data.merge({"tutorial":true,"tutorial_category":category,"tutorial_title":category_title(category),"tutorial_steps":builtin_lessons(category),"tutorial_require_victory":category == "practice","tutorial_opponent_mode":"ai" if category == "practice" else "scripted"})
 	return data
 
@@ -59,8 +59,14 @@ static func exercise(title: String, setup: String, goals: Array) -> Array:
 	return goals
 
 static func builtin_lessons(category := "armies") -> Array:
+	if category not in IDS: return []
+	if category == "encirclement": return preload("res://src/game/encirclement_tutorial.gd").runtime_steps()
 	if category == "practice":
 		return [goal("win", Loc.text("Defeat the enemy kingdom"), Loc.text("Play a real match using cities, limited movement, roads and infrastructure upkeep. Expand, establish recruitment sites, and take the enemy capital."), "any", NONE, {}, {"exercise":"practice", "restrict_actions":false, "conditions":[{"type":"victory", "faction":-1}]})]
 	var result: Array = preload("res://src/game/logistics_tutorial.gd").steps(category)
 	for entry in result: entry.title = entry.task
 	return result
+
+static func authored_steps(category: String) -> Array:
+	if category == "encirclement": return preload("res://src/game/encirclement_tutorial.gd").authored_steps()
+	return Document.encode(builtin_lessons(category))

@@ -1,4 +1,5 @@
 extends SceneTree
+## Income investment coverage migrated from houses to province development.
 const Rules = preload("res://src/game/kingdom_rules.gd")
 const Candidates = preload("res://src/game/ai_candidates.gd")
 var checks := 0
@@ -9,45 +10,45 @@ func expect(condition: bool, message: String) -> void:
 	if not condition:
 		failures += 1
 		push_error(message)
-func houses(model) -> Array:
-	return Candidates.preparation(model, 0).filter(func(action): return action["kind"] == "house")
-func fixture(length: int):
+func investments(model) -> Array:
+	return Candidates.preparation(model, 0).filter(func(action): return action.kind == "develop")
+func fixture():
 	var model = Rules.new()
-	model.rule_mode = "modern"
-	for x in range(length): model.cells[Vector2i(x,0)] = model.make_cell(0)
-	model.cells[Vector2i(length,0)] = model.make_cell()
-	model.cells[Vector2i.ZERO]["capital"] = 0
+	for x in range(3): model.cells[Vector2i(x,0)] = model.make_cell(0)
+	model.cells[Vector2i(3,0)] = model.make_cell()
+	model.cells[Vector2i.ZERO].capital = 0
 	model.rebuild_kingdoms()
-	model.kingdom_at(Vector2i.ZERO)["gold"] = 500
+	model.kingdom_at(Vector2i.ZERO).gold = 500
 	return model
 func run() -> void:
-	var model = fixture(7)
-	expect(not houses(model).is_empty(), "AI can still invest in housing when it needs reinforcement income")
-	model.cells[Vector2i(1,0)]["building"] = "house"
-	model.cells[Vector2i(2,0)]["building"] = "house"
-	expect(houses(model).is_empty(), "AI stops housing once its reinforcement income target is met")
-	model = fixture(7)
-	for x in range(1,5): model.cells[Vector2i(x,0)]["building"] = "house"
-	model.cells[Vector2i(5,0)]["unit"] = 3
-	model.cells[Vector2i(6,0)]["unit"] = 3
-	expect(houses(model).is_empty(), "Even a wage deficit cannot consume the final deployment sites")
-	model = fixture(12)
-	for x in range(1,9): model.cells[Vector2i(x,0)]["building"] = "house"
-	model.cells[Vector2i(9,0)]["unit"] = 3
-	model.cells[Vector2i(10,0)]["unit"] = 3
-	model.cells[Vector2i(11,0)]["unit"] = 3
-	expect(houses(model).is_empty(), "Occupied reserved sites do not justify filling the last open site")
-	for difficulty in ["easy", "normal", "hard"]:
-		model = fixture(7)
+	var model = fixture()
+	var options := investments(model)
+	expect(not options.is_empty(), "AI can invest in province income under current rules")
+	var bank: Dictionary = model.kingdom_at(Vector2i.ZERO)
+	var income: int = model.income(bank)
+	var gold: int = bank.gold
+	var cost: int = model.development_cost(options[0].coord)
+	expect(Candidates.apply(model,options[0],0) and model.income(bank) == income+1 and bank.gold == gold-cost,"Income investment uses the authoritative development price and reward")
+	for cell in model.cells.values(): cell.value = model.MAX_VALUE
+	expect(investments(model).is_empty(), "AI stops development at the province value cap")
+	model = fixture()
+	model.cells[Vector2i(1,0)].unit = 3
+	model.kingdom_at(Vector2i.ZERO).gold = 22
+	expect(investments(model).is_empty(), "Income investment cannot consume the wages needed for settlement")
+	for difficulty in ["easy","normal","hard"]:
+		model = fixture()
 		model.ai_difficulty = difficulty
 		for purchase in range(12):
-			var options := houses(model)
+			options = investments(model)
 			if options.is_empty(): break
-			Candidates.apply(model, options[0], 0)
-		var available := 0
+			expect(Candidates.apply(model,options[0],0),"Repeated investments remain legal on "+difficulty)
 		for cell in model.cells.values():
-			if cell["owner"] == 0 and cell["building"] == "": available += 1
-		expect(available >= 2, "Repeated housing preserves deployment space on " + difficulty)
-		expect(model.can_recruit(Vector2i.ZERO, 0, 1), "Housing leaves recruitment legal on " + difficulty)
-	print("AI housing checks: %d passed, %d failed" % [checks - failures, failures])
-	quit(0 if failures == 0 else 1)
+			expect(cell.building == "" and cell.value <= model.MAX_VALUE,"Development preserves deployment space and obeys the value cap")
+		expect(model.can_recruit(Vector2i.ZERO,0,1),"Income investment leaves recruitment legal on "+difficulty)
+	model = fixture()
+	bank = model.kingdom_at(Vector2i.ZERO)
+	income = model.income(bank)
+	expect(not model.build_structure(Vector2i(1,0),0,"house"),"Retired houses are rejected by current construction rules")
+	expect(model.build_structure(Vector2i(1,0),0,"city") and model.income(bank) == income,"Recruitment cities do not replace the retired house income bonus")
+	print("AI housing checks: %d passed, %d failed" % [checks-failures,failures])
+	quit(1 if failures else 0)

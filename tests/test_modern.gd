@@ -46,7 +46,7 @@ func run() -> void:
 	var opening_owner: int = opening_kingdom["owner"]
 	var placements: Array = []
 	for coord in opening_kingdom["hexes"]:
-		if opening.cells[coord]["unit"] == 0 and opening.cells[coord]["capital"] < 0:
+		if opening.can_recruit(coord,opening_owner,1) and opening.cells[coord]["unit"] == 0 and not opening.cells[coord]["tree"]:
 			placements.append(coord)
 	expect(not opening.cast_spell("summon", placements[1], opening_owner), "Starting one mana cannot pay the two-mana Summon cost")
 	opening.set_mana(opening_owner, 2)

@@ -10,8 +10,12 @@ $suites += "test_video_display"
 $suites += "test_settings"
 $suites += "test_music"
 $suites += "test_logistics_tutorial"
+$suites += "test_encirclement_tutorial"
 $suites += "test_single_rules"
 $suites += "test_painting_collection"
+$suites += "test_event_art"
+$suites += "test_event_art_loading"
+$suites += "test_gallery_loading"
 $suites += "test_player_profile"
 $suites += "test_account_progress"
 $suites += "test_kingdom_roads"
@@ -29,8 +33,13 @@ $suites += "test_hotseat"
 $suites += "test_steam_multiplayer"
 $suites += "test_steam_session"
 $suites += "test_multiplayer_setup"
+$suites += "test_nation_limits"
+$suites += "test_nation_lobbies"
+$suites += "test_ten_nation_match"
 $suites += "test_multiplayer_maps"
 $suites += "test_ui_consistency"
+$suites += "test_ui_audit"
+$suites += "test_tooltips"
 $suites += "test_tutorial"
 $suites += "test_tutorial_editor"
 $suites += "test_rebalance"
@@ -54,6 +63,8 @@ $suites += "test_new_events"
 $suites += "test_kingdom_palettes"
 $suites += "test_replay_viewer"
 $suites += "test_camera_zoom"
+$suites += "test_opening_camera"
+$suites += "test_clouds"
 $suites += "test_depth_of_field"
 $suites += "test_birds"
 $suites += "test_bird_heads"
@@ -96,8 +107,8 @@ foreach ($suite in $suites) {
     }
 }
 Write-Output "All $($suites.Count) test suites passed."
-& $pythonExecutable -B -m unittest discover -s (Join-Path $projectPath "tests") -p test_replay_report.py
-if ($LASTEXITCODE -ne 0) { throw "Python replay reader tests failed" }
+& $pythonExecutable -B -m unittest discover -s (Join-Path $projectPath "tests") -p 'test_*.py'
+if ($LASTEXITCODE -ne 0) { throw "Python tests failed" }
 } finally {
     $env:APPDATA = $previousAppData
 }

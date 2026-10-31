@@ -143,13 +143,13 @@ func run() -> void:
 	var gameplay = root.get_node("Gameplay")
 	var original_rules: String = gameplay.rule_mode
 	gameplay.set_rules("modern", false)
-	await app.start_new_game(456, "small", "easy", 6, {}, 6)
+	await app.start_new_game(456, "very_large", "easy", 10, {}, 10)
 	game = app.game
-	expect(game.rules.human_factions.size() == 6 and game.rules.is_modern(), "The current rules support six local players")
-	for seat in range(1, 7):
+	expect(game.rules.human_factions.size() == 10 and game.rules.is_modern(), "Large maps support ten local players")
+	for seat in range(1, 11):
 		await game.end_turn()
-		expect(game.player_faction == seat % 6 and not game.busy, "Every local seat receives a controllable turn")
-	expect(game.round_number == 2, "Six seats form one round")
+		expect(game.player_faction == seat % 10 and not game.busy, "Every local seat receives a controllable turn")
+	expect(game.round_number == 2, "Ten seats form one round")
 	gameplay.set_rules(original_rules, false)
 	await app.return_to_main_menu()
 	await app.start_new_game(123, "very_small", "easy", 2)

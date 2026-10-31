@@ -5,7 +5,10 @@ const Loc = preload("res://src/localization/text.gd")
 # remain readable but are no longer offered for new maps.
 const IDS := ["small", "medium", "large", "very_large", "huge"]
 const DEFAULT_KINGDOMS := 4
-const MAX_KINGDOMS := {"very_small": 4, "small": 6, "medium": 6, "large": 6, "very_large": 6, "huge": 6}
+const MAX_NATIONS := 10
+# About 28 nominal tiles per nation, rounded to an even roster, with four
+# allowed on the smallest profiles and a global ceiling of ten.
+const MAX_KINGDOMS := {"very_small": 4, "small": 4, "medium": 6, "large": 8, "very_large": 10, "huge": 10}
 const APPROX_TILES := {"very_small": 40, "small": 80, "medium": 150, "large": 250, "very_large": 500, "huge": 1000}
 # Nominal bounds set home-layout proportions; generation_bounds() supplies a
 # separate, generous safety envelope so rotated land never hits these edges.
@@ -42,13 +45,17 @@ static func generation_bounds(size_id: String) -> Vector2:
 static func clamp_kingdom_count(size_id: String, count: int) -> int:
 	return clampi(count, 2, MAX_KINGDOMS.get(size_id, MAX_KINGDOMS["small"]))
 
-static func fallback_sites(size_id: String) -> Array:
+static func fallback_sites(size_id: String, count := 0) -> Array:
 	# Only used after bounded random packing retries. These layouts fit full
 	# seven-hex homes with at least five steps between every capital pair.
 	if size_id == "very_small":
 		return [Vector2i(-3, -2), Vector2i(5, -2), Vector2i(-5, 3), Vector2i(3, 3)]
 	if size_id == "small":
 		return [Vector2i(-4, -3), Vector2i(1, -3), Vector2i(6, -3), Vector2i(-7, 3), Vector2i(-2, 3), Vector2i(3, 3)]
+	if count > 6:
+		# Triangular lattice: ten full home rings, all capitals at least five
+		# hexes apart. The generous generation envelope contains every ring.
+		return [Vector2i(-5,-5),Vector2i(0,-5),Vector2i(5,-5),Vector2i(-5,0),Vector2i(0,0),Vector2i(5,0),Vector2i(-5,5),Vector2i(0,5),Vector2i(5,5),Vector2i(0,-10)]
 	var radius := 6 if size_id == "medium" else 9
 	var result: Array = []
 	for direction in preload("res://src/game/hex_grid.gd").DIRECTIONS:

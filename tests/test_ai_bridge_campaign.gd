@@ -25,11 +25,11 @@ func recorded(name: String, authoritative := false):
 func short_turn_checks() -> void:
 	var model = recorded("ember-short-turn")
 	var before := Replay.position(model)
-	var planner = Planner.new(model,1)
+	var planner = Strategy.new(model,1)
 	var move: Dictionary = planner.run()
-	expect(move.get("coord") == Vector2i(8,4), "Hard accepts Ember's safe capture instead of holding")
-	expect(planner.best_sequence.size() == 1 and planner.best_score > 4, "Hard can stop after the profitable prefix without four harmful merges")
-	expect(planner.replies.size() <= 2 * Analysis.profile(model)["width"] + 1, "Prefix reply comparisons stay within a fixed bound")
+	expect(planner.best_sequence.any(func(action): return action.coord == Vector2i(8,4)), "Unified AI includes Ember's safe capture while advancing its rear army")
+	expect(planner.best_sequence.all(func(action): return model.cells[action.coord].unit == 0), "Unified AI does not merge the rear army when a safe capture is available")
+	expect(planner.evaluated <= planner.units.size() * 64, "Hard tactical comparisons stay within the per-unit budget")
 	expect(Replay.position(model) == before, "Short-plan search preserves the source state and RNG")
 	var options := Candidates.movements(model,1)
 	var distinct := {}
@@ -54,6 +54,7 @@ func recruitment_checks() -> void:
 	fresh.cells[Vector2i(2,1)] = fresh.make_cell()
 	fresh.cells[Vector2i(3,1)] = fresh.make_cell()
 	fresh.cells[Vector2i.ZERO]["capital"] = 0
+	fresh.cells[Vector2i(2,0)]["building"] = "city" # Cover all three frontier jobs.
 	fresh.cells[Vector2i(1,0)]["unit"] = 1
 	fresh.rebuild_kingdoms()
 	fresh.kingdom_at(Vector2i.ZERO)["gold"] = 100
@@ -96,6 +97,7 @@ func turn_checks() -> void:
 		model.replay_log = replay
 		replay.start(model)
 		var started := Time.get_ticks_usec()
+		var territory_before: int = model.territory(1)
 		model.ai_turn(1)
 		var crossing := false
 		var purchases := 0
@@ -107,7 +109,7 @@ func turn_checks() -> void:
 				if row["args"]["outcome"] == "attack": attacks += 1
 		expect(model.is_bridge(Vector2i(5,8)) and crossing, "Recovered turn builds and actually uses the bridge with "+backend)
 		expect(purchases == 0, "Recovered turn avoids redundant Scout purchases with "+backend)
-		expect(attacks > 0, "The recovered turn can pressure the rival rather than wait with "+backend)
+		expect(attacks > 0 or model.territory(1) > territory_before, "The recovered turn attacks or expands across its crossing with "+backend)
 		for bank in model.kingdoms.values():
 			if bank["owner"] == 1: expect(bank["gold"] + model.income(bank) - model.upkeep(bank) >= 0, "The offensive plan remains solvent")
 		print("Recovered Ember turn ",backend," ms: ",(Time.get_ticks_usec()-started)/1000.0)

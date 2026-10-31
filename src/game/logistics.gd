@@ -54,7 +54,7 @@ static func road_connected(a: Dictionary, b: Dictionary, source: Vector2i, targe
 	# Earlier experimental maps contain paved tiles without explicit route edges.
 	return (not a.has("road_links") or target in a.road_links) and (not b.has("road_links") or source in b.road_links)
 
-static func routes(state, source: Vector2i, tier := -1) -> Dictionary:
+static func routes(state, source: Vector2i, tier := -1, expiring_barriers_by := -1) -> Dictionary:
 	var parents := {source: Grid.NONE}
 	var costs := {source: 0}
 	var faction: int = state.unit_faction(source) if state.cells[source].unit > 0 else state.cells[source].owner
@@ -68,7 +68,8 @@ static func routes(state, source: Vector2i, tier := -1) -> Dictionary:
 		for next in state.neighbors(current):
 			var cell: Dictionary = state.cells[next]
 			var accessible: bool = cell.owner == faction or cell.building == "bridge" and (cell.unit == 0 or cell.get("unit_owner", -1) == faction)
-			if not accessible or state.is_mountain(next) or state.is_barrier(next) or state.has_wildlife(next): continue
+			var blocked: bool = state.is_barrier(next) and (expiring_barriers_by < 0 or cell.get("barrier_by", -1) != expiring_barriers_by)
+			if not accessible or state.is_mountain(next) or blocked or state.has_wildlife(next): continue
 			var cost: int = costs[current] + step_cost(state, current, next, faction)
 			if cost > budget or cost >= costs.get(next, 2147483647): continue
 			costs[next] = cost

@@ -27,13 +27,14 @@ func line_board():
 	return model
 func purchase_checks() -> void:
 	var model = line_board()
+	model.cells[Vector2i(6,0)]["building"] = "city" # Frontier purchases need a recruitment hub.
 	model.cells[Vector2i(7,0)]["unit"] = 1
 	model.cells[Vector2i(9,0)]["unit"] = 2
 	for q in range(8,12): model.cells[Vector2i(q,0)]["value"] = 1
 	# The enemy Soldier lends defence 2 to the frontier: only a Knight breaches.
 	for backend in [Planner,Strategy]:
 		var buy: Dictionary = backend.new(model,0,true).run()
-		expect(buy.get("kind") == "recruit" and buy.get("tier") == 3, "Both backends buy an affordable Knight for a Soldier-protected frontier")
+		expect(buy.get("kind") == "recruit" and buy.get("tier") == 3, "Both backends buy an affordable Knight for a Soldier-protected frontier (chosen %s)" % buy)
 		var copy = Analysis.snapshot(model)
 		expect(Candidates.apply(copy,buy,0), "Recommended Knight purchase is authoritative-legal")
 		if buy.get("kind") == "recruit": expect(copy.can_move(buy["coord"],Vector2i(8,0)), "Purchased Knight can breach the intended defence immediately")
@@ -53,8 +54,8 @@ func purchase_checks() -> void:
 	model.cells[Vector2i(1,0)]["unit"] = 3
 	model.kingdom_at(Vector2i.ZERO)["gold"] = 22
 	var queries = Analysis.Queries.new(model)
-	expect(not Analysis.safe_spending(model.kingdom_at(Vector2i.ZERO),20,4,queries),"An income improvement must not spend the wages needed for settlement")
-	var unsafe := Candidates.preparation(model,0).filter(func(a): return a["kind"] in ["house","tower","bridge"])
+	expect(not Analysis.safe_spending(model.kingdom_at(Vector2i.ZERO),2,1,queries),"An income improvement must not spend the wages needed for settlement")
+	var unsafe := Candidates.preparation(model,0).filter(func(a): return a["kind"] in ["city","tower","bridge","road","develop"])
 	expect(unsafe.is_empty(),"No construction that knowingly bankrupts the existing army")
 func bridge_checks() -> void:
 	var model = Rules.new()
@@ -145,10 +146,20 @@ func replay_checks() -> void:
 		var model = restore.restore(sample)
 		var faction := int(sample["faction"])
 		var options := Candidates.preparation(model,faction)
-		expect(options.any(func(a):return a["kind"] == "recruit" and a["tier"] == 2),"Replay %s keeps a useful Soldier option" % id)
-		if id.begins_with("small"):
-			var buy: Dictionary = Planner.new(model,faction,true).run()
-			expect(buy.get("tier",0) == 2,"Replay %s buys the useful Soldier" % id)
+		# These pre-city recordings have no legal reinforcement hub at the front.
+		# Under current logistics, supply must be established before buying troops.
+		if id in ["small-174","large-409"]:
+			for backend in [Planner,Strategy]:
+				var buy: Dictionary = backend.new(model,faction,true).run()
+				expect(buy.get("kind") == "city","Replay %s establishes frontier recruitment before another rear unit" % id)
+				var copy = Analysis.snapshot(model)
+				var previous_zone := preload("res://src/game/logistics.gd").recruitment_zone(copy,buy.coord,faction)
+				expect(Candidates.apply(copy,buy,faction) and not previous_zone and preload("res://src/game/logistics.gd").recruitment_zone(copy,buy.coord,faction) and copy.kingdom_at(buy.coord).gold >= 0,"Replay %s establishes new recruitment coverage without overspending" % id)
+		else:
+			expect(options.any(func(a):return a["kind"] == "recruit" and a["tier"] == 2),"Replay %s keeps a useful Soldier option" % id)
+			if id.begins_with("small"):
+				var buy: Dictionary = Planner.new(model,faction,true).run()
+				expect(buy.get("tier",0) == 2,"Replay %s buys the useful Soldier" % id)
 	restore.free()
 func run() -> void:
 	purchase_checks()

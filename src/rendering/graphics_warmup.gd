@@ -77,6 +77,9 @@ func prepare(board, palette_owners: Array = [], report: Callable = Callable()) -
 			Lifetime.set_layers(surface, 1)
 			if surface.get_parent() == board.playback: surface.position = board.focus
 	# These are real draws in the game's viewport, concealed by the loading UI.
+	await board.clouds.prepare()
+	board.clouds.warming = true
+	board.clouds.update_camera()
 	for frame in range(3):
 		await get_tree().process_frame
 		if DisplayServer.get_name() != "headless":
@@ -87,6 +90,8 @@ func prepare(board, palette_owners: Array = [], report: Callable = Callable()) -
 		Lifetime.set_layers(saved[0], saved[1])
 		saved[0].position = saved[2]
 	storage.position = storage_position
+	board.clouds.warming = false
+	board.clouds.update_camera()
 	hide()
 	completed = true
 	if report.is_valid(): report.call(1.0)

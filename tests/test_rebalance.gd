@@ -82,6 +82,8 @@ func run() -> void:
 		expect(s.move_unit(Vector2i(2, 0), Vector2i.RIGHT), "First Knight breaches the protective ring")
 		expect(s.move_unit(Vector2i(2, -1), Vector2i.ZERO) and s.cells[Vector2i.ZERO]["unit"] == 0 and s.cells[Vector2i.ZERO]["capital"] == 0, "Second Knight removes the defender by a duel without capturing the capital")
 		s.cells[Vector2i(-2, 0)]["unit"] = 2
-		expect(s.move_unit(Vector2i(-2, 0), Vector2i.ZERO) and s.cells[Vector2i.ZERO]["owner"] == 1, "A ready follower can capture the capital through the breached ring")
+		expect(not s.can_move(Vector2i(-2,0),Vector2i.ZERO),"An opposite-side follower cannot shortcut through unbreached enemy territory")
+		s.cells[Vector2i(2,-2)]["unit"] = 2
+		expect(s.move_unit(Vector2i(2,-2), Vector2i.ZERO) and s.cells[Vector2i.ZERO]["owner"] == 1, "A ready follower within range captures the capital through the breached ring")
 	print("Rebalance checks: %d passed, %d failed" % [checks - failures, failures])
 	quit(1 if failures else 0)

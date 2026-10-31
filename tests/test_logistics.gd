@@ -5,6 +5,7 @@ const Queries = preload("res://src/game/ai_queries.gd")
 const Snapshot = preload("res://src/game/state_snapshot.gd")
 const Replay = preload("res://src/game/replay_log.gd")
 const Document = preload("res://src/editor/level_document.gd")
+const Actions = preload("res://src/tutorial_editor/tutorial_actions.gd")
 var checks := 0
 var failures := 0
 class Host:
@@ -276,6 +277,11 @@ func construction_checks() -> void:
 	state.cells[Vector2i(12, 0)].unit = 0
 	expect(state.can_recruit(Vector2i(12, 0), 0, 1), "New owners can use their captured city")
 
+func dismantle_rejected(state, coord: Vector2i, faction: int) -> bool:
+	var before: Dictionary = Snapshot.capture(state)
+	var result: Dictionary = Actions.apply(state,{"kind":"dismantle","target":coord},faction)
+	return not result.ok and Snapshot.capture(state) == before
+
 func economy_checks() -> void:
 	var state = fixture()
 	var home := Vector2i.ZERO
@@ -292,18 +298,22 @@ func economy_checks() -> void:
 	var gold: int = state.kingdom_at(home).gold
 	state.begin_turn(0)
 	expect(state.kingdom_at(home).gold == gold + state.income(state.kingdom_at(home)) - 6, "Turn settlement charges infrastructure exactly once")
-	expect(not state.dismantle(Vector2i(2, 0), 0) and state.tower_cost(0) == 25 and state.upkeep(state.kingdom_at(home)) == 6, "Towers are a permanent upkeep and construction-price commitment")
-	expect(not state.dismantle(bridge, 1), "Another faction cannot dismantle the builder's bridge")
+	expect(dismantle_rejected(state,Vector2i(2, 0),0) and state.tower_cost(0) == 25 and state.upkeep(state.kingdom_at(home)) == 6, "Towers are a permanent upkeep and construction-price commitment")
+	expect(dismantle_rejected(state,bridge,1), "Another faction cannot dismantle the builder's bridge")
 	state.cells[bridge].unit = 1
 	state.cells[bridge].unit_owner = 0
-	expect(not state.can_dismantle(bridge, 0), "Occupied bridges cannot be dismantled under a unit")
+	expect(dismantle_rejected(state,bridge,0), "Occupied bridges cannot be dismantled under a unit")
 	state.cells[bridge].unit = 0
-	expect(state.dismantle(bridge, 0) and not state.cells.has(bridge), "An empty sponsored bridge can be dismantled")
+	expect(dismantle_rejected(state,bridge,0) and state.cells.has(bridge), "Even the sponsor cannot dismantle an empty bridge through an authored command")
+	state.cells[home].mana_source = true
+	state.mana_by_faction[0] = 2
+	var before_shatter: int = state.kingdom_at(home).gold
+	expect(state.cast_spell("shatter",bridge,0) and not state.cells.has(bridge) and state.get_mana(0) == 0 and state.kingdom_at(home).gold == before_shatter and state.upkeep(state.kingdom_at(home)) == 4, "Shatter spends mana, removes the bridge and upkeep, and gives no construction refund")
 	gold = state.kingdom_at(home).gold
 	expect(state.build_road(home, Vector2i(3, 0), 0) and state.kingdom_at(home).gold == gold - 4, "A structure connection costs one gold for each newly paved tile")
 	expect(not state.build_road(home, Vector2i(3, 0), 0), "An already connected route cannot be purchased twice")
 	var before_road: Dictionary = state.cells.duplicate(true)
-	expect(not state.dismantle(home, 0) and state.cells == before_road, "Road removal is rejected without changing the network")
+	expect(dismantle_rejected(state,home,0) and state.cells == before_road, "Road removal is rejected without changing the network")
 	state = fixture()
 	state.build_structure(bridge, 0, "bridge", home)
 	state.relocate_capital(Vector2i(2, 0), 0)
@@ -313,14 +323,16 @@ func economy_checks() -> void:
 
 func replay_editor_checks() -> void:
 	var state = fixture()
+	state.cells[Vector2i.ZERO].mana_source = true
+	state.mana_by_faction[0] = 2
 	state.replay_log = Replay.new()
 	state.replay_log.start(state)
 	state.build_structure(Vector2i(3, 0), 0, "city")
 	state.build_road(Vector2i.ZERO, Vector2i(3, 0), 0)
 	state.build_structure(Vector2i(0, 1), 0, "bridge", Vector2i.ZERO)
-	state.dismantle(Vector2i(0, 1), 0)
+	expect(state.cast_spell("shatter",Vector2i(0, 1),0), "A sponsored bridge is removed through Shatter for replay coverage")
 	var replay: Dictionary = Replay.read_records(state.replay_log.records)
-	expect(replay.error == "" and replay.position.cells == state.cells, "Replays preserve cities, roads, sponsorship and demolition")
+	expect(replay.error == "" and replay.position.cells == state.cells, "Replays preserve cities, roads, sponsorship and shattered bridges")
 	var document := Document.new()
 	document.cells = fixture().cells
 	document.player_start = Vector2i.ZERO
@@ -494,7 +506,7 @@ func run() -> void:
 	expect(scene.view.roads.mesh_cache.size() == cached_meshes, "Placement needs no new road meshes after previewing")
 	expect(scene.view.tile_nodes[home].get_node("Features").has_node("CapitalCastle"), "Capital uses the new castle model")
 	scene.inspect_province(home)
-	expect(not scene.province_view.dismantle_button.visible, "Road details do not expose removal")
+	expect(scene.province_view.find_children("*","Button",false).all(func(button): return not button.text.to_lower().contains("dismantle")), "Province details do not expose dismantling")
 	scene.rules.cells[home].erase("road")
 	scene.rules.cells[home].erase("road_links")
 	var peer = load("res://src/network/network_match.gd").new(Host.new(), scene, [{"id":7}])
@@ -517,6 +529,14 @@ func run() -> void:
 	expect(not peer.valid_command(7, command) and not peer.valid_command(8, command), "The host rejects road removal even from its owner")
 	scene.rules.cells[site].building = "tower"
 	expect(not peer.valid_command(7, command), "The host rejects tower removal")
+	var crossings: Array = scene.rules.bridge_targets(0,home).keys()
+	var crossing: Vector2i = crossings[0] if not crossings.is_empty() else scene.NONE
+	expect(scene.rules.build_structure(crossing,0,"bridge",home), "The network rejection fixture includes an empty sponsored bridge")
+	command.coord = crossing
+	var bridge_before: Dictionary = scene.cells[crossing].duplicate(true)
+	expect(not peer.valid_command(7,command), "The host rejects bridge dismantling even from its sponsor")
+	await peer.handle(7,command)
+	expect(scene.cells[crossing] == bridge_before, "Rejected dismantling leaves the bridge intact")
 	scene.network_match = null
 	scene.session.online = false
 	peer.free()

@@ -21,7 +21,7 @@ func start(arriving: bool) -> void:
 	if board.unit_batches != null:
 		board.unit_batches.sync()
 	entering = arriving
-	board.stop_camera_pan()
+	board.navigation.stop_camera_pan(true,true)
 	var travel: float = board.camera.size + 18.0
 	var offset: Vector3 = board.camera.global_basis.y * travel
 	var departure_move := Vector3.ZERO

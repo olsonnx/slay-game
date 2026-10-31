@@ -156,6 +156,7 @@ func run() -> void:
 
 	# Graves suppress income and can be removed by landing or recruitment.
 	fixture({a: 0, b: 0, c: 0, d: 0})
+	board.cells[b]["building"] = "city" # Forward hub covers the clearing/upgrade site.
 	board.cells[b]["grave"] = true
 	board.cells[c]["tree"] = true
 	expect(board.income(board.kingdom_at(a)) == 2, "Trees and graves do not earn income")
@@ -171,6 +172,7 @@ func run() -> void:
 	expect(not board.cells[c]["moved"] and board.can_move(c, d), "Upgraded unmoved unit remains ready to move")
 	expect(not board.recruit(c, 0), "Tier three cannot upgrade further")
 	fixture({a: 0, b: 0, c: 0, d: 0})
+	board.cells[c]["building"] = "city" # Covers the later direct Knight deployment.
 	expect(board.recruit(b, 0, 2), "Soldier can be recruited directly from shop")
 	expect(board.cells[b]["unit"] == 2 and board.kingdom_at(b)["gold"] == 80, "Direct Soldier purchase costs twenty gold")
 	expect(board.recruit(b, 0, 3) and board.kingdom_at(b)["gold"] == 60, "Knight upgrade charges the twenty-gold price difference")
@@ -181,6 +183,7 @@ func run() -> void:
 	board.kingdom_at(a)["gold"] = 9
 	expect(not board.recruit(a, 0, 1), "Direct recruitment checks local funds")
 	fixture({a: 0, b: 0, c: 0, d: 0})
+	board.cells[b]["building"] = "city"
 	board.cells[b]["unit"] = 1
 	expect(board.recruit(b, 0, 2) and board.move_unit(b, c), "Scout upgraded to Soldier can move in the same turn")
 	var upgrade_gold: int = board.kingdom_at(c)["gold"]
@@ -210,19 +213,19 @@ func run() -> void:
 
 	# Construction, adjacent defense, strict strength, and captured building removal.
 	fixture({a: 0, b: 0, c: 0, d: 1, e: 1, Vector2i(5, 0): 1})
-	expect(board.build_structure(b, 0, "house"), "House can be built on clear land")
-	expect(board.income(board.kingdom_at(a)) == 7, "House contributes four additional gold")
-	expect(board.kingdom_at(a)["gold"] == 80, "House costs twenty local gold")
+	expect(board.build_structure(b, 0, "city"), "City can be built on clear land")
+	expect(board.income(board.kingdom_at(a)) == 3, "City provides recruitment without an income bonus")
+	expect(board.kingdom_at(a)["gold"] == 75, "City costs twenty-five local gold")
 	expect(not board.build_structure(b, 0, "tower"), "Cannot stack buildings")
-	expect(not board.recruit(b, 0), "Cannot recruit on a building")
-	expect(not board.build_structure(a, 0, "house"), "Cannot build over a capital")
+	expect(board.can_recruit(b, 0), "Cities allow recruitment on their own tile")
+	expect(not board.build_structure(a, 0, "city"), "Cannot build over a capital")
 	board.cells[c]["tree"] = true
 	expect(not board.build_structure(c, 0, "tower"), "Trees must be cleared before construction")
 	board.cells[c]["tree"] = false
 	board.cells[c]["grave"] = true
-	expect(not board.build_structure(c, 0, "house"), "Graves must be cleared before construction")
+	expect(not board.build_structure(c, 0, "city"), "Graves must be cleared before construction")
 	board.cells[c]["grave"] = false
-	expect(not board.build_structure(e, 0, "house"), "Cannot construct on enemy land")
+	expect(not board.build_structure(e, 0, "city"), "Cannot construct on enemy land")
 	expect(board.build_structure(c, 0, "tower"), "Tower can be built")
 	expect(board.defense(b) == 2 and board.defense(c) == 2, "Tower protects self and adjacent friendly hexes")
 	board.cells[d]["unit"] = 2
@@ -230,12 +233,12 @@ func run() -> void:
 	board.cells[d]["unit"] = 3
 	expect(board.move_unit(d, c) and board.cells[c]["building"] == "", "Stronger unit captures and destroys tower")
 	board.cells[c]["moved"] = false
-	expect(board.move_unit(c, b) and board.cells[b]["building"] == "", "Enemy house is destroyed on capture")
+	expect(board.move_unit(c, b) and board.cells[b]["building"] == "city", "Captured city survives as a recruitment hub")
 
 	# Tree spread cannot overwrite graves, units, buildings or capitals.
 	fixture({a: -1, b: -1, c: -1, d: -1, Vector2i(0, 1): 0, Vector2i(1, 1): 0})
 	board.cells[a]["tree"] = true
-	board.cells[c]["building"] = "house"
+	board.cells[c]["building"] = "city"
 	board.cells[d]["grave"] = true
 	board.cells[Vector2i(1, 1)]["unit"] = 1
 	for iteration in range(50):
@@ -267,7 +270,7 @@ func run() -> void:
 	expect(game.action_mode == "recruit" and game.recruit_tier == 2 and not game.shop_panel.visible, "Selecting Soldier activates placement and closes its list")
 	game.cancel_action()
 	game.build_button.pressed.emit()
-	expect(game.shop_panel.visible and game.shop_items.get_child_count() == 3, "Build button opens tower, house and bridge choices")
+	expect(game.shop_panel.visible and game.shop_items.get_child_count() == 3, "Build button opens tower, city and bridge choices")
 	game.shop_items.get_child(0).pressed.emit()
 	expect(game.action_mode == "tower" and not game.shop_panel.visible, "Tower card activates building placement")
 	game.cancel_action()
@@ -320,9 +323,9 @@ func run() -> void:
 	expect(game.recruit_button.get_global_rect().position.y > 650 and game.end_button.get_global_rect().position.x > 1000, "Recruitment and turn buttons occupy opposite bottom corners")
 	game.toggle_action("tower")
 	expect(game.action_mode == "tower", "Tower action is exposed in UI")
-	game.toggle_action("house")
-	expect(game.action_mode == "house", "House action replaces tower action")
-	game.toggle_action("house")
+	game.toggle_action("city")
+	expect(game.action_mode == "city", "City action replaces tower action")
+	game.toggle_action("city")
 	expect(game.action_mode == "", "Repeating action cancels it")
 	var owned: Array = game.active_kingdom()["hexes"]
 	game.active_kingdom()["gold"] = 16
@@ -337,18 +340,18 @@ func run() -> void:
 	expect(game.active_kingdom()["gold"] == 1, "Construction UI spends selected kingdom funds")
 	var roof_point: Vector2 = game.view.camera.unproject_position(game.view.coord_position(tower_hex) + Vector3(0, 0.98, 0))
 	expect(game.view.hex_at_screen(roof_point) == tower_hex, "Clicking the visible tower roof selects its hex")
-	game.active_kingdom()["gold"] = 20
-	game.toggle_action("house")
-	var house_hex := Rules.NONE
+	game.active_kingdom()["gold"] = 25
+	game.toggle_action("city")
+	var city_hex := Rules.NONE
 	for coord in owned:
-		if game.rules.can_build(coord, 0, "house"):
-			house_hex = coord
+		if game.rules.can_build(coord, 0, "city"):
+			city_hex = coord
 			game.click_hex(coord)
 			break
-	expect(house_hex != Rules.NONE and game.cells[house_hex]["building"] == "house", "House can be built through a UI action")
+	expect(city_hex != Rules.NONE and game.cells[city_hex]["building"] == "city", "City can be built through a UI action")
 	expect(game.money_label.text == "0 G", "UI reflects local treasury after construction")
-	roof_point = game.view.camera.unproject_position(game.view.coord_position(house_hex) + Vector3(0, 0.90, 0))
-	expect(game.view.hex_at_screen(roof_point) == house_hex, "Clicking the visible house roof selects its hex")
+	roof_point = game.view.camera.unproject_position(game.view.coord_position(city_hex) + Vector3(0, 0.90, 0))
+	expect(game.view.hex_at_screen(roof_point) == city_hex, "Clicking the visible city roof selects its hex")
 	var scout := Rules.NONE
 	for coord in owned:
 		if game.cells[coord]["unit"] > 0:
@@ -396,7 +399,7 @@ func run() -> void:
 		game.check_winner()
 		expect(game.game_over and game.message.contains("Victory") and game.rules.territory(1) == 1 and game.rules.has_units(5), "Enemy singletons and stranded troops cannot prevent victory once all enemy capitals are gone")
 	for mode in ["modern"]:
-		for building in ["", "house", "tower", "monument"]:
+		for building in ["", "city", "tower", "monument"]:
 			game.new_game()
 			game.rules.rule_mode = mode
 			game.cells.clear()

@@ -6,7 +6,7 @@ signal save_failed(error: Error)
 const DEFAULT_PATH := "user://video_settings.cfg"
 const RESOLUTIONS := [Vector2i(1280, 720), Vector2i(1600, 900), Vector2i(1920, 1080), Vector2i(2560, 1440), Vector2i(3840,2160)]
 const BASE_SIZE := Vector2i(1280, 720)
-const EXTRA_DEFAULTS := {"ui_scale":1.0, "tooltip_delay":0.65, "show_fps":false, "reduced_motion":false, "menu_animation":true, "depth_of_field":true, "ambient_occlusion":true, "brightness":1.0, "frame_limit":0, "background_frame_limit":30}
+const EXTRA_DEFAULTS := {"ui_scale":1.0, "tooltip_delay":0.65, "show_fps":false, "reduced_motion":false, "menu_animation":true, "depth_of_field":true, "clouds":true, "ambient_occlusion":true, "brightness":1.0, "frame_limit":0, "background_frame_limit":30}
 const FRAME_LIMITS := [0,30,60,90,120,144,165,240]
 var ui_scale := 1.0
 var tooltip_delay := 0.65
@@ -14,6 +14,7 @@ var show_fps := false
 var reduced_motion := false
 var menu_animation := true
 var depth_of_field := true
+var clouds := true
 var ambient_occlusion := true
 var brightness := 1.0
 var frame_limit := 0

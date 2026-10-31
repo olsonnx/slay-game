@@ -32,7 +32,7 @@ static func unit_tooltip(tier: int, wages := -1) -> String:
 
 static func building_tooltip(kind: String, price := -1) -> String:
 	if kind == "bridge":
-		return Loc.text("Bridge · cost %d G\nNeutral crossing · upkeep 2 G / turn per segment\nBuilder pays; dismantle in province details") % BRIDGE_COST
+		return Loc.text("Bridge · cost %d G\nNeutral crossing · upkeep 2 G / turn per segment\nBuilder pays; only Shatter can remove it") % BRIDGE_COST
 	if kind == "tower":
 		return Loc.text("Tower · cost %d G\nProtects self + adjacent friendly land\nUpkeep 2 G / turn · next tower costs 5 G more") % (TOWER_COST if price < 0 else price)
 	if kind == "road":

@@ -71,7 +71,6 @@ var metadata_target := ""
 var preview_title: Label
 var preview_result: Label
 var preview_details: Label
-var preview_hint: Label
 var start_button: Button
 var previous_button: Button
 var next_button: Button
@@ -110,6 +109,7 @@ func open_file_dialog() -> void:
 	# Do this only for an explicit import, never while entering the replay menu.
 	if dialog == null:
 		dialog = FileDialog.new()
+		dialog.theme = interface.theme
 		dialog.access = FileDialog.ACCESS_FILESYSTEM
 		dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
 		dialog.filters = PackedStringArray(["*.jsonl ; Replay recordings"])
@@ -148,7 +148,6 @@ func refresh_library() -> void:
 	preview_title.add_theme_color_override("font_color", Ui.TEXT)
 	preview_result.text = ""
 	preview_details.text = ""
-	preview_hint.show()
 	list.clear()
 	paths.clear()
 	pending_files.clear()
@@ -267,7 +266,6 @@ func show_summary(summary: Dictionary) -> void:
 	preview_title.text = Summary.players(summary)
 	preview_result.text = Summary.outcome(summary)
 	preview_details.text = Summary.description(summary)
-	preview_hint.hide()
 	var palette := Identity.resolve({"metadata":{"factions":summary.get("factions", []), "match":summary.get("match", {})}})
 	var humans: Array = summary.get("humans", [])
 	var faction: int = int(humans[0]) if not humans.is_empty() else -1

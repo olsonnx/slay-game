@@ -47,6 +47,7 @@ var static_batches
 var unit_batches
 var unit_spawn_effects
 var birds
+var clouds
 var wildlife
 var batch_dirty_ids: Dictionary = {}
 var batch_update_pending := false
@@ -352,6 +353,8 @@ func _ready() -> void:
 	visible_board_changed.connect(birds.sync)
 	wildlife = preload("res://src/rendering/wildlife_presentation.gd").new(self)
 	board_root.add_child(wildlife)
+	clouds = preload("res://src/rendering/board_clouds.gd").new(self)
+	add_child(clouds)
 	visible_board_changed.connect(wildlife.sync)
 	overlays.prepare_building_previews()
 	value_heatmap.changed.connect(refresh_value_batches)
@@ -477,6 +480,7 @@ func _apply_background() -> void:
 	sky_backdrop.visible = active and not use_water
 	navigation.water_background = use_water
 	background_environment.background_mode = Environment.BG_COLOR if use_water else Environment.BG_CANVAS
+	if clouds != null: clouds.update_camera()
 	background_environment.background_color = Color("253d47")
 	update_camera()
 
@@ -735,12 +739,14 @@ func record_capture_sample(sample: Dictionary) -> void:
 	capture_samples.append(sample)
 
 func _on_camera_changed() -> void:
+	if clouds != null: clouds.update_camera()
 	if island_transition != null: island_transition.camera_changed()
 	if lighting != null: lighting.update_camera()
 	update_upgrade_indicator()
 
 func set_active(value: bool) -> void:
 	active = value
+	if clouds != null: clouds.update_camera()
 	controls_enabled = value
 	camera.current = value
 	if not value:

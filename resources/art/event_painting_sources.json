@@ -1,0 +1,330 @@
+{
+  "description": "Event paintings added for playtesting. Full images are retained; the UI applies a non-destructive 2:1 crop.",
+  "frame_aspect": 2.0,
+  "artworks": [
+    {
+      "event": "gold",
+      "path": "res://assets/paintings/events/gold.jpg",
+      "title": "The Parable of the Rich Fool",
+      "artist": "Rembrandt",
+      "focus": [
+        0.5,
+        0.47
+      ],
+      "source": "https://commons.wikimedia.org/wiki/File:Rembrandt_-_The_Parable_of_the_Rich_Fool.jpg",
+      "source_file": "File:Rembrandt - The Parable of the Rich Fool.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/a/a1/Rembrandt_-_The_Parable_of_the_Rich_Fool.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "license": "Public domain",
+      "license_url": "",
+      "original_width": 2998,
+      "original_height": 2228,
+      "sha256": "fa766cc270fa3222b21f08743b31e40611232378cafa9baa362b6ea5b712ff6a",
+      "bytes": 4352237
+    },
+    {
+      "event": "altar",
+      "path": "res://assets/paintings/events/altar.jpg",
+      "title": "Cairn in Snow",
+      "artist": "Caspar David Friedrich",
+      "focus": [
+        0.5,
+        0.58
+      ],
+      "source": "https://commons.wikimedia.org/wiki/File:Caspar_David_Friedrich_-_Cairn_in_Snow_-_Google_Art_Project.jpg",
+      "source_file": "File:Caspar David Friedrich - Cairn in Snow - Google Art Project.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/0/0c/Caspar_David_Friedrich_-_Cairn_in_Snow_-_Google_Art_Project.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "license": "Public domain",
+      "license_url": "",
+      "original_width": 4390,
+      "original_height": 3329,
+      "sha256": "562423bcde1542c633a30f7b7b940f6cfcc149b97a2fd5298af3fb312b9eff85",
+      "bytes": 8819349
+    },
+    {
+      "event": "pit",
+      "path": "res://assets/paintings/events/pit.png",
+      "title": "Alpine Landscape with Beck",
+      "artist": "Gustave Doré",
+      "focus": [
+        0.5,
+        0.62
+      ],
+      "source": "https://commons.wikimedia.org/wiki/File:Alpine_Landscape_with_Beck_(SM_1553).png",
+      "source_file": "File:Alpine Landscape with Beck (SM 1553).png",
+      "download_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/cb/Alpine_Landscape_with_Beck_%28SM_1553%29.png/1920px-Alpine_Landscape_with_Beck_%28SM_1553%29.png?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "PDM-owner",
+      "license_url": "",
+      "original_width": 3117,
+      "original_height": 4216,
+      "sha256": "b337d735be6674c19fb0cd5dc018e8e3397d0748b281a1cf209f7c0de5aa44cd",
+      "bytes": 9594264
+    },
+    {
+      "event": "duel",
+      "path": "res://assets/paintings/events/duel.jpg",
+      "title": "Combat of the Giaour and Hassan",
+      "artist": "Eugène Delacroix",
+      "focus": [
+        0.5,
+        0.42
+      ],
+      "source": "https://commons.wikimedia.org/wiki/File:Eug%C3%A8ne_Delacroix_-_Combat_du_Giaour_et_Hassan_(1826).jpg",
+      "source_file": "File:Eugène Delacroix - Combat du Giaour et Hassan (1826).jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/9/90/Eug%C3%A8ne_Delacroix_-_Combat_du_Giaour_et_Hassan_%281826%29.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "license": "Public domain",
+      "license_url": "",
+      "original_width": 5000,
+      "original_height": 4035,
+      "sha256": "1cf17c6508817e2665a4e4f6b2023314046c698f26aa2d22c6ea39a5aa8d7a63",
+      "bytes": 6646262
+    },
+    {
+      "event": "wizard",
+      "path": "res://assets/paintings/events/wizard.jpg",
+      "title": "The Alchemist",
+      "artist": "David Teniers the Younger",
+      "focus": [
+        0.5,
+        0.48
+      ],
+      "source": "https://commons.wikimedia.org/wiki/File:David_Teniers_de_Jonge_-_The_Alchemist_-_261_-_Mauritshuis.jpg",
+      "source_file": "File:David Teniers de Jonge - The Alchemist - 261 - Mauritshuis.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/2/28/David_Teniers_de_Jonge_-_The_Alchemist_-_261_-_Mauritshuis.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "license": "Public domain",
+      "license_url": "",
+      "original_width": 6000,
+      "original_height": 4437,
+      "sha256": "b9b2c56c3a8e7875a6fb4c069ceb0c5040453c6e473d98437ca359d244ebc734",
+      "bytes": 7923035
+    },
+    {
+      "event": "goose",
+      "path": "res://assets/paintings/events/goose.jpg",
+      "title": "Geese and Ducks",
+      "artist": "Melchior d’Hondecoeter",
+      "focus": [
+        0.5,
+        0.6
+      ],
+      "source": "https://commons.wikimedia.org/wiki/File:Melchior_d%27_Hondecoeter_-_Geese_and_Ducks_-_61_-_Mauritshuis.jpg",
+      "source_file": "File:Melchior d' Hondecoeter - Geese and Ducks - 61 - Mauritshuis.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/2/22/Melchior_d%27_Hondecoeter_-_Geese_and_Ducks_-_61_-_Mauritshuis.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "license": "Public domain",
+      "license_url": "",
+      "original_width": 6000,
+      "original_height": 5082,
+      "sha256": "5e4317bb2d3f173f280affd633d234e5d499b568414e72cbe4c9cff8b359227f",
+      "bytes": 10189528
+    },
+    {
+      "event": "innkeeper",
+      "path": "res://assets/paintings/events/innkeeper.jpg",
+      "title": "Tavern Scene",
+      "artist": "David Teniers the Younger",
+      "focus": [
+        0.5,
+        0.5
+      ],
+      "source": "https://commons.wikimedia.org/wiki/File:David_Teniers_the_Younger,_Tavern_Scene,_1658,_NGA_55505.jpg",
+      "source_file": "File:David Teniers the Younger, Tavern Scene, 1658, NGA 55505.jpg",
+      "download_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/94/David_Teniers_the_Younger%2C_Tavern_Scene%2C_1658%2C_NGA_55505.jpg/3840px-David_Teniers_the_Younger%2C_Tavern_Scene%2C_1658%2C_NGA_55505.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "original_width": 4000,
+      "original_height": 2822,
+      "sha256": "888acbf3478e8c0a861be226e3f8b25d8cbc3d582770dbef2725f2d32217f6b9",
+      "bytes": 2394799
+    },
+    {
+      "event": "regroup",
+      "path": "res://assets/paintings/events/regroup.jpg",
+      "title": "Army Camp",
+      "artist": "Philips Wouwerman",
+      "focus": [
+        0.5,
+        0.62
+      ],
+      "source": "https://commons.wikimedia.org/wiki/File:Philips_Wouwerman_-_Army_Camp_-_220_-_Mauritshuis.jpg",
+      "source_file": "File:Philips Wouwerman - Army Camp - 220 - Mauritshuis.jpg",
+      "download_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/82/Philips_Wouwerman_-_Army_Camp_-_220_-_Mauritshuis.jpg/3840px-Philips_Wouwerman_-_Army_Camp_-_220_-_Mauritshuis.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "Public domain",
+      "license_url": "",
+      "original_width": 6000,
+      "original_height": 4192,
+      "sha256": "413105045d7e8fd4135aa9327b585b29b4818a539eba458fa5d1b5c9b287337e",
+      "bytes": 3066131
+    },
+    {
+      "event": "cartographer",
+      "path": "res://assets/paintings/events/cartographer.jpg",
+      "title": "The Geographer",
+      "artist": "Johannes Vermeer",
+      "focus": [
+        0.5,
+        0.48
+      ],
+      "source": "https://commons.wikimedia.org/wiki/File:Johannes_Vermeer_-_The_Geographer_-_Google_Art_Project.jpg",
+      "source_file": "File:Johannes Vermeer - The Geographer - Google Art Project.jpg",
+      "download_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2a/Johannes_Vermeer_-_The_Geographer_-_Google_Art_Project.jpg/3840px-Johannes_Vermeer_-_The_Geographer_-_Google_Art_Project.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "Public domain",
+      "license_url": "",
+      "original_width": 7991,
+      "original_height": 8959,
+      "sha256": "be478b4f41d12f15df34f29c93ac4985176226709d0f7d195a8a3c3fda26ff2f",
+      "bytes": 4436093
+    },
+    {
+      "event": "ransom",
+      "path": "res://assets/paintings/events/ransom.jpg",
+      "title": "The Laughing Cavalier",
+      "artist": "Frans Hals",
+      "focus": [
+        0.5,
+        0.31
+      ],
+      "source": "https://commons.wikimedia.org/wiki/File:Frans_Hals_%E2%80%93_The_Laughing_Cavalier.jpg",
+      "source_file": "File:Frans Hals – The Laughing Cavalier.jpg",
+      "download_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d1/Frans_Hals_%E2%80%93_The_Laughing_Cavalier.jpg/3840px-Frans_Hals_%E2%80%93_The_Laughing_Cavalier.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "Public domain",
+      "license_url": "",
+      "original_width": 6687,
+      "original_height": 8165,
+      "sha256": "cc79e948a652b951fe4f251f4063e47d07ec215785f4cb7ee1f9dccf785b7d25",
+      "bytes": 4316972
+    },
+    {
+      "event": "revolt",
+      "path": "res://assets/paintings/events/revolt.jpg",
+      "title": "Peasant Brawl",
+      "artist": "Adriaen Brouwer",
+      "focus": [
+        0.5,
+        0.56
+      ],
+      "source": "https://commons.wikimedia.org/wiki/File:Peasant_Brawl_by_Adriaen_Brouwer_Mauritshuis_919.jpg",
+      "source_file": "File:Peasant Brawl by Adriaen Brouwer Mauritshuis 919.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/a/a0/Peasant_Brawl_by_Adriaen_Brouwer_Mauritshuis_919.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "original_width": 5948,
+      "original_height": 4510,
+      "sha256": "e2a1bc48fbfe6f61139966c0b35cdacdb79656e4203a45943966b25c24f670bd",
+      "bytes": 3558069
+    },
+    {
+      "event": "stainless_steel",
+      "path": "res://assets/paintings/events/stainless_steel.jpg",
+      "title": "The Blacksmith’s Shop",
+      "artist": "Joseph Wright of Derby",
+      "focus": [
+        0.5,
+        0.56
+      ],
+      "source": "https://commons.wikimedia.org/wiki/File:Joseph_Wright_of_Derby_-_The_Blacksmith%27s_Shop_-_Google_Art_Project.jpg",
+      "source_file": "File:Joseph Wright of Derby - The Blacksmith's Shop - Google Art Project.jpg",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/c/c4/Joseph_Wright_of_Derby_-_The_Blacksmith%27s_Shop_-_Google_Art_Project.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "license": "Public domain",
+      "license_url": "",
+      "original_width": 4688,
+      "original_height": 5975,
+      "sha256": "d850391dd84363fadfade27fe91d6b9ab015c1260f849188527906ed2dabca67",
+      "bytes": 3384877
+    },
+    {
+      "event": "builders_guild",
+      "path": "res://assets/paintings/events/builders_guild.jpg",
+      "title": "The Stonemason’s Yard",
+      "artist": "Canaletto",
+      "focus": [
+        0.5,
+        0.62
+      ],
+      "source": "https://commons.wikimedia.org/wiki/File:Canaletto_-_The_Stonemason%27s_Yard.jpg",
+      "source_file": "File:Canaletto - The Stonemason's Yard.jpg",
+      "download_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/45/Canaletto_-_The_Stonemason%27s_Yard.jpg/3840px-Canaletto_-_The_Stonemason%27s_Yard.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "Public domain",
+      "license_url": "",
+      "original_width": 6000,
+      "original_height": 4640,
+      "sha256": "447849970897516b3c62ed72574f4e7df442f555db56846c6525237587aa0488",
+      "bytes": 3853357
+    },
+    {
+      "event": "barracks",
+      "path": "res://assets/paintings/events/barracks.jpg",
+      "title": "Guardroom",
+      "artist": "David Teniers the Younger and anonymous",
+      "focus": [
+        0.5,
+        0.56
+      ],
+      "source": "https://commons.wikimedia.org/wiki/File:Soldatenwacht,_SK-A-398.jpg",
+      "source_file": "File:Soldatenwacht, SK-A-398.jpg",
+      "download_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a1/Soldatenwacht%2C_SK-A-398.jpg/3840px-Soldatenwacht%2C_SK-A-398.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+      "license": "CC0",
+      "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "original_width": 6836,
+      "original_height": 4236,
+      "sha256": "cff8e0ffcba6449b7e0e8c96323f23c9dbe5bd98f21fb067f0b95039cc679e4c",
+      "bytes": 2492769
+    },
+    {
+      "event": "scout_lodge",
+      "path": "res://assets/paintings/events/scout_lodge.jpg",
+      "title": "Landscape with a Cottage and Trees",
+      "artist": "Jacob van Ruisdael",
+      "focus": [
+        0.5,
+        0.56
+      ],
+      "source": "https://commons.wikimedia.org/wiki/File:Jacob_van_Ruisdael_-_Landscape_with_a_Cottage_and_Trees.jpg",
+      "source_file": "File:Jacob van Ruisdael - Landscape with a Cottage and Trees.jpg",
+      "download_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/16/Jacob_van_Ruisdael_-_Landscape_with_a_Cottage_and_Trees.jpg/960px-Jacob_van_Ruisdael_-_Landscape_with_a_Cottage_and_Trees.jpg",
+      "license": "Public domain",
+      "license_url": "",
+      "original_width": 1250,
+      "original_height": 895,
+      "sha256": "8ecae9fa5f3edd115d815cdc9524006b063c529e409ede9c06523e69978b63e3",
+      "bytes": 228627
+    },
+    {
+      "event": "watchtower",
+      "path": "res://assets/paintings/events/watchtower.jpg",
+      "title": "The Castle of Bentheim",
+      "artist": "Jacob van Ruisdael",
+      "focus": [
+        0.5,
+        0.4
+      ],
+      "source": "https://commons.wikimedia.org/wiki/File:Il_castello_di_Bentheim_(Jacob_Van_Ruisdael).jpg",
+      "source_file": "File:Il castello di Bentheim (Jacob Van Ruisdael).jpg",
+      "download_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9d/Il_castello_di_Bentheim_%28Jacob_Van_Ruisdael%29.jpg/1920px-Il_castello_di_Bentheim_%28Jacob_Van_Ruisdael%29.jpg",
+      "license": "Public domain",
+      "license_url": "",
+      "original_width": 3000,
+      "original_height": 2279,
+      "sha256": "54e6f30828d69f9aa9eceab015bf58a580a0e65df611305f411ef33b3c083256",
+      "bytes": 910894
+    },
+    {
+      "event": "economist",
+      "path": "res://assets/paintings/Quentin_Massys,_The_Tax_Collectors,_Kunstmuseum_Liechtenstein.webp",
+      "title": "The Tax Collectors",
+      "artist": "Quentin Massys",
+      "focus": [
+        0.5,
+        0.38
+      ],
+      "source": "https://commons.wikimedia.org/wiki/File:Quentin_Massys,_The_Tax_Collectors,_Kunstmuseum_Liechtenstein.webp",
+      "source_file": "File:Quentin Massys, The Tax Collectors, Kunstmuseum Liechtenstein.webp",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/9/93/Quentin_Massys%2C_The_Tax_Collectors%2C_Kunstmuseum_Liechtenstein.webp?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+      "license": "Public domain",
+      "license_url": "",
+      "original_width": 2859,
+      "original_height": 3500,
+      "sha256": "9964015de88d032ae5f20605fa3257ad10b8d786a9f1ba6dd27bd3fbe590c7b6",
+      "bytes": 1005932,
+      "reused_existing_asset": true
+    }
+  ]
+}

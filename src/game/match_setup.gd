@@ -11,7 +11,7 @@ static func normalize(value: Dictionary) -> Dictionary:
 	if not map_path is String: map_path = ""
 	# Authored maps retain retired size metadata; generated lobbies use current choices.
 	if size_id not in Sizes.IDS and not (map_path != "" and Sizes.SPECS.has(size_id)): size_id = "small"
-	count = clampi(count if count is int else 4, 2, 6) if map_path != "" else Sizes.clamp_kingdom_count(size_id, count if count is int else 4)
+	count = clampi(count if count is int else 4, 2, Sizes.MAX_NATIONS) if map_path != "" else Sizes.clamp_kingdom_count(size_id, count if count is int else 4)
 	var result := {"size": size_id, "count": count, "rules": "modern", "seed": -1, "order": "random" if value.get("order") == "random" else "fixed", "slots": []}
 	if map_path != "": result["map_path"] = map_path
 	var seed_value = value.get("seed", -1)
@@ -75,7 +75,7 @@ static func read_level(path: String) -> Dictionary:
 		if kingdom["owner"] not in capitals: capitals.append(kingdom["owner"])
 	factions.sort()
 	if factions.size() < 2: return {"error":Loc.text("A multiplayer map needs at least two starting factions.")}
-	if factions.size() > 6: return {"error":Loc.text("Local multiplayer supports up to six active kingdoms per map.")}
+	if factions.size() > Sizes.MAX_NATIONS: return {"error":Loc.text("Local multiplayer supports up to %d active kingdoms per map.") % Sizes.MAX_NATIONS}
 	for faction in factions:
 		if faction not in capitals:
 			return {"error":Loc.text("%s needs at least two connected provinces for multiplayer.") % document.factions[faction]["name"]}

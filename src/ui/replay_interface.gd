@@ -96,7 +96,6 @@ static func build_library(v, ui: Control) -> void:
 	heading.add_theme_constant_override("separation", 6)
 	content.add_child(heading)
 	label(heading, "Replays", 28)
-	label(heading, "Watch a saved match, one move at a time.", 14, Ui.MUTED)
 	var body := HBoxContainer.new()
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	body.add_theme_constant_override("separation", 20)
@@ -134,8 +133,6 @@ static func build_library(v, ui: Control) -> void:
 	v.message = label(summary, "", 13, Ui.MUTED)
 	v.message.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
 	v.message.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	v.preview_hint = label(summary, "Replays open paused. Use the timeline to inspect any move.", 14, Ui.MUTED)
-	v.preview_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	var footer := HBoxContainer.new()
 	footer.add_theme_constant_override("separation", 10)
 	content.add_child(footer)

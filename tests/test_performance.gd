@@ -91,24 +91,9 @@ func bridge_query_checks() -> void:
 	expect(Analysis.threats(rules, 0) == scalar_threats(rules, 0), "A fresh analysis observes changed barrier routes")
 
 func scalar_threats(model, faction: int) -> Dictionary:
-	var result: Dictionary = {}
-	for source in model.cells:
-		if model.cells[source]["unit"] == 0 or model.unit_faction(source) == faction:
-			continue
-		var routes: Dictionary = model.friendly_routes(source)
-		var destinations: Dictionary = {}
-		for coord in routes:
-			for next in model.neighbors(coord):
-				if not routes.has(next) and not model.is_mountain(next) and not model.is_barrier(next):
-					destinations[next] = true
-		for target in destinations:
-			if model.cells[target]["owner"] != faction and model.unit_faction(target) != faction:
-				continue
-			if not result.has(target):
-				result[target] = {"strength": 0, "sources": []}
-			result[target]["strength"] = maxi(result[target]["strength"], model.cells[source]["unit"])
-			result[target]["sources"].append(source)
-	return result
+	# Independent linear-frontier reference includes range, roads and settlement
+	# expiry; the old unbounded flood predates the logistics rules.
+	return preload("res://tests/test_ai_optimization.gd").reference_threats(model,faction)
 
 func scene_checks() -> void:
 	var game = load("res://scenes/main.tscn").instantiate()

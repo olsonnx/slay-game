@@ -15,6 +15,7 @@ var danger: Dictionary = {}
 var replies: Dictionary = {}
 var enemy_capitals: Array = []
 var enemy_armies: Dictionary = {}
+var expiring_enemy_barriers := false
 var objective_values: Dictionary = {}
 var best: Dictionary = {}
 var best_sequence: Array = []
@@ -93,6 +94,7 @@ func initialize() -> void:
 	if context.get("signature", []) != current:
 		context = {"signature": current, "objectives": {}, "builds": int(context.get("builds", 0)) + 1}
 	for coord in state.cells:
+		if state.cells[coord].get("barrier_by", -1) >= 0 and state.cells[coord].barrier_by != faction: expiring_enemy_barriers = true
 		if state.cells[coord]["capital"] >= 0 and state.cells[coord]["owner"] != faction: enemy_capitals.append(coord)
 		if state.cells[coord]["unit"] > 0 and state.unit_faction(coord) == faction and not state.cells[coord]["moved"]:
 			units.append(coord)
@@ -240,6 +242,9 @@ func tactical_score(source: Vector2i, target: Vector2i, goal: Dictionary) -> flo
 					# Settlement precedes movement: troops in a newly bankrupt
 					# detached bank cannot make the imagined counterattack.
 					if coord != target and coord not in removed and queries.attack_reach(coord, target) and not queries.cut_starves(target,coord): strength = maxi(strength, state.cells[coord]["unit"])
+			# Legacy barriers can split today's regions, then reconnect an enemy
+			# army at settlement. The normal local-region shortcut misses it.
+			if expiring_enemy_barriers: strength = maxi(strength,queries.reply_strength(target,faction))
 			replies[target] = strength
 		var reply: int = replies[target]
 		var after_defence := rank

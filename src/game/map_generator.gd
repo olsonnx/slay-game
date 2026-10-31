@@ -96,7 +96,7 @@ func starting_sites() -> Array:
 				if sites.size() == state.faction_count:
 					return state.shuffled(sites)
 	# Dense selections cannot trigger an exhaustive combinatorial search.
-	return state.shuffled(MapSizes.fallback_sites(state.map_size)).slice(0, state.faction_count)
+	return state.shuffled(MapSizes.fallback_sites(state.map_size, state.faction_count)).slice(0, state.faction_count)
 
 func join_land(start: Vector2i, finish: Vector2i, width: int) -> void:
 	var cursor := start

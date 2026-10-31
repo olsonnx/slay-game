@@ -55,13 +55,14 @@ func _ready() -> void:
 func render() -> void:
 	var indices: Array = tutor.exercise_indices()
 	var step: Dictionary = tutor.current()
-	var title: String = step.title
+	var title: String = tutor.reading_title()
 	if tutor.completed: title = Loc.text("Match won") if tutor.category == "practice" else Loc.text("Topic complete")
 	if tutor.failed: title = Loc.text("Your kingdom fell")
-	Ui.fit_text(progress,tutor.course_title,312)
+	var page_hint: String = " | %d/%d" % [tutor.text_page+1,step.get("substeps",[]).size()+1] if tutor.reading_substeps() and not step.get("substeps",[]).is_empty() else ""
+	Ui.fit_text(progress,tutor.course_title+page_hint,312)
 	Ui.fit_text(heading,title,312)
 	explanation_scroll.position = Vector2(16,heading.position.y+heading.size.y+8)
-	var text: String = step.text
+	var text: String = tutor.reading_text()
 	if tutor.completed: text = Loc.text("You have completed this topic. Choose another subject or use what you learned in Your first match. Every topic is available immediately.")
 	if tutor.completed and tutor.category == "practice": text = Loc.text("You won the practice match. Try a new island in Quick Play, or return to a topic to practice a particular skill.")
 	elif tutor.failed: text = Loc.text("The opponent took your last capital. Retry this exercise to try a different opening. Expand into useful land, keep your armies paid, and reinforce where they can act.")
@@ -121,7 +122,7 @@ func render() -> void:
 	retry.disabled = tutor.game.busy or tutor.game.closing or tutor.game.view.level_transitioning
 	finish.visible = tutor.completed
 	next_button.visible = tutor.completed and tutor.category != tutor.Lessons.IDS.back() and not tutor.custom
-	continue_button.visible = not tutor.completed and not tutor.failed and (tutor.exercise_done or tutor.awaiting_confirmation or step.kind == "continue")
+	continue_button.visible = not tutor.completed and not tutor.failed and (tutor.reading_substeps() or tutor.exercise_done or tutor.awaiting_confirmation or step.kind == "continue")
 	continue_button.text = Loc.text("Next exercise") if tutor.exercise_done else Loc.text("Continue")
 	continue_button.disabled = retry.disabled
 	controls_button.visible = not tutor.completed and not continue_button.visible

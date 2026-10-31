@@ -2,6 +2,7 @@ extends Node
 ## Optional GodotSteam adapter. Offline/local play never initializes Steam.
 const Loc = preload("res://src/localization/text.gd")
 const Protocol = preload("res://src/network/steam_protocol.gd")
+const Sizes = preload("res://src/game/map_sizes.gd")
 signal changed
 signal failed(message: String)
 signal match_requested(config: Dictionary, roster: Array)
@@ -82,7 +83,7 @@ func host() -> void:
 	phase = "creating"
 	pending_since = Time.get_ticks_msec()
 	status = Loc.text("Creating lobby…")
-	api.createLobby(1, 6) # Friends only; Steam ELobbyTypeFriendsOnly.
+	api.createLobby(1, Sizes.MAX_NATIONS) # Friends only; Steam ELobbyTypeFriendsOnly.
 	changed.emit()
 
 func join(id: int) -> void:
@@ -118,13 +119,17 @@ func refresh_members() -> void:
 	changed.emit()
 
 func can_start() -> bool:
-	return is_host() and phase == "lobby" and lobby_content_id == content_id and members.size() >= 2 and members.all(func(member): return member.ready)
+	return is_host() and phase == "lobby" and lobby_content_id == content_id and members.size() >= 2 and members.size() <= Sizes.MAX_NATIONS and members.all(func(member): return member.ready)
 
 func start(config: Dictionary) -> void:
 	if not can_start(): return
 	var roster := members.duplicate(true)
 	roster.sort_custom(func(a, b): return a.id == host_id and b.id != host_id)
 	var setup: Dictionary = preload("res://src/game/match_setup.gd").normalize(config)
+	if roster.size() > Sizes.MAX_KINGDOMS[setup.size]:
+		status = Loc.text("Choose a larger map for this many players.")
+		changed.emit()
+		return
 	setup.count = maxi(setup.count, roster.size())
 	setup.slots = []
 	for index in range(setup.count):
@@ -217,7 +222,7 @@ func _receive(sender: int, kind: String, data: Dictionary) -> void:
 		if not content_matches_lobby(): return
 		if not data.get("config") is Dictionary or not data.get("roster") is Array: return
 		var roster: Array = data.roster
-		if roster.size() < 2 or roster.size() > 6 or roster.size() != members.size(): return
+		if roster.size() < 2 or roster.size() > Sizes.MAX_NATIONS or roster.size() != members.size(): return
 		var ids := []
 		for member in roster:
 			if not member is Dictionary or member.get("id") not in member_ids() or member.get("id") in ids: return

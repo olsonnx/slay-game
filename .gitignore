@@ -24,7 +24,10 @@ Desktop.ini
 
 # Temporary native-library copies from Godot on Windows.
 /addons/godotsteam/win64/~*.TMP
+/addons/godotsteam/win64/~*.dll
 
 # Event editor recovery files; the actual event pack stays tracked.
 /resources/events/*.json.bak
 /resources/events/*.json.tmp
+/tutorials/*.json.bak
+/tutorials/*.json.tmp

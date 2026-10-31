@@ -25,6 +25,23 @@ var history_index := -1
 var app
 var return_layer: CanvasLayer
 var play_return: Button
+var controls: Dictionary = {}
+var map_state: Label
+var pick_hint: Label
+var prompt_scroll: ScrollContainer
+var prompt_heading: Label
+var mode_tabs: TabBar
+var level_tools
+var step_menu: PopupMenu
+var file_menu: PopupMenu
+var play_menu: PopupMenu
+var template_menu: PopupMenu
+var editing_level := false
+var level_document = Level.new()
+var topic_positions: Array = []
+var stroke_changed := false
+var picking_area := false
+var finish_area_button: Button
 
 func _ready() -> void:
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -43,35 +60,56 @@ func _ready() -> void:
 	margin.add_child(layout)
 	var bar := HBoxContainer.new()
 	layout.add_child(bar)
-	button(bar,"New",func(): guard(new_document))
+	var file_button := MenuButton.new()
+	file_button.text = "File"
+	bar.add_child(file_button)
+	file_menu = file_button.get_popup()
+	for entry in [["New tutorial",0],["Open...",1],["Save as...",2],["Import level...",3],["Recover autosave",4],["Use in game...",5]]: file_menu.add_item(entry[0],entry[1])
 	template = OptionButton.new()
 	for course in Lessons.categories(): template.add_item(course.title)
+	# Keep the template selection as document state; the menu presents the choices.
+	template.hide()
 	bar.add_child(template)
-	button(bar,"Load template",func(): guard(load_template))
-	button(bar,"Open",func(): guard(func(): choose_file("open")))
+	template_menu = PopupMenu.new()
+	template_menu.name = "Templates"
+	file_menu.add_child(template_menu)
+	for course in Lessons.categories(): template_menu.add_item(course.title)
+	file_menu.add_submenu_item("Start from template", "Templates")
+	template_menu.id_pressed.connect(func(id): template.select(id); guard(load_template))
+	file_menu.id_pressed.connect(file_action)
+	button(bar,"Undo",undo)
+	button(bar,"Redo",redo)
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bar.add_child(spacer)
+	mode_tabs = TabBar.new()
+	mode_tabs.clip_tabs = false
+	mode_tabs.custom_minimum_size.x = 240
+	mode_tabs.add_tab("Write steps")
+	mode_tabs.add_tab("Edit level")
+	bar.add_child(mode_tabs)
+	mode_tabs.tab_changed.connect(func(index): set_level_mode(index == 1))
+	spacer = Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bar.add_child(spacer)
 	button(bar,"Save",save)
-	button(bar,"Save as",func(): choose_file("save"))
-	button(bar,"Import map",func(): choose_file("map"))
-	button(bar,"Recover autosave",func(): guard(recover))
-	var bar2 := HBoxContainer.new()
-	layout.add_child(bar2)
-	button(bar2,"Undo",undo)
-	button(bar2,"Redo",redo)
-	button(bar2,"Check script",validate_script)
-	button(bar2,"Preview step",preview_step)
-	button(bar2,"Playtest",func(): playtest(false))
-	button(bar2,"Play this step",func(): playtest(true))
-	button(bar2,"Use in game",install)
+	var play_button := MenuButton.new()
+	play_button.text = "Play / Check"
+	bar.add_child(play_button)
+	play_menu = play_button.get_popup()
+	for entry in [["Play from beginning",0],["Play selected step",1],["Preview selected step",2],["Check entire script",3]]: play_menu.add_item(entry[0],entry[1])
+	play_menu.id_pressed.connect(play_action)
 	file_label = Label.new()
 	file_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	file_label.clip_text = true
 	layout.add_child(file_label)
-	var body := HBoxContainer.new()
+	var body := HSplitContainer.new()
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	body.add_theme_constant_override("separation",14)
+	body.split_offset = 210
 	layout.add_child(body)
 	var left := VBoxContainer.new()
 	left.custom_minimum_size.x = 190
+	left.size_flags_horizontal = Control.SIZE_FILL
 	body.add_child(left)
 	label(left,"STEPS")
 	steps_list = ItemList.new()
@@ -81,39 +119,86 @@ func _ready() -> void:
 	var row := HBoxContainer.new()
 	left.add_child(row)
 	button(row,"Add",add_step)
-	button(row,"Duplicate",duplicate_step)
-	row = HBoxContainer.new()
-	left.add_child(row)
-	button(row,"Up",func(): move_step(-1))
-	button(row,"Down",func(): move_step(1))
-	button(row,"Delete",delete_step)
+	var more := MenuButton.new()
+	more.text = "Step actions"
+	row.add_child(more)
+	step_menu = more.get_popup()
+	for entry in [["Duplicate step",0],["Move up",1],["Move down",2],["Delete step",3]]: step_menu.add_item(entry[0],entry[1])
+	step_menu.id_pressed.connect(step_action)
+	var workspace := HSplitContainer.new()
+	workspace.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	workspace.split_offset = 510
+	body.add_child(workspace)
 	var center := VBoxContainer.new()
 	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	body.add_child(center)
-	label(center,"MAP / Wheel: zoom. Middle-drag: pan. Pick a field, then click a tile. Fern is player 0.")
+	workspace.add_child(center)
+	var map_bar := HBoxContainer.new()
+	center.add_child(map_bar)
+	map_state = Label.new()
+	map_state.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	map_bar.add_child(map_state)
+	button(map_bar,"Done",cancel_pick)
+	finish_area_button = controls.Done
+	finish_area_button.hide()
+	button(map_bar,"Reset view",func(): canvas.zoom = 1.0; canvas.pan = Vector2.ZERO; canvas.framing_dirty = true; canvas.queue_redraw())
+
+	pick_hint = Label.new()
+	pick_hint.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	pick_hint.text = "Use Pick beside a tile field to choose it on the map."
+	center.add_child(pick_hint)
 	canvas = preload("res://src/tutorial_editor/map_canvas.gd").new()
 	canvas.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	canvas.picked.connect(tile_picked)
+	canvas.stroke_started.connect(begin_level_stroke)
+	canvas.paint_requested.connect(paint_level)
+	canvas.stroke_finished.connect(end_level_stroke)
 	center.add_child(canvas)
-	label(center,"PLAYER PROMPT PREVIEW")
+	prompt_heading = Label.new()
+	prompt_heading.text = "PLAYER PROMPT"
+	center.add_child(prompt_heading)
 	preview = Label.new()
 	preview.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	preview.custom_minimum_size.y = 150
-	preview.max_lines_visible = 7
-	preview.clip_text = true
-	center.add_child(preview)
+	prompt_scroll = ScrollContainer.new()
+	prompt_scroll.custom_minimum_size.y = 150
+	prompt_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	center.add_child(prompt_scroll)
+	preview.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	prompt_scroll.add_child(preview)
 	inspector = preload("res://src/tutorial_editor/step_inspector.gd").new()
 	inspector.custom_minimum_size.x = 390
 	inspector.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	inspector.size_flags_stretch_ratio = 0.8
 	inspector.changed.connect(changed)
-	inspector.pick_requested.connect(func(field: LineEdit): pick_field = field; message("Click a map hex to set " + field.get_parent().get_parent().name))
-	body.add_child(inspector)
+	inspector.preview_changed.connect(update_preview)
+	inspector.pick_requested.connect(start_pick)
+	inspector.area_pick_requested.connect(start_area_pick)
+	inspector.tab_changed.connect(func(_index): cancel_pick())
+	var details := VBoxContainer.new()
+	details.custom_minimum_size.x = 390
+	details.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	workspace.add_child(details)
+	inspector.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	details.add_child(inspector)
+	level_tools = preload("res://src/tutorial_editor/level_tools.gd").new()
+	level_tools.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	details.add_child(level_tools)
+	level_tools.hide()
+	level_tools.brush_changed.connect(func(): cancel_pick(); update_level_hint())
+	level_tools.gold_changed.connect(func(value):
+		begin_level_stroke()
+		level_document.starting_gold = value
+		stroke_changed = true
+		store_level()
+		for position in topic_positions:
+			position.document.starting_gold = value
+			document.data.steps[position.index].setup = position.document.state()
+		end_level_stroke())
 	status = Label.new()
 	status.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	status.custom_minimum_size.y = 42
 	layout.add_child(status)
 	dialog = FileDialog.new()
+	dialog.theme = theme
 	dialog.access = FileDialog.ACCESS_FILESYSTEM
 	dialog.filters = PackedStringArray(["*.json ; JSON files"])
 	dialog.size = Vector2i(900,600)
@@ -121,6 +206,7 @@ func _ready() -> void:
 	dialog.file_selected.connect(file_chosen)
 	add_child(dialog)
 	confirmation = ConfirmationDialog.new()
+	confirmation.theme = theme
 	confirmation.get_label().autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	confirmation.get_label().custom_minimum_size = Vector2(500,100)
 	confirmation.confirmed.connect(func(): if pending.is_valid(): pending.call())
@@ -131,12 +217,34 @@ func _ready() -> void:
 	save_timer.timeout.connect(commit)
 	add_child(save_timer)
 	new_document()
+	get_viewport().size_changed.connect(update_density)
+	call_deferred("update_density")
+
+func update_density() -> void:
+	# UI scaling reduces the logical workspace as well as the physical window.
+	# Let the map flex before the prompt's minimum height pushes the form out.
+	var compact := get_viewport_rect().size.y < 760
+	canvas.custom_minimum_size.y = 240 if compact else 320
+	prompt_scroll.custom_minimum_size.y = 80 if compact else 150
 
 func button(parent: Node, text: String, callback: Callable) -> void:
 	var node := Button.new()
 	node.text = text
 	node.pressed.connect(callback)
 	parent.add_child(node)
+	controls[text] = node
+	node.tooltip_text = {
+		"Undo":"Undo the last draft edit (Ctrl+Z)", "Redo":"Restore an undone edit (Ctrl+Y)",
+		"Save":"Save your tutorial file (Ctrl+S)", "Save as":"Save a separate copy (Ctrl+Shift+S)",
+		"Preview step":"Simulate earlier objectives and show the board before the selected step.",
+		"Check script":"Check whether the authored actions and conditions can be completed in sequence.",
+		"Playtest":"Play the tutorial from the beginning. Return here to keep editing.",
+		"Play this step":"Play from the selected step using its simulated checkpoint.",
+		"Use in game":"Install this draft for its course topic. You will review a replacement confirmation.",
+		"Import map":"Replace the map for every exercise, keeping step text and targets. Undo restores prepared positions.",
+		"Duplicate":"Copy the selected step with a fresh ID.",
+		"Reset view":"Fit the map in the available space and reset zoom and pan."
+	}.get(text,"")
 
 func label(parent: Node, text: String) -> void:
 	var node := Label.new()
@@ -155,7 +263,7 @@ func reset_history() -> void:
 func load_template() -> void:
 	var category: String = Lessons.IDS[template.selected]
 	document = Doc.new()
-	document.data = {"format":"slay-tutorial","version":1,"title":Lessons.category_title(category),"description":Lessons.categories()[template.selected].description,"category":category,"opponent_mode":"ai" if category == "practice" else "scripted","require_victory":category == "practice","map":Lessons.Scenarios.map_data(category),"steps":Doc.encode(Lessons.builtin_lessons(category))}
+	document.data = {"format":"slay-tutorial","version":1,"title":Lessons.category_title(category),"description":Lessons.categories()[template.selected].description,"category":category,"opponent_mode":"ai" if category == "practice" else "scripted","require_victory":category == "practice","map":Lessons.Scenarios.map_data(category),"steps":Lessons.authored_steps(category)}
 	document.data.map.erase("tutorial")
 	document.data.map.erase("tutorial_category")
 	step_index = 0
@@ -171,29 +279,44 @@ func new_document() -> void:
 	document.saved = JSON.stringify(document.data)
 	reset_history()
 	refresh(true)
-	message("New draft. Import a custom map, write a prompt, and choose how each step advances.")
+	message("New tutorial. Use Edit level to build your board, then Write steps to guide the player.")
 
 func refresh(reset_map := false) -> void:
+	cancel_pick()
 	step_index = clampi(step_index,0,document.data.steps.size()-1)
 	refresh_list()
 	inspector.bind(document.data,document.data.steps[step_index])
-	if reset_map:
-		var level := Level.new()
-		level.read_data(document.data.map)
-		canvas.set_map(level.cells)
+	if reset_map or editing_level:
+		if editing_level:
+			load_editable_level()
+		else:
+			var level := Level.new()
+			var setup := prepared_index()
+			level.read_data(document.data.steps[setup].setup if setup >= 0 else document.data.map)
+			canvas.set_map(level.cells)
+			map_state.text = "Exercise starting position" if setup >= 0 else "Course starting level"
 	update_preview()
 
 func refresh_list() -> void:
 	steps_list.clear()
-	for index in range(document.data.steps.size()): steps_list.add_item("%02d  %s" % [index+1,document.data.steps[index].title])
+	for index in range(document.data.steps.size()):
+		var step: Dictionary = document.data.steps[index]
+		steps_list.add_item("%02d  %s" % [index+1,step.title])
+		steps_list.set_item_tooltip(index,"%s\n%s" % [step.get("exercise","Independent objective"),step.task])
 	steps_list.select(step_index)
+	steps_list.ensure_current_is_visible()
+	update_controls()
 
 func update_preview() -> void:
 	var step: Dictionary = document.data.steps[step_index]
-	canvas.target = Doc.coord(step.get("highlight",step.get("target")))
-	canvas.source = Doc.coord(step.get("details",{}).get("source"))
+	canvas.area_targets = [] if editing_level else Doc.target_hexes(step) if step.has("targets") else []
+	canvas.target = Doc.NONE if editing_level else Doc.coord(step.get("highlight",step.get("target")))
+	canvas.source = Doc.NONE if editing_level else Doc.coord(step.get("details",{}).get("source"))
 	canvas.queue_redraw()
-	preview.text = step.title + "\n\n" + step.text + "\n\n" + step.task
+	var reading: Dictionary = inspector.substeps_editor.preview_page()
+	preview.text = step.title + "\n\n" + step.text + "\n\n" + step.task if reading.is_empty() else (reading.get("title","") if reading.get("title","") != "" else step.title) + "\n\n" + reading.text
+	file_label.tooltip_text = document.path
+	update_controls()
 	file_label.text = ("* " if document.dirty() else "") + (document.path if document.path != "" else "Unsaved tutorial") + " | " + document.data.title + " | Map: " + document.data.map.title
 
 func select_step(index: int) -> void:
@@ -201,9 +324,10 @@ func select_step(index: int) -> void:
 	step_index = index
 	pick_field = null
 	refresh(true)
-	message("Starting map. Use Preview step to see the board at this point in the match.")
+	message("Edit this starting position in Edit level, or use Play / Check to preview the simulated step.")
 
 func changed() -> void:
+	if picking_area and not document.data.steps[step_index].has("targets"): cancel_pick()
 	refresh_list()
 	update_preview()
 	save_timer.start()
@@ -216,6 +340,7 @@ func commit() -> void:
 	if history.size() > 80: history.pop_front()
 	history_index = history.size()-1
 	Doc.write_atomic(AUTOSAVE,document.data)
+	update_controls()
 
 func undo() -> void:
 	commit()
@@ -273,11 +398,38 @@ func move_step(direction: int) -> void:
 	changed()
 	refresh()
 
+func update_controls() -> void:
+	controls.Undo.disabled = history_index <= 0 and (history_index < 0 or document.data == history[history_index])
+	controls.Redo.disabled = history_index >= history.size()-1 or (history_index >= 0 and document.data != history[history_index])
+	step_menu.set_item_disabled(1,step_index == 0)
+	step_menu.set_item_disabled(2,step_index >= document.data.steps.size()-1)
+	step_menu.set_item_disabled(3,document.data.steps.size() <= 1)
+	file_menu.set_item_disabled(4,not FileAccess.file_exists(AUTOSAVE))
+
+func start_pick(field: LineEdit) -> void:
+	cancel_pick()
+	if editing_level: set_level_mode(false)
+	pick_field = field
+	pick_hint.text = "Picking: %s | Click a map tile | Esc to cancel" % field.get_parent().get_parent().name
+	canvas.mouse_default_cursor_shape = Control.CURSOR_CROSS
+
+func cancel_pick() -> void:
+	if picking_area:
+		canvas.finish_stroke()
+		end_level_stroke()
+	picking_area = false
+	if finish_area_button != null: finish_area_button.hide()
+	if canvas != null: canvas.edit_enabled = editing_level
+	pick_field = null
+	if pick_hint != null: pick_hint.text = "Use Pick beside a tile field to choose it on the map."
+	if canvas != null: canvas.mouse_default_cursor_shape = Control.CURSOR_CROSS if editing_level else Control.CURSOR_POINTING_HAND
+	if editing_level and level_tools != null: update_level_hint()
+
 func tile_picked(coord: Vector2i) -> void:
 	if pick_field == null: message("Tile %d, %d. Use a Pick button to assign it to a rule." % [coord.x,coord.y]); return
 	pick_field.text = "%d, %d" % [coord.x,coord.y]
 	pick_field.text_changed.emit(pick_field.text)
-	pick_field = null
+	cancel_pick()
 	message("Tile assigned. Condition and opponent forms need Add or Update to commit their row.")
 
 func guard(action: Callable) -> void:
@@ -352,9 +504,12 @@ func validate_script() -> void:
 	message("Script checked: every specified action and condition is valid, including the ending." if result.error == "" else result.error)
 
 func preview_step() -> void:
+	cancel_pick()
 	commit()
 	var result: Dictionary = Simulator.run(document,step_index)
-	if result.rules != null: canvas.set_map(result.rules.cells)
+	if result.rules != null:
+		canvas.set_map(result.rules.cells)
+		map_state.text = "Before step %d | Round %d" % [step_index+1,result.round]
 	message("Board before step %d, turn %d. This preview does not change your draft." % [step_index+1,result.round] if result.error == "" else result.error)
 
 func install() -> void:
@@ -376,6 +531,7 @@ func install() -> void:
 	confirmation.popup_centered(Vector2i(560,200))
 
 func playtest(from_step: bool) -> void:
+	cancel_pick()
 	if app != null: return
 	commit()
 	var error := Doc.validate(document.data)
@@ -433,6 +589,10 @@ func request_close() -> void:
 	guard(func(): get_tree().quit())
 
 func _unhandled_key_input(event: InputEvent) -> void:
+	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE and (pick_field != null or picking_area):
+		cancel_pick()
+		get_viewport().set_input_as_handled()
+		return
 	if app != null or not event is InputEventKey or not event.pressed or event.echo or not event.ctrl_pressed: return
 	match event.keycode:
 		KEY_S:
@@ -442,3 +602,131 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		KEY_Y: redo()
 		_: return
 	get_viewport().set_input_as_handled()
+
+func file_action(id: int) -> void:
+	match id:
+		0: guard(new_document)
+		1: guard(func(): choose_file("open"))
+		2: choose_file("save")
+		3: choose_file("map")
+		4: guard(recover)
+		5: install()
+
+func prepared_index() -> int:
+	for index in range(step_index,-1,-1):
+		if document.data.steps[index].has("setup"): return index
+	return -1
+
+func set_level_mode(enabled: bool) -> void:
+	canvas.finish_stroke()
+	end_level_stroke()
+	mode_tabs.set_block_signals(true)
+	mode_tabs.current_tab = 1 if enabled else 0
+	mode_tabs.set_block_signals(false)
+	editing_level = enabled
+	canvas.edit_enabled = enabled
+	inspector.visible = not enabled
+	level_tools.visible = enabled
+	prompt_scroll.visible = not enabled
+	prompt_heading.visible = not enabled
+	cancel_pick()
+	if enabled:
+		load_editable_level()
+		update_preview()
+	else: refresh(true)
+
+func load_editable_level() -> void:
+	end_level_stroke()
+	level_document = Level.new()
+	level_document.read_data(document.data.map)
+	topic_positions.clear()
+	for index in range(document.data.steps.size()):
+		if not document.data.steps[index].has("setup"): continue
+		var position := Level.new()
+		position.read_data(document.data.steps[index].setup)
+		topic_positions.append({"index":index,"document":position})
+	level_tools.bind_level(level_document)
+	canvas.set_map(level_document.cells)
+	map_state.text = "Topic level"
+	level_tools.context.text = "Level edits apply to this entire topic, including every prepared exercise position."
+	update_level_hint()
+
+func update_level_hint() -> void:
+	pick_hint.text = "%s | Drag to paint, right-drag to erase | Wheel: zoom, middle-drag: pan" % level_tools.tool_name()
+
+func begin_level_stroke() -> void:
+	commit()
+	stroke_changed = false
+
+func paint_level(at: Vector2i, erase: bool) -> void:
+	if picking_area:
+		paint_target_area(at,erase)
+		return
+	if not editing_level: return
+	var tool: String = level_tools.tool_name()
+	var owner_id: int = level_tools.owner_choice.selected-1
+	var province_value := int(level_tools.value.value)
+	var result: bool = level_document.erase(at,tool) if erase else level_document.paint(at,tool,owner_id,province_value)
+	# Apply the same brush to each prepared board, retaining untouched exercise details.
+	for position in topic_positions:
+		var level = position.document
+		var painted: bool = level.erase(at,tool) if erase else level.paint(at,tool,owner_id,province_value)
+		if painted:
+			document.data.steps[position.index].setup = level.state()
+			result = true
+	if not result: return
+	stroke_changed = true
+	store_level()
+	canvas.queue_redraw()
+
+func store_level() -> void:
+	document.data.map = level_document.state()
+
+func end_level_stroke() -> void:
+	if not stroke_changed: return
+	stroke_changed = false
+	changed()
+	commit()
+	message("Target area updated. Any selected hex can satisfy the goal." if picking_area else "Level updated. Undo restores the whole brush stroke.")
+
+func play_action(id: int) -> void:
+	match id:
+		0: playtest(false)
+		1: playtest(true)
+		2:
+			mode_tabs.current_tab = 0
+			set_level_mode(false)
+			preview_step()
+		3: validate_script()
+
+func step_action(id: int) -> void:
+	match id:
+		0: duplicate_step()
+		1: move_step(-1)
+		2: move_step(1)
+		3: delete_step()
+
+func start_area_pick() -> void:
+	cancel_pick()
+	if editing_level: set_level_mode(false)
+	commit()
+	picking_area = true
+	canvas.edit_enabled = true
+	canvas.framing_dirty = true
+	canvas.mouse_default_cursor_shape = Control.CURSOR_CROSS
+	finish_area_button.show()
+	pick_hint.text = "Select area: click or drag to add hexes, right-drag to remove. Done or Esc finishes."
+	message("Every selected hex is an allowed target; normal action rules still apply.")
+
+func paint_target_area(at: Vector2i, erase: bool) -> void:
+	if absi(at.x) > 100 or absi(at.y) > 100: return
+	var step: Dictionary = document.data.steps[step_index]
+	if not step.has("targets"): return
+	var encoded := [at.x,at.y]
+	var index: int = step.targets.find(encoded)
+	if erase and index >= 0: step.targets.remove_at(index)
+	elif not erase and index < 0 and step.targets.size() < Level.MAX_CELLS: step.targets.append(encoded)
+	else: return
+	stroke_changed = true
+	inspector.update_area_summary()
+	update_preview()

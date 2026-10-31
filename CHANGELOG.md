@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.2.0P — Closed playtest preparation
+
+- Bridges can only be removed with Shatter; removed dismantling from province details, network commands and tutorial authoring.
+- Hide empty notification banners when a tutorial topic completes.
+- Added slowly drifting distant clouds with a soft, irregular offshore clearing,
+  bounded rendering cost, reduced-motion support and a Video settings toggle.
+- New matches pan and zoom toward the player's country as the island arrives.
+  The opening takes 0.85 seconds and locks camera input until it finishes;
+  reduced motion frames it immediately.
+- Added the P playtest marker to the game version while preserving numeric
+  Windows version metadata. Version tooling accepts both marked and release labels.
+- Reconciled regression fixtures with recruitment hubs, cities, infrastructure
+  upkeep and limited movement. Historical replay positions remain unchanged.
+- AI retaliation analysis accounts for enemy barriers expiring at settlement,
+  including armies separated by those barriers in stored positions.
+
 ## 0.2.0 — Cities and logistics experiment
 
 - All map sizes now use the same strategic enemy AI. Difficulty adjusts tactical
@@ -86,6 +102,8 @@ First versioned development baseline, covering the work accumulated so far:
 
 Versions use **MAJOR.MINOR.PATCH**. During development, use a minor bump for
 features and a patch bump for fixes; reserve 1.0.0 for the first stable release.
+An optional uppercase **P** suffix marks a playtest (for example, `0.2.0P`).
+The suffix does not enter the four-component numeric Windows version.
 The game version is independent of replay, save, map-generation and network
 format versions.
 

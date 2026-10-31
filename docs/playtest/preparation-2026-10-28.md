@@ -1,5 +1,8 @@
 # Playtest preparation — 28 October 2026
 
+This records the historical package check. The later test reconciliation is
+documented in [the 30 October report](test-reconciliation-2026-10-30.md).
+
 Prepared `builds/Slay-and-Reign-0.2.0-closed-02-windows-x64.zip` (47,085,397
 bytes). This is a Windows x64 release export, including the current uncommitted
 0.2.0 work, native Steam dependencies, START-HERE.txt, build identity and license

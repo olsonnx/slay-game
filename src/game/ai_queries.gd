@@ -49,7 +49,8 @@ func reply_strength(target: Vector2i, faction: int) -> int:
 	return strength
 
 func travel(source: Vector2i) -> Dictionary:
-	if not travel_cache.has(source): travel_cache[source] = preload("res://src/game/logistics.gd").routes(model, source)
+	# Threats predict the army's next turn, when its own legacy barriers expire.
+	if not travel_cache.has(source): travel_cache[source] = preload("res://src/game/logistics.gd").routes(model, source, -1, model.unit_faction(source))
 	return travel_cache[source]
 
 func attack_reach(source: Vector2i, target: Vector2i) -> bool:

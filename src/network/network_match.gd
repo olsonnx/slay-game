@@ -100,7 +100,7 @@ func valid_command(sender: int, command: Dictionary) -> bool:
 	if not command.get("request") is int or command.request <= int(last_requests.get(sender, 0)): return false
 	if not command.get("revision") is int or command.revision != revision: return false
 	var kind = command.get("kind")
-	if kind not in ["move", "recruit", "spell", "city", "tower", "road", "bridge", "develop", "entrench", "relocate", "dismantle", "rename", "event", "end_turn"]: return false
+	if kind not in ["move", "recruit", "spell", "city", "tower", "road", "bridge", "develop", "entrench", "relocate", "rename", "event", "end_turn"]: return false
 	if kind == "event":
 		if game.shown_event.is_empty() or not command.get("choice") is int: return false
 		var definition: Dictionary = game.rules.event_definition(game.shown_event)
@@ -126,7 +126,6 @@ func valid_command(sender: int, command: Dictionary) -> bool:
 		"recruit": return command.get("tier") is int and command.tier in [1, 2, 3] and game.rules.can_recruit(coord, game.player_faction, command.tier, command.capital)
 		"spell": return command.get("spell") is String and game.Spells.SPELLS.has(command.spell) and game.rules.spell_targets(command.spell, game.player_faction, command.capital).has(coord)
 		"city", "tower", "bridge": return game.rules.can_build(coord, game.player_faction, kind, command.capital)
-		"dismantle": return game.rules.can_dismantle(coord, game.player_faction)
 		"develop": return game.rules.can_develop(coord, game.player_faction)
 		"entrench": return game.rules.can_entrench(coord, game.player_faction)
 		"relocate": return game.rules.can_relocate_capital(coord, game.player_faction)
@@ -147,14 +146,13 @@ func handle(sender: int, command: Dictionary) -> void:
 		"end_turn": await game.end_turn()
 		"rename": game.rules.rename_settlement(command.coord, game.player_faction, command.name)
 		"event": game.resolve_shown_event(command.choice)
-		"develop", "entrench", "relocate", "dismantle":
+		"develop", "entrench", "relocate":
 			if kind == "relocate":
 				game.rules.relocate_capital(command.coord, game.player_faction)
 				game.view.render_cells(game.cells)
 			else:
 				game.inspect_province(command.coord)
-				if kind == "dismantle": game.dismantle_province()
-				elif kind == "develop": game.develop_province()
+				if kind == "develop": game.develop_province()
 				else: game.entrench_province()
 		_:
 			game.session.selection.active_hex = command.get("capital", game.NONE)

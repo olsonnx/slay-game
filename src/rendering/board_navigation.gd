@@ -19,6 +19,7 @@ var saved_pitch := 0.92
 var rotating := false
 var controls_enabled := true
 var camera_pan_tween: Tween
+var opening_camera_active := false
 var zoom_target := 22.0
 var zooming := false
 var zoom_cursor := Vector2.ZERO
@@ -92,7 +93,7 @@ func update_camera() -> void:
 	changed.emit()
 
 func configure_map(size_id: String, bounds: Vector2, layout: Dictionary = {}) -> void:
-	stop_camera_pan()
+	stop_camera_pan(true,true)
 	preset_zoom = preload("res://src/game/map_sizes.gd").spec(size_id)["zoom"]
 	map_span = Vector2.ZERO
 	map_center = Vector3.ZERO
@@ -109,6 +110,7 @@ func configure_map(size_id: String, bounds: Vector2, layout: Dictionary = {}) ->
 	_refresh_zoom_limits()
 
 func pan(direction: Vector2, delta: float) -> void:
+	if opening_camera_active: return
 	var editor = get_viewport().gui_get_focus_owner()
 	if editor is LineEdit or editor is TextEdit: return
 	if direction.is_zero_approx():
@@ -125,6 +127,7 @@ func pan(direction: Vector2, delta: float) -> void:
 	update_camera()
 
 func orbit(relative: Vector2) -> void:
+	if opening_camera_active: return
 	stop_camera_pan(false)
 	manual_moved.emit()
 	if top_down:
@@ -139,6 +142,7 @@ func orbit(relative: Vector2) -> void:
 	update_camera()
 
 func drag_pan(relative: Vector2) -> void:
+	if opening_camera_active: return
 	if relative.is_zero_approx() or not controls_enabled:
 		return
 	stop_camera_pan(false)
@@ -156,6 +160,7 @@ func drag_pan(relative: Vector2) -> void:
 	update_camera()
 
 func change_zoom(steps: float, cursor := Vector2(-1, -1)) -> void:
+	if opening_camera_active: return
 	var previous_target := zoom_target if zooming else zoom
 	stop_camera_pan()
 	_refresh_zoom_limits()
@@ -169,6 +174,7 @@ func change_zoom(steps: float, cursor := Vector2(-1, -1)) -> void:
 	zooming = not is_equal_approx(zoom, zoom_target)
 
 func toggle_top_down() -> void:
+	if opening_camera_active: return
 	stop_camera_pan()
 	manual_moved.emit()
 	top_down = not top_down
@@ -185,6 +191,7 @@ func toggle_top_down() -> void:
 	update_camera()
 
 func reset_camera() -> void:
+	if opening_camera_active: return
 	stop_camera_pan()
 	manual_moved.emit()
 	focus = map_center
@@ -197,13 +204,16 @@ func reset_camera() -> void:
 	zoom_reference = Vector2(-1, -1)
 	update_camera()
 
-func stop_camera_pan(cancel_zoom := true) -> void:
+func stop_camera_pan(cancel_zoom := true, force := false) -> void:
+	if opening_camera_active and not force: return
+	opening_camera_active = false
 	if cancel_zoom:
 		zooming = false
 	if camera_pan_tween != null and camera_pan_tween.is_valid():
 		camera_pan_tween.kill()
 
 func smooth_pan_to(target: Vector3) -> void:
+	if opening_camera_active: return
 	stop_camera_pan()
 	if Video.reduced_motion:
 		_set_camera_focus(target)
@@ -212,6 +222,34 @@ func smooth_pan_to(target: Vector3) -> void:
 		return
 	camera_pan_tween = create_tween()
 	camera_pan_tween.tween_method(_set_camera_focus, focus, target, 0.55).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+
+func frame_starting_country(points: Array[Vector3]) -> void:
+	if points.is_empty(): return
+	stop_camera_pan(true,true)
+	var center := Vector3.ZERO
+	for point in points: center += point
+	center /= points.size()
+	var extent := Vector2.ZERO
+	for point in points:
+		var offset := point-center
+		extent.x = maxf(extent.x,absf(cos(yaw)*offset.x-sin(yaw)*offset.z))
+		extent.y = maxf(extent.y,absf(sin(pitch)*(sin(yaw)*offset.x+cos(yaw)*offset.z)))
+	var aspect := viewport_size.x/maxf(1.0,viewport_size.y)
+	# Leave neighboring provinces and tall scenery visible around the homeland.
+	var destination_zoom := minf(zoom,maxf(20.0,maxf((extent.x*2+4)/aspect,extent.y*2+6)*1.5))
+	zoom_target = destination_zoom
+	if Video.reduced_motion:
+		_set_country_frame(Vector3(center.x,destination_zoom,center.z))
+		return
+	camera_pan_tween = create_tween()
+	opening_camera_active = true
+	camera_pan_tween.tween_method(_set_country_frame,Vector3(focus.x,zoom,focus.z),Vector3(center.x,destination_zoom,center.z),0.85).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	camera_pan_tween.tween_callback(func(): opening_camera_active = false)
+
+func _set_country_frame(value: Vector3) -> void:
+	focus = Vector3(value.x,0,value.z)
+	zoom = value.y
+	update_camera()
 
 func _set_camera_focus(value: Vector3) -> void:
 	focus = value

@@ -853,15 +853,27 @@
 
 			},
 			"exercise": "logistics",
+			"id": "bridge_mana",
+			"kind": "end_turn",
+			"target": null,
+			"task": "Prepare Shatter",
+			"text": "Bridges cannot be dismantled. End your turn to reach 2 mana for Shatter, the only way to remove a bridge. Roads and towers cannot be dismantled either.",
+			"title": "Prepare Shatter"
+		},
+		{
+			"details": {
+				"spell": "shatter"
+			},
+			"exercise": "logistics",
 			"id": "remove_bridge",
-			"kind": "dismantle",
+			"kind": "spell",
 			"target": [
 				-2,
 				2
 			],
-			"task": "Remove the empty bridge",
-			"text": "Click the gold-ringed bridge, then Dismantle bridge in its details. Your empty sponsored bridges can be removed without a refund. Roads and towers cannot. Removing this segment stops its 2 G upkeep.",
-			"title": "Remove the empty bridge"
+			"task": "Shatter the bridge",
+			"text": "Open Spells, choose Shatter, then click the gold-ringed bridge. Shatter costs 2 mana and removes the crossing without refunding its construction cost. Removing this segment stops its 2 G upkeep. Any unit on a shattered bridge is lost too.",
+			"title": "Shatter the bridge"
 		},
 		{
 			"confirm": true,

@@ -1,0 +1,1100 @@
+{
+	"category": "encirclement",
+	"format": "slay-tutorial",
+	"map": {
+		"cells": [
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": -3,
+				"r": -1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": 0,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": -3,
+				"r": 0,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": -3,
+				"r": 1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": -2,
+				"r": -1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": -2,
+				"r": 0,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": -2,
+				"r": 1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": -1,
+				"r": -1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": -1,
+				"r": 0,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": -1,
+				"r": 1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": 0,
+				"r": -1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": 0,
+				"r": 0,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": 0,
+				"r": 1,
+				"road": false,
+				"tree": false,
+				"unit": 3,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": 1,
+				"r": -1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 1,
+				"q": 1,
+				"r": 0,
+				"road": false,
+				"tree": false,
+				"unit": 3,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": 1,
+				"r": 1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 0,
+				"q": 2,
+				"r": -1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 1,
+				"q": 2,
+				"r": 0,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 1,
+				"q": 3,
+				"r": -1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 1,
+				"q": 3,
+				"r": 0,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 1,
+				"q": 3,
+				"r": 1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 1,
+				"q": 4,
+				"r": -1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 1,
+				"q": 4,
+				"r": 0,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 1,
+				"q": 4,
+				"r": 1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 1,
+				"q": 5,
+				"r": -1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": 1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 1,
+				"q": 5,
+				"r": 0,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			},
+			{
+				"building": "",
+				"capital": -1,
+				"event": "",
+				"grave": false,
+				"mana_source": false,
+				"mountain": false,
+				"owner": 1,
+				"q": 5,
+				"r": 1,
+				"road": false,
+				"tree": false,
+				"unit": 0,
+				"value": 2
+			}
+		],
+		"factions": [
+			{
+				"color": "86b998ff",
+				"name": "Fern",
+				"terrain": "80ad86ff"
+			},
+			{
+				"color": "d79879ff",
+				"name": "Ember",
+				"terrain": "c58768ff"
+			},
+			{
+				"color": "92acc9ff",
+				"name": "Tide",
+				"terrain": "6e8fb3ff"
+			},
+			{
+				"color": "c5b478ff",
+				"name": "Ochre",
+				"terrain": "b6a66dff"
+			},
+			{
+				"color": "b29acdff",
+				"name": "Aster",
+				"terrain": "a18ab9ff"
+			},
+			{
+				"color": "73b7b7ff",
+				"name": "Cove",
+				"terrain": "659f9eff"
+			},
+			{
+				"color": "d47985ff",
+				"name": "Ruby",
+				"terrain": "b75b67ff"
+			},
+			{
+				"color": "e8b4caff",
+				"name": "Dawn",
+				"terrain": "d5a0b7ff"
+			},
+			{
+				"color": "bfce78ff",
+				"name": "Moss",
+				"terrain": "a4b95cff"
+			},
+			{
+				"color": "9ac1c6ff",
+				"name": "Frost",
+				"terrain": "7cafb6ff"
+			},
+			{
+				"color": "99958eff",
+				"name": "Slate",
+				"terrain": "74716cff"
+			},
+			{
+				"color": "aa99c7ff",
+				"name": "Iris",
+				"terrain": "8875acff"
+			}
+		],
+		"format": "slay-level",
+		"gold": 100,
+		"player_start": [
+			-3,
+			0
+		],
+		"rules": "modern",
+		"seed": 73022,
+		"size": "small",
+		"title": "Cutting off armies",
+		"version": 1
+	},
+	"opponent_mode": "scripted",
+	"require_victory": false,
+	"steps": [
+		{
+			"condition_mode": "all",
+			"conditions": [],
+			"details": {},
+			"exercise": "encirclement",
+			"highlight": [
+				1,
+				0
+			],
+			"id": "supply",
+			"kind": "read",
+			"opponent": [],
+			"restrict_actions": false,
+			"setup": {
+				"cells": [
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -3,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": 0,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -3,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -3,
+						"r": 1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -2,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -2,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -2,
+						"r": 1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -1,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -1,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": -1,
+						"r": 1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 0,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 0,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 0,
+						"r": 1,
+						"road": false,
+						"tree": false,
+						"unit": 3,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 1,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 1,
+						"q": 1,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 3,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 1,
+						"r": 1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 0,
+						"q": 2,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 1,
+						"q": 2,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 1,
+						"q": 3,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 1,
+						"q": 3,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 1,
+						"q": 3,
+						"r": 1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 1,
+						"q": 4,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 1,
+						"q": 4,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 1,
+						"q": 4,
+						"r": 1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 1,
+						"q": 5,
+						"r": -1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": 1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 1,
+						"q": 5,
+						"r": 0,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					},
+					{
+						"building": "",
+						"capital": -1,
+						"event": "",
+						"grave": false,
+						"mana_source": false,
+						"mountain": false,
+						"owner": 1,
+						"q": 5,
+						"r": 1,
+						"road": false,
+						"tree": false,
+						"unit": 0,
+						"value": 2
+					}
+				],
+				"factions": [
+					{
+						"color": "86b998ff",
+						"name": "Fern",
+						"terrain": "80ad86ff"
+					},
+					{
+						"color": "d79879ff",
+						"name": "Ember",
+						"terrain": "c58768ff"
+					},
+					{
+						"color": "92acc9ff",
+						"name": "Tide",
+						"terrain": "6e8fb3ff"
+					},
+					{
+						"color": "c5b478ff",
+						"name": "Ochre",
+						"terrain": "b6a66dff"
+					},
+					{
+						"color": "b29acdff",
+						"name": "Aster",
+						"terrain": "a18ab9ff"
+					},
+					{
+						"color": "73b7b7ff",
+						"name": "Cove",
+						"terrain": "659f9eff"
+					},
+					{
+						"color": "d47985ff",
+						"name": "Ruby",
+						"terrain": "b75b67ff"
+					},
+					{
+						"color": "e8b4caff",
+						"name": "Dawn",
+						"terrain": "d5a0b7ff"
+					},
+					{
+						"color": "bfce78ff",
+						"name": "Moss",
+						"terrain": "a4b95cff"
+					},
+					{
+						"color": "9ac1c6ff",
+						"name": "Frost",
+						"terrain": "7cafb6ff"
+					},
+					{
+						"color": "99958eff",
+						"name": "Slate",
+						"terrain": "74716cff"
+					},
+					{
+						"color": "aa99c7ff",
+						"name": "Iris",
+						"terrain": "8875acff"
+					}
+				],
+				"format": "slay-level",
+				"gold": 100,
+				"player_start": [
+					-3,
+					0
+				],
+				"rules": "modern",
+				"seed": 73022,
+				"size": "small",
+				"title": "Cutting off armies",
+				"version": 1
+			},
+			"substeps": [
+				{
+					"text": "The enemy Knight has only one connection to the rest of its kingdom. Capture that connection and it will be left on a single tile, without a treasury to support it.",
+					"title": ""
+				}
+			],
+			"target": null,
+			"task": "Cutting off an army",
+			"text": "Units need a connection to their kingdom to survive. You can defeat a strong unit by cutting off its land instead of attacking it.",
+			"title": "Cutting off an army"
+		},
+		{
+			"condition_mode": "all",
+			"conditions": [],
+			"confirm": true,
+			"details": {},
+			"exercise": "encirclement",
+			"id": "inspect_knight",
+			"kind": "inspect",
+			"opponent": [],
+			"restrict_actions": true,
+			"target": [
+				1,
+				0
+			],
+			"task": "Inspect the enemy Knight",
+			"text": "Click the gold-ringed Knight to inspect it. Its land is still connected to Ember's capital through the narrow strip on its right. Read its details, then click Continue.",
+			"title": "Inspect the enemy Knight"
+		},
+		{
+			"condition_mode": "all",
+			"conditions": [
+				{
+					"faction": 1,
+					"target": [
+						1,
+						0
+					],
+					"type": "isolated"
+				},
+				{
+					"faction": 1,
+					"target": [
+						1,
+						0
+					],
+					"type": "unit",
+					"value": 3
+				}
+			],
+			"criteria": {
+				"owner_before": 1
+			},
+			"details": {
+				"source": [
+					0,
+					1
+				]
+			},
+			"exercise": "encirclement",
+			"id": "cut_connection",
+			"kind": "move",
+			"opponent": [],
+			"read_before_action": true,
+			"restrict_actions": true,
+			"target": [
+				2,
+				0
+			],
+			"task": "Cut the connection",
+			"text": "Click your blue-ringed Knight, then the gold-ringed land behind the enemy Knight. Conquering that tile removes its last connection to the kingdom.",
+			"title": "Cut the connection"
+		},
+		{
+			"condition_mode": "all",
+			"conditions": [],
+			"details": {},
+			"exercise": "encirclement",
+			"highlight": [
+				1,
+				0
+			],
+			"id": "isolated",
+			"kind": "read",
+			"opponent": [],
+			"restrict_actions": false,
+			"substeps": [
+				{
+					"text": "Cutting a border is not always enough. A larger pocket of connected land can form its own kingdom. Here, the Knight is left on just one tile, which cannot support it.",
+					"title": ""
+				}
+			],
+			"target": null,
+			"task": "Cut off, but still alive",
+			"text": "The enemy Knight is surrounded by your land now. It is still on the map, but has no kingdom to pay for it. It will die at the start of Ember's next turn.",
+			"title": "Cut off, but still alive"
+		},
+		{
+			"condition_mode": "all",
+			"conditions": [
+				{
+					"target": [
+						1,
+						0
+					],
+					"type": "no_unit"
+				}
+			],
+			"details": {},
+			"exercise": "encirclement",
+			"highlight": [
+				1,
+				0
+			],
+			"id": "wait_for_isolation",
+			"kind": "end_turn",
+			"opponent": [],
+			"read_before_action": true,
+			"restrict_actions": true,
+			"target": null,
+			"task": "End turn to remove the Knight",
+			"text": "End your turn. Ember's turn comes next, and its unsupported Knight will disappear. You do not need to attack it.",
+			"title": "End turn to remove the Knight"
+		},
+		{
+			"condition_mode": "all",
+			"conditions": [],
+			"details": {},
+			"exercise": "encirclement",
+			"highlight": [
+				1,
+				0
+			],
+			"id": "positioning",
+			"kind": "read",
+			"opponent": [],
+			"restrict_actions": false,
+			"target": null,
+			"task": "Win with positioning",
+			"text": "The enemy Knight is gone, while yours survived. Look for narrow connections before attacking a strong army. The same can happen to your units - keep them connected to a kingdom.",
+			"title": "Win with positioning"
+		}
+	],
+	"title": "Cutting off armies",
+	"version": 1,
+	"description": "Surround a Knight, cut its connection and let isolation defeat it."
+}
