@@ -15,6 +15,14 @@ $output = Join-Path $projectPath "builds/$name"
 $archive = "$output.zip"
 if ((Test-Path -LiteralPath $output) -or (Test-Path -LiteralPath $archive)) { throw "Build already exists. Choose a new -Label to keep each shared build identifiable." }
 if ($Template) { $Template = (Resolve-Path -LiteralPath $Template).Path }
+# Capture source identity before temporarily changing export settings.
+$sourceRevision = git -C $projectPath rev-parse HEAD
+if ($LASTEXITCODE -ne 0) { throw "Cannot identify the source revision." }
+$sourceBranch = git -C $projectPath branch --show-current
+if ($LASTEXITCODE -ne 0) { throw "Cannot identify the source branch." }
+$sourceStatus = git -C $projectPath status --porcelain
+if ($LASTEXITCODE -ne 0) { throw "Cannot inspect the working tree." }
+$sourceModified = [bool]$sourceStatus
 $presetPath = Join-Path $projectPath "export_presets.cfg"
 $preset = [IO.File]::ReadAllBytes($presetPath)
 $previousAppData = $env:APPDATA
@@ -46,7 +54,7 @@ try {
     Copy-Item -LiteralPath (Join-Path $projectPath "resources/shaders/water.LICENSE.md") -Destination (Join-Path $licenses "Water-shader.txt")
     Copy-Item -LiteralPath (Join-Path $projectPath "resources/shaders/clouds.LICENSE.md") -Destination (Join-Path $licenses "Cloud-shaders.txt")
     Copy-Item -Path (Join-Path $projectPath "docs/playtest/licenses/*.txt") -Destination $licenses
-    @("Slay & Reign $version / $Label", "Packaged UTC: $([DateTime]::UtcNow.ToString('o'))", "Engine: $(& $engine --version)", "Source revision: $(git -C $projectPath rev-parse HEAD)", "Working tree modified: $([bool](git -C $projectPath status --porcelain))") | Set-Content (Join-Path $output "BUILD.txt")
+    @("Slay & Reign $version / $Label", "Packaged UTC: $([DateTime]::UtcNow.ToString('o'))", "Engine: $(& $engine --version)", "Source branch: $sourceBranch", "Source revision: $sourceRevision", "Working tree modified: $sourceModified") | Set-Content (Join-Path $output "BUILD.txt")
     Compress-Archive -LiteralPath $output -DestinationPath $archive -CompressionLevel Optimal
     $hash = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash
     "$hash  $name.zip" | Set-Content "$archive.sha256.txt"
