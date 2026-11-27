@@ -1,200 +1,165 @@
-> **0.3.0:** Castles, three-tier buildings and Ore. See [the current rules and balance switches](docs/castles-and-ore.md).
-
 # Slay & Reign
 
-Game versions and release notes are tracked in [CHANGELOG.md](CHANGELOG.md).
-The current development version is `0.3.0` (Windows metadata: `0.3.0.0`).
-The earlier `0.2.0P` playtest remains on its playtest branch.
-Closed playtest packaging, the Discord brief and the final send checklist are in
-[the playtest guide](docs/playtest/organizer.md).
-See [player settings](docs/settings.md) for display, audio, interface scaling,
-camera controls, accessibility preferences and category resets.
-Use `python tools/version.py` to see the current version and
-`python tools/version.py 0.1.1` to set the next one.
-
-Create encounters with **Event Editor.cmd**, or **Level editor â†’ Events â†’ Create eventsâ€¦**. Duplicate existing events, configure choices, requirements, weighted outcomes, artwork and permanent landmark rewards, and preview/test the result without editing code. See the [Event Editor guide](docs/event-editor.md).
-
-A small Slay-inspired strategy game made in Godot 4.6. Open `project.godot` in Godot and press **F5** to play. Raised 3D hex terrain, low-poly buildings and trees, shadows, and original camera-facing pixel soldiers create a small diorama. **Options â†’ Video â†’ Background** switches between the original animated **Water** (default) and **Sky**, a softly lit teal void with subtle haze and sparse motes behind floating tiles. The choice applies immediately and is saved across sessions. Both backgrounds cover the full camera range. Terrain and scenery meshes are generated in code; Steam support uses the bundled GodotSteam extension.
-
-**Steam multiplayer:** Open **Multiplayer â†’ Steam onlineâ€¦** to host a friends-only lobby, invite friends and play online. Development uses Spacewar (App ID 480). See [setup, behavior and testing](docs/steam-multiplayer.md).
-
-**Localization:** Options â†’ Gameplay â†’ Language lists your installed language packs; changes apply on the next launch. English is supplied, with a blank editable template for your own translations. See [the translation guide](docs/localization.md).
-
-**Collection:** Paintings seen in events join a saved digital album on the main menu. Unseen artwork stays locked; collected paintings open in their original colours with fit, native-size and zoom controls. See [the painting collection](docs/painting-collection.md).
-
-Clouds drift slowly around the island when zoomed out, with a soft
-asymmetric clearing extending offshore. Its edge uses the same cloud volume
-and lighting as the surrounding banks. They work with Water and Sky; Options > Video > Clouds controls the
-effect, and reduced motion freezes their drift. See [distant clouds](docs/clouds.md).
-
-**Replays:** choose **Save replay** on the results screen to keep a completed match. **Replays** on the main menu opens the viewer with play/pause, speed controls, action stepping, timeline seeking and a free camera. Shared recordings can be opened from other folders. Unfinished games create no replay file. See [watching, recording and analysis](docs/replays.md).
-
-## Controls
-
-The application starts at a main menu with **Quick Play**, **Tutorial**, **Multiplayer**, **Level editor**, **Options** and **Quit game**. The level editor supports 3D terrain/owner/value/object painting, generated or blank islands, undo/redo, saved level files and playtesting. Pause â†’ Quit â†’ **Return to editor** preserves your draft; Restart repeats its authored starting position. See [level editor controls and files](docs/level-editor.md). Match saving/loading is planned for a later update; audio and video preferences are already saved separately.
-
-**Tutorial** offers eight topics: **Armies and expansion**, **Cutting off armies**, **Kingdoms and money**, **Defences and upkeep**, **Cities and supply lines**, **Mana and spells**, **Exploration and rewards**, and **Your first match**. Short exercises group related mechanics, track real actions with checkboxes, and teach plain neutral capture before special rewards. Retry exercise restores its complete starting position. The final practice runs a normal Easy opponent and accepts your own strategy. Start any topic directly. See [the tutorial](docs/tutorial.md).
-
-**Quick Play** has **Map size**, **Kingdoms**, **Difficulty** and **Your kingdom** selectors. Your kingdom offers Fern, Ember, Tide, Ochre, Aster, Cove, Ruby, Dawn, Moss, Frost, Slate and Iris, each with its own colors. **Random** is the default and chooses a fresh kingdom for each new match; your preference is remembered. Opponents use different palettes sampled from the same twelve choices. Map size offers Tiny (~80 tiles), Small (~150), Standard (~250), Large (~500) and Huge (~1,000); Tiny and four kingdoms are selected by default. Approximate land counts appear directly in both the Quick Play and editor dropdowns, with tooltips explaining seed variation. Huge uses the tested 1,000-tile performance target; 2,000 tiles remains outside the playable presets because its slow-frame margin was narrower at 1080p. Kingdom counts include yours: Tiny supports 2–4, Small 2–6, Standard 2–8, and Large/Huge 2–10. See [nation capacity](docs/nation-capacity.md) for the calculation and generation checks. Changing size preserves the count when it fits, otherwise clamps it to the supported maximum. Island bounds, terrain budgets and camera range come from size; the chosen count determines starting factions. Kingdoms start with six to nine provinces in varied shapes. Each receives a Scout and 10 G. Restart preserves size, count, seed, difficulty and the resolved kingdom lineup.
-
-The 1,000-tile performance target applies to initial boards. Settled armies now share spatial draw batches, unit changes retain terrain, movement overlays retain their geometry, and AI shares region/target analysis. Captures publish changed records, terrain retains color buffers, and secondary uploads use a frame budget. Heavy captures and effects can still exceed the 240 FPS frame budget. See the [strategy-scale implementation report](docs/strategy-scale-optimization-2026-10-14.md), the [capture-update follow-up](docs/capture-updates-2026-10-14.md), and the [original heavy-map strain baseline](docs/heavy-map-strain-2026-10-14.md). See the [AI turn stutter investigation](docs/ai-turn-stutter-2026-10-20.md) for the Forward+ effect-pipeline fix and crowded-board measurements. The [sustained turn FPS investigation](docs/turn-fps-2026-10-20.md) covers CPU/GPU timings, sprite cleanup errors, and scoped board updates.
-
-All map sizes use the same strategic AI with reusable faction objectives and local unit assignments. Difficulty controls tactical budgets and risk handling. Captures rebuild the factions involved, command groups validate moves in order, and arriving actors remain allocated. The old beam search is retained only as an explicit diagnostic reference. See the [unified AI rollout](docs/unified-ai-2026-10-28.md) and [performance report](docs/ai-performance-2026-10-28.md).
-
-New matches pan and zoom toward your starting country as the island arrives.
-The brief opening finishes before camera controls take over; the reset gesture
-still frames the whole island. Reduced motion applies the country framing instantly. Guided
-tutorials retain their authored camera framing.
-
-Slay & Reign has one ruleset across Quick Play, local multiplayer, tutorials, and the editor. **Restart** repeats the same starting island. Older saved rules preferences are ignored, and older authored maps load their existing layouts under the current rules.
-
-- **Main menu â†’ Multiplayer** opens a dedicated local multiplayer setup with **Players** and **Map** tabs. In Players, choose the kingdom count and each seat's name, player/computer control and colour; computer rows also show their individual difficulty. **Player options** contains the shared AI preset and colour shuffling. In Map & rules, choose the island and rules; expand **Advanced** for an optional seed and fixed or shuffled turn order. At least two seats must be local players. Choosing an occupied colour swaps the two seats. The roster and match settings are remembered. Setup only shows footer text when a choice needs correcting.
-- **Multiplayer â†’ Map â†’ Load editor mapâ€¦** opens the editor's saved-map folder and can browse other locations. Choose a saved Slay `.json` level. Its terrain, troops, starting gold, rules, size and seed are used as authored; size, kingdom count and seed are fixed in setup. Each starting faction becomes a seat, including maps that use nonconsecutive colours or omit Fern. Every faction must have a connected kingdom of at least two provinces, and at least two factions are required. Names, colours, human/AI control, difficulty and turn order remain configurable. The selected file is remembered. Restart repeats the match's original map snapshot, even if that file is later edited. Choose **Generated island** in the Map dropdown to return to normal generation.
-- Local turns pass immediately, with a brief turn notice and a smooth camera pan to the next player's kingdom, preserving angle and zoom. This pan always happens for local players; Video's follow setting controls AI playback. There is no pass-the-controls popup. AI runs between local turns, eliminated seats are skipped, and the round advances after the final seat. The selected name and colour appear across terrain, flags, soldiers, province details, statistics and the HUD. Each seat receives its opening income/upkeep settlement before its first turn. Losing one human does not end the match for the others; the last faction with a capital wins. Losing every local player's last kingdom ends the match in defeat; isolated provinces and their buildings do not keep an eliminated player in the turn rotation. Restart preserves the exact island, roster, colours, individual AI difficulties and shuffled turn order.
-- In solo play, you control your chosen kingdom against one to nine computer opponents, depending on your Kingdoms selection. There are twelve available palettes, with up to ten nations per map (subject to map-size limits). Multiplayer seats can also choose any of the twelve palettes.
-- **Right mouse drag** rotates and tilts the camera without cancelling the selected action. A six-pixel drag threshold separates camera rotation from a click. **Right-click** cancels the action or selection; **left-click off the map** also cancels. Either gesture (or Escape) can cancel an unfinished player move and restore its units, ownership, capitals and treasuries. Opponent turn playback continues normally. **Scroll wheel** zooms. Hold the **middle mouse button (scroll wheel)** and drag to pan the map beneath the cursor. **WASD** also pans relative to the camera's direction.
-- The icon-only **view button / Tab** toggles an overhead view, preserving camera position and zoom. Its cube or hex-grid icon indicates the current view. Toggle it again to restore the previous 3D angle. Right-dragging while overhead returns to 3D. Hold the view button for **0.55 seconds** to center the map and restore the default 3D angle and zoom; releasing after a hold does not toggle views. The **?** button opens camera and keyboard help.
-- **Hold Ctrl** to play unit movement at **6Ă— speed**, including a move already in progress. During opponent turns, you can instead hold the loading **End turn** button. Release to restore normal speed; `Â»` beside the faction name indicates fast playback. Pause/focus loss clears the hold, and releasing the button after opponents finish cannot accidentally start another turn. This speeds up animations and phase pauses; AI decisions and game rules remain unchanged.
-- **Options â†’ Controls** saves custom keyboard bindings and offers Restore defaults. Defaults: **Q / E / R** open Recruit / Build / Spells. In an open menu, **Q / E / R** select left-to-right cards. **G** develops the open province. **Tab** changes view. Camera, turn, cancellation and speed-up keys are also editable. See [keyboard bindings](docs/key-bindings.md).
-- **F / grid icon beside the camera button** toggles a province-value heatmap, with soft value tints on the original raised 3D tiles: black zero-value surfaces, red value 1 and green for the highest current value. Kingdom borders, lighting and Water/Sky remain visible; landmarks are muted and exact numbers appear on hover. Works in both camera views and can be rebound in Controls. Toggle again to restore the normal view. See [value heatmap](docs/value-heatmap.md).
-- Click your land to select its kingdom. The compact **bottom-left** dock places Recruit, Build and Spells in an action row above gold and mana, each paired with its next-turn forecast. Gold amounts are marked **G**. The forecast updates during enemy playback as houses are destroyed, provinces change hands, and unit upkeep changes. Spending and income pulse the amount and show a brief signed change beside the gold heading. Selecting a different kingdom switches the readout without pretending that treasury transfer is income. Hover the display for income, upkeep, and territory details.
-- Click a ready unit, then a highlighted hex to move. Units can cross **any amount of connected friendly land** in one action, including passing through occupied hexes, and can finish by capturing **one** neutral or enemy hex at that kingdom's border. They cannot cross water, enemy land, or neutral land to reach another destination. Hover a destination to preview its route.
-- Movement reach uses a **cyan border around the reachable area**, omitting shared internal edges. Hover emphasizes the destination (**cyan** move, **gold** capture, **coral** attack, **purple** merge) and shows one continuous arrow with smooth bends and a single head. **Options â†’ Gameplay â†’ Clear movement indicators** restores the original tile outlines and dotted path when disabled; the choice saves and applies immediately. See [movement indicators](docs/movement-indicators.md).
-- Mouse-wheel zoom eases smoothly toward the pointer when zooming in. Holding RMB anchors zoom to the position where the press began, even while orbiting. Zooming out gradually recentres the island; the widest view fits the map with a safe margin and adapts to window size and camera angle. Wind ambience starts earlier and builds gradually across the overview range. These controls also work in replays and the level editor.
-- Three decorative birds inhabit each map, perching independently on empty or forested hexes and sometimes sharing a tile. They peck quietly, then scatter away from approaching soldiers with varied takeoff timing, curved flight paths, speeds and wingbeats. Each fades out and returns to a new safe tile after one or two rounds. A soldier who stays on the same tile for three full rounds may attract a bird onto their helmet; moving or being replaced scares it away and resets the wait. A perching bird follows the helmet through each idle pose. Four natural feather colours add variety. Birds have no effect on movement, income, combat or replay data.
-- Editor map loading and resets use a preparation cover, background island generation and gradual terrain construction/uploads. Blank maps skip generation entirely. Birds stay hidden during preparation and tile transitions, and share their feather textures between boards.
-- **Options â†’ Video â†’ Atmospheric lighting** enables warmer sunlight, cooler shadows, subtle scene grading and a bounded number of nearby light accents. Units, animals and birds also pick up sunlight, cast shadows and nearby light colours while retaining their pixel art. Turn it off for the original Simple lighting. It applies immediately and is saved between sessions. See the [Forward+ adaptation](docs/forward-lighting-2026-10-20.md) for the current renderer tuning, captures and verification; the [lighting comparison](docs/lighting-overhaul-2026-10-20.md) records the earlier Compatibility baseline.
-- **Options â†’ Video â†’ Plastic tiles** switches between reflective satin tops with charcoal rubber bases and the original matte tiles with brown bases. It is enabled by default, applies immediately to gameplay and menu scenery, and is saved between sessions. Plastic bevels appear only along kingdom exteriors, including when internal borders are visible.
-- Diorama depth of field softens foreground and background when zoomed in, fades smoothly as you zoom out, and switches off completely at overview scale. Focus stays on the camera target and never follows the cursor. The menu uses the same effect, overhead terrain stays sharp, and interface elements remain sharp. This replaces the former top/bottom screen blur.
-- Decorative grass tufts and pebbles have been removed. Nearby crystal and building lights fade smoothly with zoom and proximity; retained light sources fade out before relocating. Shadows keep one stable projection and ease toward a softer presence at wide zooms. Light shader variants are drawn under the loading cover before gameplay, editor loads and replay reveals. Settled terrain still uses merged chunks, and zooming does not rebuild terrain or army buffers. See [zoom lighting](docs/zoom-lighting-2026-10-20.md).
-- Hover previews show the action directly on its destination tile: a cyan movement arrow, gold capture arrow, coral attack destination, purple merge/upgrade marker, green ghost recruit, or blue ghost building. Recruitment upgrades preserve the existing soldier sprite and show an upward arrow with the target rank above its head in both angled and top-down views. Invalid destinations show a red X. Preview models do not change gameplay or interfere with map picking, and cancelling clears them immediately.
-- Units visibly travel along their route as a whole group, including their shadow and rank markers. Sprites remain static, with no idle bobbing or sprite-frame animation. An attack approaches the defender, jabs forward, removes the defender at impact, then takes its place. Friendly merges finish as one stronger unit.
-- Click **Recruit / R** to open a three-unit menu, choose a Scout, Soldier, or Knight, then click a highlighted hex to place it. Recruiting directly costs 10 / 20 / 40 gold for tiers 1 / 2 / 3. Choosing a stronger tier and clicking an unmoved existing unit upgrades it, charging the price difference: Scout â†’ Soldier 10 G, Soldier â†’ Knight 20 G, Scout â†’ Knight 30 G.
-- **All new units and upgrades of unmoved units can move immediately.** After an upgrade or a merge into an unmoved unit, the unit is selected automatically so you can click a destination straight away. A unit that has moved cannot upgrade to reset its action. Normal movement still spends the resulting unit's action.
-- Move a ready unit onto an equal-tier friendly unit to merge them into one unit of the next tier, even if the receiving unit has already moved. The merged unit inherits the receiving unit's movement status: it can move only if that unit had not moved.
-- Enemy land can be captured only with a unit **strictly stronger** than its defense. A Knight can attack a hostile Knight at equal strength: both die, with territory, capitals and structures preserved. Scouts and Soldiers cannot attack at equal strength. Defense uses the strongest protector: a Knight defends its own hex at strength 3 and adjacent friendly hexes at strength 2. Capitals provide defense 1; towers provide defense 2 to themselves and adjacent friendly hexes. Neutral land has no defense.
-- Click **Build / B** to choose a tower or house. Towers cost 15 local gold. Houses cost 20 local gold and add 4 gold to the kingdom's income each turn. Both require a clear, empty hex without a capital, unit, tree, grave, or existing structure. Structures have no upkeep. Recruitment and building target only the selected connected kingdom; select another kingdom before purchasing there. A unit may pass through friendly structures but cannot stop on them; enemy structures are destroyed on capture.
-- Recruitment and building cards show prices directly: Scouts / Soldiers / Knights cost **10 / 20 / 40 G**; towers / houses cost **15 / 20 G**. Descriptions and upkeep remain delayed tooltips, shown after hovering for about 0.65 seconds. Hover a hex or visible object to inspect it. The default screen has no persistent instructions or statistics panel.
-- **End turn / Space**, in the **bottom-right**, runs each opponent's turn in order, pays local income and upkeep, and refreshes surviving units. **Escape** first closes menus or cancels placement/selection (including an unfinished player move), and opens Pause when nothing remains to cancel.
-- The **cogwheel** in the **top-right** opens Pause and freezes gameplay, camera movement, opponent phase timers and unit animations. **Continue / Escape** resumes from the same point. The **Options** text buttons in the main and pause menus open Audio and Video settings. **Quit** lets you return to the main menu or exit the game; leaving a session requires confirming that its state will be discarded.
-- **Audio options** provide overall/interface/game-effect volume and mute. **Video options** provide windowed/fullscreen mode, window size, VSync, MSAA anti-aliasing, shadows, **Follow active kingdom** and **Animate level transitions**. Camera following gently pans toward each opponent's territory and returns to your selected kingdom after playback, preserving zoom and angle. Manual camera input stops following for the rest of that turn. When level transitions are enabled, tiles and their buildings/units float down from above the screen on Quick Play. Restart and rules changes first send the old island below the screen, then bring the replacement down from above. Returning to Main Menu also waits for tile departure. Victory starts departure automatically; defeat waits for the popup choice described below. Gameplay and camera navigation wait for entrance to finish; Pause remains available and freezes the animation. Disabling the setting finishes an active transition immediately. Preferences apply immediately and persist; window size is disabled in fullscreen, which uses the display's native size. Escape from Options returns to the menu that opened it.
-- Opponent playback runs **Ember (red), Tide (blue), then Ochre (yellow)**. Recruitment, upgrades, construction and deaths are marked at the start of each faction's phase; all its moving units then animate **simultaneously**. The next faction waits for the entire movement batch to finish. The turn label and End Turn button identify the active faction. Camera controls remain available during playback; other gameplay commands and restarting wait for animations to finish, with cancellation available during a player's own move.
-- **Stats**, beside End turn, opens faction territory counts and your kingdom finances. Click a kingdom's row to select it and center the camera there. **Restart**, in the pause menu, asks for confirmation before resetting the current level with its original seed, starting troops/ownership/treasuries, turn and RNG sequence. Back or Escape cancels the confirmation and preserves progress. Options contains only settings. Defeat all rival factions to win; lose every hex to lose. Neutral land need not all be captured to win.
-- **Defeat** opens a popup with **Restart level** and **Main menu** after opponent playback finishes. The island stays in place behind it until you choose. Restart dismisses the popup, plays tile departure, and brings back the same starting level; Main Menu plays departure before showing the menu. Escape does not dismiss the choice. With level animations disabled, the popup still appears and its choices take effect immediately.
-
-AI turn preparation and validated movement now run on an ordered simulation worker, publishing changed records for animation. See the [simulation worker report](docs/simulation-workers-2026-10-20.md) for ownership guarantees, validation and the limits of the measured performance results.
-
-## Kingdoms and separation
-
-On first launch, create your kingdom profile, then follow the recommended tutorial or choose to learn as you play. The bottom-right badge shows your Steam name and opens your match record and account level; its brush button opens Country and Flag tabs, with color wheels, hex fields and an in-game country preview. Completed matches earn XP based on result, difficulty, map size and opponent count, with progress shown in the profile and on the results screen. Quick Play offers your kingdom or a grid of default countries. Delete the profile to start fresh. **Campaign** is reserved for a future update. See [player profiles](docs/player-profile.md).
-
-You win once **no enemy capitals remain**, even if opponents still own isolated single provinces or have stranded troops. A surviving enemy capital keeps the game active.
-
-When a kingdom needs a replacement capital, it prefers a site away from rival borders, or the site touching the fewest rival hexes if every site is exposed. It preserves houses and towers when a structure-free site is available, and can place the capital beneath a friendly garrison. Existing capitals stay where they are unless the player relocates them.
-
-The **castle-and-arrow icon** beside Develop opens a confirmation before moving the capital in the province inspector. Relocation uses that territory's treasury: 10 G for the first move, then 20 G, 30 G and so on for the same color throughout the match. Splits, lost capitals and automatic replacements do not reset the price. The destination must be clear friendly land in that territory; a unit may share it. The treasury, bridge garrison home references and any existing city ward move with the capital. Terrain mana sources stay on their original tiles.
-
-Maps of size Small and larger also contain rare, visible **treasure chests** worth a guaranteed **15 G**, collected automatically by capturing their tile. They favor remote neutral side routes, peninsulas and offshore pockets, with about one chest per 100 neutral land tiles when suitable locations exist. Chests are separate from encounters and have no random outcome or unit loss.
-
-Every connected group of **two or more** friendly hexes is a separate kingdom with its own capital and treasury. Each faction starts with a connected, rotated compact, crescent or elongated footprint and a Scout. Territories vary from six to nine hexes. Starting gold is 10 G. The rest of the map is neutral. Kingdom locations and faction colors are scattered anew for each seed, with at least two intervening hexes between starting borders. Distances vary rather than following fixed slots. Rotated home layouts, solid irregular land lobes and coastal erosion produce tall or wide worlds without clipping their coasts to a rectangle. Modern worlds can have one, two or three substantial landmasses, with kingdoms starting on islands even on Small maps. Islands are optional, have at least 13 hexes, and remain reachable through protected one-hex bridge crossings. Optional lakes of five or more water hexes, including much larger inland lakes, and winding mountain ridges add terrain variety. The camera fits the generated footprint. Different Modern territory sizes all total eleven province value and produce +7 net income after Scout upkeep. Actual starting borders retain at least two intervening hexes; capitals have at least three friendly neighbors and every start has two neutral expansion tiles protected from mountains. Restart reproduces the same seed and map within generation v13; older seeds intentionally produce new layouts. See [world generation](docs/world-generation.md). Maps also contain aggressive bears, wolves and boars with distant lairs, three-World-turn respawns and permanent or immediate clearing rewards; see [wildlife rules](docs/wildlife.md). `tools/map_generation_preview.gd` renders six Large maps to `artifacts/map_generation_large.png` for comparison.
-
-**Quick Play â†’ Difficulty** offers Easy, Normal (default) and Hard, with equal resources and rules. All map sizes use the same strategic AI. Easy considers fewer tactical alternatives; Normal checks exposure and counterattacks; Hard considers more alternatives and places a larger penalty on unsafe attacks. Opponents assess reachable threats, protect important positions, account for actual wages, use all three Modern spells and can hold position. Difficulty is remembered for future games and preserved on restart. See [enemy AI](docs/ai-system.md) for its design and validation.
-
-**Options â†’ Video â†’ Internal borders** controls the width of borders between provinces in the same kingdom, from 0% (continuous colored surfaces) to 100% (original full borders). The default is **50%**. Changes apply immediately to both gameplay and the main-menu landmass, including while paused, and save automatically. Territory edges, coastlines, neutral tiles and bridges remain distinct. Hover and selection highlights still identify individual hexes. Captures and streamed menu rows update neighboring surfaces without replacing unchanged buildings or units. Island appearance settings should always be shared between gameplay and the menu.
-
-- When a capture **splits** a kingdom, the piece containing its surviving capital keeps its gold. Other pieces of at least two hexes receive a new capital and start with zero gold.
-- When kingdoms **reconnect**, their treasuries combine and only one capital remains. Rebuilding borders does not create extra gold.
-- Capturing a capital destroys its stored gold. Surviving connected land receives a replacement capital with zero gold. Losing a capital alone does not eliminate the faction.
-- A **single isolated hex** has no capital, treasury, recruitment, or construction. A soldier stranded there dies **at the start of its faction's next turn**, leaving a grave. Reconnecting it before that turn restores kingdom membership.
-- At the start of each faction's turn, each kingdom pays income minus upkeep. If its treasury would become negative, **only that kingdom's army** dies and leaves graves, and its gold resets to zero. Other kingdoms keep their funds and units.
-
-## Trees and graves
-
-Each existing tree has a 16% chance per full round to spread to one adjacent eligible empty hex. New trees cannot spread again in that same round. Trees never spread onto units, capitals, structures, or graves.
-
-Landing a unit on a tree or grave clears it, spending that unit's action. Recruitment onto an empty tree or grave hex also clears it. A grave that remains until the next turn of its owner becomes a tree. New starvation graves remain visible for a full turn. Clearing restores the hex's base income.
-
-Opponents use the same movement, kingdom, economy, and construction rules. This remains a Slay-inspired prototype with simplified prices and three unit tiers; match saving is planned; local hotseat multiplayer is available.
-
-## Economy, terrain and magic
-
-- Click friendly, neutral or enemy terrain or a province structure to open its bottom-left inspector with a short slide from below. Clicking a soldier selects the unit and closes province details; moving, recruiting, upgrading, building and casting do not automatically open the inspector. Exposed terrain on an occupied province remains separately clickable. The shorter inspector shows value, actual gold income, a mana source if present, and development cost. It shares its space above the resource dock with purchase menus, so panels never stack. RMB, off-map LMB or Escape closes it. Provinces remain inspectable during opponent playback, with development disabled.
-- Neutral provinces start at value **1â€“3**. Each starting kingdom's six to nine provinces total exactly **11 value**, and its treasury starts at **10 G**. Scout / Soldier / Knight wages are **4 / 12 / 36 G per turn**. Clear land earns its value in gold each turn; trees and graves suppress that income. Houses still add **4 G**. Values persist through capture.
-- **Develop** increases a friendly connected province's value by one, up to **6**. Prices are **2 / 8 / 18 / 32 / 50 G** for values 1â€“5: **2 Ă— current valueÂ˛**. Development uses that province's local kingdom treasury and does not clear a tree or grave. Press **G** while the province inspector is open to develop it; the shortcut can be rebound in Controls.
-- **Mountains** are permanent, neutral, impassable terrain. They form thin, gently winding ridges, with longer ranges on larger maps and occasional inland passes. Coverage varies around **5â€“8.5%** before placement constraints. Ridges create detours and sheltered approaches while preserving routes through every landmass. Units cannot enter or cross mountains; spells, construction and bridges cannot remove or replace them. Mountains have no value or income. Generation protects starting territory, mana sources, bridge ports and passes.
-- Blue crystal clusters mark mana sources. Every starting faction has exactly **one**, at its castle, plus sparse neutral sources (up to one fewer than the kingdom count, with at least one guaranteed). Mana is **shared across all kingdoms in the faction**. Each faction starts with **1 mana**. Owned sources add **1 maximum mana**, or **2** on a capital or a province with a tree; those bonuses do not stack. Regeneration is **1 + floor(owned source count / 4)** per faction turn: 1 at 0â€“3 sources, 2 at 4â€“7, 3 at 8â€“11. It is capped by available storage. Capturing a source increases capacity without instantly creating mana; losing sources or clearing a wooded source clamps stored mana to the new cap. The HUD shows **current / capacity** and the effective next-turn gain. Replacement castles do not create sources.
-- **Spells** opens one row of three choices: **Trailblaze (1 mana)**, **Summon (2)** and **Shatter (2)**. The shared Q/E/R choice keys select them left to right. Summon creates a ready Scout with normal upkeep and clears a tree or grave. Fortify, Grove and Barrier are removed; defense is a unit action in the province inspector.
-- Clearing a tree by movement, recruitment or Summon grants **1 G** to the clearing unit's supporting kingdom or the casting/recruiting kingdom. Clearing graves gives no reward. A removed tree cannot be rewarded again; cancelling a movement restores both the tree and the previous treasury.
-- **Entrench** in the province inspector lets any unmoved friendly unit spend its action to absorb one valid attack on its own tile. It costs no gold or mana, does not stack, and expires at the start of that faction's next turn. The attacker spends its action and holds the nearest free hex along its approach, falling back toward its origin past occupied hexes. A second attacker can break through. Entrenchment does not protect a bridge from Shatter. AI uses the same action for threatened defenders.
-- **Bridges** cost **15 G** and create a brown wooden, permanently neutral tile in an empty water hex adjacent to your kingdom or a reachable bridge chain. Water sites are highlighted while placing them; other placement modes still cancel on off-map clicks. Bridges give no income or value and cannot recruit or develop. All factions can cross them in a single route, stop on them, merge friendly units or attack a hostile bridge garrison. Intact neutral bridge chains join friendly land into one kingdom, combining its treasury, income and army wages. Bridges stay neutral, generate no income and do not count as owned provinces. Destroying a crossing separates the kingdom under the usual capital and treasury rules; hostile bridge garrisons obstruct movement but do not remove the physical economic connection. A soldier on a bridge or newly captured isolated shore can draw support and upkeep from a friendly kingdom connected through the bridge route. If that connection is broken, it starves at its next turn; bridge deaths leave no tree or grave on the wood.
-- **Shatter** costs **2 mana** and destroys a neutral structure reachable beside your selected kingdom or its accessible bridge chain. Destroying a bridge removes the tile and any soldier standing on it, including an entrenched garrison. Shatter cannot destroy owned structures.
-- Capturing a castle also claims **only the provinces directly adjacent to it that belong to that same kingdom**. A gold wave spreads from the fallen castle before the neighboring land changes color. Those provinces' buildings, values and mana sources are retained; their enemy garrisons die and leave graves. Distant provinces, neutral land and other kingdoms do not surrender. Remaining enemy land forms kingdoms under the existing separation rules. Cancelling an unfinished player attack also rolls back this surrender.
-
-Spell definitions live in `src/game/spell_catalog.gd`; targeting and resource spending remain in the authoritative rules, while the UI and opponents use the same definitions. See [docs/modern-rules.md](docs/modern-rules.md) for extension details.
-
-Exploration events scale with eligible neutral land: roughly one encounter per 16 tiles, with the existing kingdom-count minimum on smaller maps. Events remain at least three hexes apart and exclude owned provinces, mountains and mana sources. Placement can stop short of the target where spacing leaves no room. Every visited encounter is consumed immediately. Event types have relative rarity weights. Unmet conditions draw an eligible weighted replacement before reveal, so encounters offer real consequences instead of empty alternate stories; they never remain dormant for a revisit. New encounters include comets, dubious innkeepers, forest clearance, army regrouping, border corrections, royal ransoms, economic reforms, peasant independence and stainless steel. Permanent income and Knight wage modifiers are shown in the HUD. See [the event reference and future ideas](docs/events.md).
-
-## Verification
-
-The six effects in `assets/sfx/` are connected through a reusable cue bank and pooled `Sound` autoload. **Pause â†’ Options â†’ Audio**, also available from the main menu, provides saved overall/interface/game-effect volume and mute. See [docs/audio.md](docs/audio.md) for triggers and how to add future cues.
-
-Run `godot --headless --path . --script tests/test_audio.gd` to check audio resources, routing, voice limits, priorities, settings and game integration.
-
-Run `godot --headless --path . --script tests/test_game.gd` to check 100 deterministic maps, movement around water and hostile land, kingdom splitting and reconnection, capital capture, local bankruptcy, graves, tree spread, structures, purchases and upgrades, five simulated games, camera orbit/zoom/pan/top-down switching, picking sprites and building roofs, recruitment/building menus, statistics, and actual scene interactions.
-
-Run `godot --headless --path . --script tests/test_animation.gd` to check static sprites, visible intermediate positions, concurrent movement, jab/impact/occupation ordering, merging, animation cleanup, gameplay locks, camera access, and sequential faction playback.
-
-Run `godot --headless --path . --script tests/test_input.gd` to check click-versus-drag handling, RMB and off-map cancellation, rollback during an attack, ghost previews, invalid targets, and starting a fresh move after cancellation. Preview switches `--intent-house` and `--intent-move` capture hovered destination previews.
-
-Run `godot --path . --script tools/preview.gd` to capture the initial 3D layout in `artifacts/preview.png`. Add `-- --showcase` to capture a fixture with a tower, house, grave and tree. Optional `--top-down`, `--shop`, `--build`, `--stats`, and `--tooltip` switches capture the corresponding views, appending their names to the output PNG.
-
-Run `godot --path . --fixed-fps 30 --script tools/animation_preview.gd` to capture a movement demonstration, including an attack and the three opposing faction turns. It writes 30 fps PNG frames in `artifacts/motion_frames`; `artifacts/preview_movement.mp4` and `artifacts/preview_movement.gif` are encoded previews of this demonstration fixture.
-
-## Project structure
-
-Static terrain and opaque props use shared spatial rendering batches while preserving their procedural geometry, colors, lighting and shadow quality. Units and tile transitions keep their existing animation paths. Settled menu rows use the same batching helper, including recycled tiles and live border preferences. Stationary hover tooltips cache their content. Native large/six-kingdom A/B benchmarks approximately doubled fully zoomed-out FPS on the test RTX 2060; see [the implementation and validation](docs/static-batching-2026-10-13.md). The runner includes **50 Godot suites**, including `tests/test_static_batches.gd`.
-
-- `scenes/`: application entry (`app.tscn`) and internal gameplay scene (`main.tscn`).
-- `src/app/`: main-menu, session and pause navigation.
-- `src/game/`: session controller, player actions, authoritative movement/economy rules, separate magic/events, generation, opponent planning, input gestures, hex geometry and balance catalogs.
-- `src/ui/`: HUD, contextual presentation, event dialog, retained status controls, shared theme/panel animation, session menus and audio/video options.
-- `src/settings/`: persisted display preferences, independent of game state.
-- `src/rendering/`: board synchronization/camera, separate screen picker and playback modules, level transitions and procedural assets.
-- `src/audio/`: sound manager and cue/bank resources' scripts.
-- `resources/audio/`: sound registry and audio bus layout.
-- `assets/`: icon, original sound files and preserved character reference.
-- `tests/`: regression suites; `tools/`: preview/capture helpers and test runner.
-- `artifacts/`: ignored generated output. Its `.gdignore` prevents Godot importing capture frames.
-- `docs/`: audio extension guide and code review findings.
-
-The main menu joins actual Tiny/Modern regions into one scrolling landmass, with gameplay assets, a low oblique orbit and diagonal motion. Border tiles fall independently; interiors stay intact in a bounded 41Ă—17 overscan pool. Settled scenery shares spatial batches across rows, with cached/incremental updates and no redundant hidden-mesh movement notifications. The isolated viewport runs at the application's full frame rate and stops during gameplay. **F3** toggles the top-right FPS overlay in menus and matches; menus also show their background draw rate. See [session menus](docs/session-menus.md) and [menu performance](docs/menu-performance-2026-10-13.md). Preview with `tools/menu_preview.gd -- --water --evolving`.
-
-Run all 105 Godot suites and the Python replay-reader tests with `./tools/run_tests.ps1 -Godot "C:/path/to/Godot_console.exe"` on Windows. Python 3.10+ is required; use `-Python "C:/path/to/python.exe"` to select an interpreter. The runner also treats engine script/runtime errors as failures even if Godot returns exit code zero. `tests/test_menus.gd` covers navigation, pausing/resuming, display preferences and disposal; `tests/test_economy_ui.gd` covers same-seed restart, ready merged units, dependent AI batches, visible prices and currency feedback. `tests/test_turn_feedback.gd` covers forecasts synchronized to concurrent captures and house destruction, smooth camera following, pause behavior, manual override and saved preferences. `tests/test_modern.gd` covers 100 deterministic resource maps, fair starts, development, shared mana, spells, simulated AI games, castle surrender and rollback, the province inspector, rules switching and Modern restart. `tests/test_presentation.gd` covers unit-versus-terrain picking at several camera angles, the compact resource/action rows, exclusive contextual panels, tile arrival/departure, pausing, completion cleanup, restart/disposal and the saved animation toggle. `tests/test_expansion.gd` covers tree rewards and rollback, two-hit fortification and expiry, bridge chains, neutral movement, support/upkeep, demolition, water picking, wood/ward visuals and action-row placement. `tests/test_resources_terrain.gd` covers 100 mountain maps, range size/passability/connectivity, all impassable-terrain guards, quadratic prices, faction mana caps/regen/capture rollback, Summon and capacity/terrain UI.
-
-`tools/menu_preview.gd` captures the main menu by default; `--pause`, `--options`, `--options --video`, `--quit`, and `--defeat` capture the corresponding screens under `artifacts/`.
-
-Use `tools/preview.gd -- --modern --province` or `--modern --spells` to capture Modern UI; `tools/menu_preview.gd -- --options --gameplay` captures the rules selector.
-
-`tools/preview.gd -- --modern --transition-in` and `--modern --transition-out` capture intermediate tile arrival/departure frames when the video setting is enabled.
-
-Add `--bridge-showcase` to a Modern preview, optionally with `--build` or `--spells`, to capture a wooden bridge, protected structures and the expanded menus.
-
-See [docs/code-review.md](docs/code-review.md) for addressed findings, validation, and remaining extension considerations.
-
-The runner includes 55 Godot suites and the Python replay-reader tests. `tests/test_ai.gd` covers tactical planning, all difficulties and spell policies, snapshot/RNG isolation, holding, wages, difficulty persistence, restart and cancellation. `tests/test_events_spells.gd` covers the three spells, exploration encounters, effects, flexible animated popups and rollback. `tests/test_performance.gd` covers batched query equivalence, retained controls, shared geometry and picking cache invalidation. `tests/test_ui_layout.gd` checks content-sized tooltips, help, notifications, province details and encounters; add `-- --preview` for native minimum-window captures. See [UI text sizing and measured cost](docs/ui-text-layout-2026-10-12.md). Run `godot --headless --path . --script tools/performance_probe.gd -- --label=current` to measure CPU workloads and object counts. See [the performance review](docs/performance-review-2026-10-11.md) for measured before/after results and module responsibilities.
-
-The [12 October post-refactor review](docs/post-refactor-review-2026-10-12.md) documents the movement/turn/overlay responsibility split, immutable AI query contexts, retained overlays, shared-material isolation, final benchmarks and future watchpoints. The fixed CPU benchmark retains identical AI decisions while reducing search time by about 20â€“25%.
-
-
-tests/test_map_sizes.gd verifies all five sizes in both rulesets, deterministic kingdom counts and fair starts, connected starting kingdoms, six-faction playback and victory checks, the Quick Play selector, same-size restart and rules switching. Size profiles are centralized in src/game/map_sizes.gd. Preview a size with -- --modern --size=large; tools/menu_preview.gd accepts --setup for the size selector.
-
-
-Recruit, Build, Spells and province details share a 0.24-second fade with an 8-pixel upward slide, staying clear of the resource dock. Terrain clicks under spent soldiers inspect the province without showing the unit warning. Province selection uses the interface click cue, including neutral/enemy provinces; X, Escape, RMB and off-map cancellation use the close cue. Successful gameplay placements keep their action cue.
-
-
-The upper-left HUD shows the current Level (1 for the current single-level Quick Play session), faction and turn, and Quick Play mode. The End turn button shows a pausable spinning indicator during opponent processing, then returns to its normal label.
-
-
-The [17 October architecture review](docs/architecture-review-2026-10-17.md) covers remaining controller coupling, snapshot policies and lifecycle debt, plus the topology/construction, visible-economy, brush-transaction and tile-effect extractions. `tests/test_architecture.gd` checks brush history and projection isolation without a gameplay scene.
-
-The [architecture implementation](docs/architecture-implementation-2026-10-17.md) adds shared snapshot policies, explicit session phases and selection, a composed HUD, an AI execution context, board navigation/unit presenters, semantic editor-view signals, named generation stages and a bounded streaming-material cache. Compatibility adapters preserve existing scene/tool APIs. Architecture tests also cover snapshot round trips, terminal-phase cancellation, component ownership and container bounds.
+A Slay-inspired, turn-based strategy game made in Godot. Expand across a raised
+hex island, manage connected kingdoms, and use armies, buildings and spells to
+capture rival capitals. Procedural terrain, low-poly scenery and pixel soldiers
+give the board a small diorama feel.
+
+**Current development version: 0.3.0 — Castles and Ore.**
+See the [changelog](CHANGELOG.md) for release history and the
+[current rules and balance settings](docs/castles-and-ore.md) for the latest changes.
+
+![Island overview showing rival kingdoms, armies, forests and mountains](screenshots/image.png)
+
+<details>
+<summary>More screenshots: recruitment, encounters, wildlife and border battles</summary>
+
+| Recruitment | Exploration encounters |
+| --- | --- |
+| ![Recruitment menu beside a capital and its garrison](screenshots/image2.png) | ![A noble ransom encounter with artwork and choices](screenshots/image3.png) |
+| **Wildlife and treasure** | **Border battles** |
+| ![Armies approaching wolves, a bear and treasure chests](screenshots/image4.png) | ![Opposing armies and fortified units along a kingdom border](screenshots/image5.png) |
+
+</details>
+
+*Screenshots show an earlier development build; the current rules include Ore and building tiers.*
+
+## Getting started
+
+1. Install **Godot 4.6.3**. The standard editor works; no custom engine is required.
+2. Import `project.godot` and press **F5** to launch the game.
+3. Choose **Tutorial** to learn the rules, or **Quick Play** to start a match.
+
+You can also launch from the project folder with Godot on your PATH:
+
+```powershell
+godot --path .
+```
+
+Steam is optional for solo and local play. Online multiplayer uses the bundled
+GodotSteam extension for **Windows x86-64**; see the
+[Steam setup guide](docs/steam-multiplayer.md) for requirements and other platforms.
+
+## Playing
+
+- **Quick Play:** play against computer opponents on five map sizes, from Tiny
+  (about 80 tiles) to Huge (about 1,000). Choose your kingdom and difficulty.
+- **Tutorial:** eight guided topics cover armies, economy, defences, supply
+  lines, magic and exploration, followed by a practice match.
+- **Multiplayer:** share a computer for local turns, or host a friends-only
+  Steam lobby. Steam development builds use Spacewar (App ID 480).
+- **Level editor:** create an island, paint terrain and starting kingdoms, then
+  playtest it or load it into a local multiplayer match.
+- **Replays:** save completed matches from the results screen and watch them
+  with playback controls and a free camera.
+
+Kingdoms maintain their own gold treasuries; mana and Ore are shared by faction.
+Castles extend recruitment, Towers defend territory, and roads and bridges help
+connect your land. In 0.3.0, Ore funds building upgrades and Knight recruitment.
+Each controlled Ore source produces **1 Ore per 3 development** each turn.
+Castles, Towers and Capitals have three tiers; Bridges retain their existing rules.
+
+Houses indicate development on owned provinces: development 1–2 has no houses,
+while levels 3–6 show one through four. Inspect a province or use the value
+heatmap to read its exact development.
+
+### Default controls
+
+| Action | Control |
+| --- | --- |
+| Select a province or unit; confirm an action | Left-click |
+| Cancel an action or selection | Right-click |
+| Rotate and tilt the camera | Right-drag |
+| Pan | Middle-drag or WASD |
+| Zoom | Mouse wheel |
+| Switch overhead / 3D view | Tab |
+| Toggle development heatmap | F |
+| Open Recruit / Build / Spells | Q / E / R |
+| Choose a card in an open action menu | Q / E / R, left to right |
+| Develop the inspected province | G |
+| End turn | Space |
+| Speed up movement playback | Hold Ctrl |
+| Cancel / pause | Escape |
+| Toggle FPS overlay | F3 |
+
+Keyboard bindings can be changed in **Options > Controls**. The in-game **?**
+button shows help. See [keyboard bindings](docs/key-bindings.md) and
+[player settings](docs/settings.md) for more detail.
+
+## Guides
+
+| Topic | Documentation |
+| --- | --- |
+| Castles, Ore, building tiers and balance constants | [0.3.0 rules](docs/castles-and-ore.md) |
+| Recruitment, roads and connected kingdoms | [Logistics](docs/cities-and-logistics.md) |
+| Guided lessons | [Tutorial](docs/tutorial.md) |
+| Local sessions and menu navigation | [Session menus](docs/session-menus.md) |
+| Steam lobbies, invitations and testing | [Steam multiplayer](docs/steam-multiplayer.md) |
+| Map sizes and kingdom limits | [Nation capacity](docs/nation-capacity.md) |
+| Audio, video, interface and accessibility | [Settings](docs/settings.md) |
+| Recording and watching matches | [Replays](docs/replays.md) |
+| Creating maps | [Level editor](docs/level-editor.md) |
+| Creating encounters | [Event Editor](docs/event-editor.md) |
+| Authoring guided lessons | [Tutorial Editor](docs/tutorial-editor.md) |
+| Language packs and translations | [Localization](docs/localization.md) |
+| Collected event artwork | [Painting collection](docs/painting-collection.md) |
+| Closed playtest packaging and handoff | [Playtest organizer guide](docs/playtest/organizer.md) |
+
+**Event Editor.cmd** and **Tutorial Editor.cmd** launch the standalone authoring
+windows on Windows. The level editor is available from the game's main menu.
+
+## Development
+
+### Project layout
+
+| Path | Contents |
+| --- | --- |
+| `scenes/` | Application entry and gameplay scenes |
+| `src/app/` | Main menu, sessions and pause navigation |
+| `src/game/` | Rules, economy, generation, AI, actions and balance catalogs |
+| `src/rendering/` | Board, camera, procedural models and unit presentation |
+| `src/ui/` | HUD, contextual panels, dialogs and options |
+| `src/settings/` | Saved preferences, key bindings and player data |
+| `src/network/` | Multiplayer sessions and synchronization |
+| `src/editor/`, `src/tutorial_editor/` | Map and tutorial authoring |
+| `src/audio/`, `resources/audio/` | Audio playback, cue registry and bus layout |
+| `assets/`, `resources/`, `tutorials/` | Art, game data and teaching scenarios |
+| `tests/` | Regression suites and deterministic fixtures |
+| `tools/` | Test runner, versioning, editors and preview helpers |
+| `docs/` | Feature guides, implementation notes and historical reports |
+| `artifacts/` | Ignored generated captures, logs and other local output |
+
+For implementation details, start with [world generation](docs/world-generation.md),
+[the AI system](docs/ai-system.md), [architecture](docs/architecture-implementation-2026-10-17.md)
+and [Steam multiplayer](docs/steam-multiplayer.md). Dated reports in `docs/` record
+measurements and decisions at the time they were written.
+
+### Verification
+
+Run the full Godot and Python regression suite on Windows with **Python 3.10+**
+and the Godot console executable:
+
+```powershell
+./tools/run_tests.ps1 -Godot "C:/path/to/Godot_console.exe"
+```
+
+Use `-Python "C:/path/to/python.exe"` to select a Python interpreter. The runner
+also treats engine script and runtime errors as failures.
+
+For a focused rules check or a visual preview:
+
+```powershell
+godot --headless --path . --script tests/test_castles_ore.gd
+godot --path . --script tools/castles_ore_preview.gd
+```
+
+Check version metadata and the localization catalogue:
+
+```powershell
+python tools/version.py --check
+python tools/localization_catalog.py --check
+```
+
+To update the game version and matching Windows export metadata, run
+`python tools/version.py <version>` and add the release notes to
+[CHANGELOG.md](CHANGELOG.md).
