@@ -76,12 +76,14 @@ func run() -> void:
 		rules.generate(seed_value)
 		expect(rules.starting_land_reachable(), "Modern resource generation preserves reachable land")
 		var sources: Array = []
+		var neutral_land := 0
 		for coord in rules.cells:
 			var cell: Dictionary = rules.cells[coord]
 			expect(cell["value"] == 0 if cell["mountain"] else cell["value"] >= 1 and cell["value"] <= 3, "Mountains have no value; initial habitable province values range from one to three")
+			if cell.owner < 0 and not cell.mountain and cell.building != "bridge": neutral_land += 1
 			if cell["mana_source"]:
 				sources.append(coord)
-		expect(sources.size() >= 5 and sources.size() <= 7, "Mana sources are sparse with at least one neutral source to contest")
+		expect(sources.size() >= 5 and sources.size() <= 2 * rules.faction_count - 1 + preload("res://src/game/mana_resources.gd").extra_source_budget(neutral_land), "Mana sources are sparse with at least one neutral source to contest")
 		for kingdom in rules.kingdoms.values():
 			var value := 0
 			var source_count := 0

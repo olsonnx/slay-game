@@ -5,10 +5,10 @@ const Events = preload("res://src/game/event_catalog.gd")
 const Catalog = preload("res://src/game/game_catalog.gd")
 const Rules = preload("res://src/game/kingdom_rules.gd")
 const Sizes = preload("res://src/game/map_sizes.gd")
-const FIELDS := ["owner", "unit", "capital", "tree", "grave", "building", "value", "mana_source", "mountain", "event", "road"]
-const TOOLS := ["Land", "Water", "Owner", "Value", "Mountain", "Tree", "Grave", "Mana source", "Capital", "Scout", "Soldier", "Knight", "City", "Road", "Tower", "Bridge", "Clear objects", "Event", "Player start", "Bear cave", "Wolf den", "Boar burrow"]
+const FIELDS := ["owner", "unit", "capital", "tree", "grave", "building", "value", "mana_source", "ore_source", "building_tier", "capital_tier", "mountain", "event", "road"]
+const TOOLS := ["Land", "Water", "Owner", "Value", "Mountain", "Tree", "Grave", "Mana source", "Ore source", "Capital", "Scout", "Soldier", "Knight", "City", "Road", "Tower", "Bridge", "Clear objects", "Event", "Player start", "Bear cave", "Wolf den", "Boar burrow"]
 const LAIR_TOOLS := {"Bear cave":"bear", "Wolf den":"wolf", "Boar burrow":"boar"}
-const MODERN_TOOLS := ["Mountain", "Mana source", "Bridge", "Event", "Bear cave", "Wolf den", "Boar burrow"]
+const MODERN_TOOLS := ["Mountain", "Mana source", "Ore source", "Bridge", "Event", "Bear cave", "Wolf den", "Boar burrow"]
 const TILE_TOOLS := ["Land", "Water", "Mountain", "Bridge"]
 const MAX_CELLS := 4000
 var cells: Dictionary = {}
@@ -36,7 +36,7 @@ func state() -> Dictionary:
 	for coord in coords:
 		var row := {"q": coord.x, "r": coord.y}
 		for field in FIELDS:
-			row[field] = cells[coord].get(field, false) if field == "road" else cells[coord][field]
+			row[field] = cells[coord].get(field, 1 if field in ["building_tier", "capital_tier"] else false) if field in ["road", "ore_source", "building_tier", "capital_tier"] else cells[coord][field]
 		if cells[coord].has("road_links"):
 			row["road_links"] = []
 			for next in cells[coord].road_links: row.road_links.append([next.x, next.y])
@@ -119,7 +119,7 @@ func clear_objects(cell: Dictionary) -> void:
 	cell.erase("road_links")
 	for field in ["lair","lair_wait","animal","animal_home","animal_target","treasure"]: cell.erase(field)
 	cell.merge({"unit": 0, "capital": -1, "tree": false, "grave": false,
-		"building": "", "mana_source": false, "event": ""}, true)
+		"building": "", "mana_source": false, "ore_source": false, "building_tier": 1, "capital_tier": 1, "event": ""}, true)
 
 func paint(coord: Vector2i, tool: String, owner: int, value: int, event_id := "") -> bool:
 	if not in_bounds(coord) or tool not in TOOLS: return false
@@ -175,17 +175,23 @@ func paint(coord: Vector2i, tool: String, owner: int, value: int, event_id := ""
 			if tool == "Road":
 				if cell.owner < 0: return false
 				cell["road"] = true
-			elif tool == "Mana source":
+			elif tool in ["Mana source", "Ore source"]:
 				if cell.get("lair", "") != "": clear_objects(cell)
-				cell["mana_source"] = true
+				cell["mana_source" if tool == "Mana source" else "ore_source"] = true
 			else:
 				# Mana is a terrain attribute and can coexist with structures.
 				var mana: bool = cell["mana_source"]
+				var ore: bool = cell.get("ore_source", false)
+				var retained_tier: int = int(cell.get("building_tier", 1))
+				var capital_tier: int = int(cell.get("capital_tier", 1))
 				var capital: int = cell["capital"] if tool in ["Scout", "Soldier", "Knight"] else -1
 				var building: String = cell["building"] if tool in ["Scout", "Soldier", "Knight"] and cell["building"] == "city" else ""
 				var road: bool = cell.get("road", false)
 				clear_objects(cell)
 				cell["mana_source"] = mana
+				cell["ore_source"] = ore
+				cell["capital_tier"] = capital_tier if capital >= 0 else 1
+				cell["building_tier"] = retained_tier if building != "" else 1
 				cell["capital"] = capital
 				cell["building"] = building
 				if road: cell["road"] = true
@@ -209,7 +215,7 @@ func restore(data: Dictionary) -> void:
 	for row in data["cells"]:
 		var cell: Dictionary = Rules.new().make_cell(int(row["owner"]))
 		for field in FIELDS:
-			cell[field] = row.get(field, false) if field == "road" else row[field]
+			cell[field] = row.get(field, cell.get(field, false))
 		if row.get("settlement_name", "") != "": cell["settlement_name"] = row.settlement_name
 		if row.has("road_links"):
 			cell["road_links"] = []
@@ -218,7 +224,7 @@ func restore(data: Dictionary) -> void:
 			cell["lair"] = row.lair
 			cell["lair_wait"] = 0
 		if row.get("treasure", 0) > 0: cell["treasure"] = int(row.treasure)
-		for field in ["owner", "unit", "capital", "value"]: cell[field] = int(cell[field])
+		for field in ["owner", "unit", "capital", "value", "building_tier", "capital_tier"]: cell[field] = int(cell[field])
 		cells[Vector2i(int(row["q"]), int(row["r"]))] = cell
 	if data.has("player_start"):
 		var marker = data["player_start"]
@@ -281,6 +287,10 @@ func read_data(data: Variant) -> String:
 		if row["owner"] < -1 or row["owner"] >= saved_factions.size() or row["unit"] < 0 or row["unit"] > 3 or row["capital"] < -1 or row["capital"] >= saved_factions.size() or row["value"] < 0 or row["value"] > 6: return Loc.text("Invalid province values.")
 		for field in ["tree", "grave", "mana_source", "mountain"]:
 			if not row.get(field) is bool: return Loc.text("Invalid terrain attributes.")
+		if not row.get("ore_source", false) is bool: return Loc.text("Invalid Ore source.")
+		for field in ["building_tier", "capital_tier"]:
+			if not is_number(row.get(field, 1)) or row.get(field, 1) < 1 or row.get(field, 1) > 3: return Loc.text("Invalid structure tier.")
+		if row.get("ore_source", false) and (row.mountain or row.building == "bridge" or row.get("lair", "") != ""): return Loc.text("Ore sources need passable land.")
 		if row.get("event") is String: row["event"] = Events.canonical_id(row["event"])
 		if row.get("building") == "house": row["building"] = "city"
 		if not row.get("road", false) is bool: return Loc.text("Invalid road attribute.")

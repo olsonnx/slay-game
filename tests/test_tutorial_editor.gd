@@ -267,7 +267,7 @@ func run() -> void:
 	var rank_start := Lessons.builtin_lessons("armies").find_custom(func(step): return step.id == "upgrade_soldier")
 	editor.select_step(rank_start)
 	await editor.playtest(true)
-	expect(editor.app.game.tutorial.index == rank_start and editor.app.game.cells[Vector2i(-3,0)].unit == 2 and editor.app.game.cells[Vector2i(-3,0)].moved and editor.app.game.rules.territory(0) == 16,"Play this step restores the merged Soldier and simulated match checkpoint")
+	expect(editor.app.game.tutorial.index == rank_start and editor.app.game.cells[Vector2i(-3,0)].unit == 2 and not editor.app.game.cells[Vector2i(-3,0)].moved and editor.app.game.rules.get_ore(0) >= 2 and editor.app.game.rules.territory(0) == 16,"Play this step restores the prepared Soldier, collected Ore and simulated checkpoint")
 	await editor.stop_playtest()
 	editor.select_step(1)
 	await editor.playtest(true)

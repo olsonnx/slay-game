@@ -17,6 +17,7 @@ static func apply(rules, order: Dictionary, faction: int) -> Dictionary:
 		"build": ok = rules.build_structure(target,faction,order.get("building","city"))
 		"spell": ok = rules.cast_spell(order.get("spell","trailblaze"),target,faction)
 		"entrench": ok = rules.entrench(target,faction)
+		"upgrade_building": ok = rules.upgrade_building(target,faction)
 		"develop": ok = rules.develop(target,faction)
 		"road": ok = rules.build_road(order.get("source",rules.NONE),target,faction)
 		"rename_settlement": ok = rules.rename_settlement(target,faction,order.get("name",""))
@@ -24,5 +25,5 @@ static func apply(rules, order: Dictionary, faction: int) -> Dictionary:
 		"event":
 			if not rules.pending_events.is_empty(): ok = rules.resolve_event(rules.pending_events[0],int(order.get("choice",0))) != ""
 		"any": return {"ok":false,"moves":[]}
-		"continue","select","inspect","view","heatmap","stats","finance","status","kingdom","animal": ok = true
+		"read","continue","select","inspect","view","heatmap","stats","finance","status","kingdom","animal": ok = true
 	return {"ok":ok,"moves":moves}

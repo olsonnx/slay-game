@@ -81,12 +81,12 @@ func click_hex(game, coord: Vector2i, hit_kind := "auto") -> void:
 			var message: String = Loc.text("%s upgraded. Ready next turn.") if game.cells[coord]["moved"] else Loc.text("%s ready to move.")
 			game.announce(message % Loc.text(game.UNIT_NAMES[game.cells[coord]["unit"]]))
 		else:
-			game.announce(Loc.text("Choose a valid hex with enough gold in its kingdom."))
+			game.announce(Loc.text("Choose a valid hex with enough gold in its kingdom and Ore for Knights."))
 	elif game.session.selection.action_mode in ["tower", "city", "road"]:
 		changed = game.rules.build_structure(coord, game.player_faction, game.session.selection.action_mode, game.active_capital())
 		if changed:
 			Sound.play(&"action_place")
-			game.announce(Loc.text("%s built.") % game.session.selection.action_mode.capitalize())
+			game.announce(Loc.text("%s built.") % ("Castle" if game.session.selection.action_mode == "city" else game.session.selection.action_mode.capitalize()))
 			game.session.selection.action_mode = ""
 		else:
 			game.announce(Loc.text("Choose a clear empty hex with enough local gold."))

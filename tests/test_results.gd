@@ -96,6 +96,7 @@ func run() -> void:
 	for victory in [true, false]:
 		await app.start_new_game(42, "very_small", "easy", 2)
 		var game = app.game
+		game.view.navigation.stop_camera_pan(true, true) # Test results controls after the opening camera settles.
 		expect(game.match_clock.running_since >= 0, "Playing starts the invisible clock after preparation")
 		app.pause_game()
 		var paused_elapsed: int = game.match_clock.accumulated_usec

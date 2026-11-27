@@ -35,6 +35,12 @@ func run() -> void:
 			var step: Dictionary = game.tutorial.current()
 			var index: int = game.tutorial.index
 			var target: Vector2i = step.target
+			if target == game.NONE and step.kind == "move":
+				for source in game.cells:
+					if game.rules.unit_faction(source) != 0 or game.cells[source].unit == 0: continue
+					for destination in game.rules.reachable_targets(source):
+						if game.tutorial.matches(step,"move",destination,{"source":source},game.cells[destination],false): target = destination; break
+					if target != game.NONE: break
 			match step.kind:
 				"move":
 					var source: Vector2i = game.NONE
@@ -75,6 +81,9 @@ func run() -> void:
 					await game.click_hex(target)
 				"end_turn": await game.end_turn()
 				"inspect": await game.click_hex(target, "terrain")
+				"upgrade_building":
+					game.inspect_province(target)
+					game.province_view.upgrade_button.pressed.emit()
 				"develop": game.develop_province()
 				"finance":
 					var tip = game.hud.gold_control._make_custom_tooltip(game.hud.gold_control.tooltip_text)
@@ -87,7 +96,7 @@ func run() -> void:
 			await process_frame
 			if step.id == "road_march": expect(game.rules.cells[target].unit == 3 and game.rules.cells[target].moved, "The supply-line lesson completes a six-hex Knight move using half-cost roads")
 			if step.id == "merge_scouts": expect(game.rules.cells[target].unit == 2 and game.rules.cells[target].moved, "The army lesson preserves a spent action through merging")
-			if step.id == "upgrade_soldier": expect(game.rules.cells[target].unit == 3 and game.rules.cells[target].moved, "The army lesson preserves a spent action through upgrading")
+			if step.id == "upgrade_soldier": expect(game.rules.cells[target].unit == 3 and not game.rules.cells[target].moved, "A newly recruited Knight is ready immediately")
 			expect(game.tutorial.index != index or game.tutorial.completed or game.tutorial.exercise_done, "The objective advances through real commands: " + category + "/" + step.id)
 			if game.tutorial.index == index and not game.tutorial.completed and not game.tutorial.exercise_done: break
 		expect(game.tutorial.completed, "The experimental lesson is playable: " + category)

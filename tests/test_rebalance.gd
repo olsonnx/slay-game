@@ -54,6 +54,7 @@ func run() -> void:
 			var bank: Dictionary = s.kingdom_at(Vector2i.ZERO)
 			s.cells[Vector2i.ZERO]["unit"] = source_tier
 			var cost: int = [40, 30, 20][source_tier]
+			s.ore_by_faction[0] = Rules.Catalog.KNIGHT_ORE_COST
 			bank["gold"] = cost - 1
 			expect(not s.recruit(Vector2i.ZERO, 0, 3) and bank["gold"] == cost - 1 and s.cells[Vector2i.ZERO]["unit"] == source_tier, "Insufficient Knight funds reject without mutating unit or treasury")
 			bank["gold"] = cost

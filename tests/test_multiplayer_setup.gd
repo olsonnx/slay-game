@@ -100,6 +100,7 @@ func run() -> void:
 	expect(not game.commands_locked() and game.view.controls_enabled,"No Ready screen or input gate delays local play")
 	var map_before: Dictionary = game.cells.duplicate(true)
 	var kingdoms_before: Dictionary = game.rules.kingdoms.duplicate(true)
+	game.view.navigation.stop_camera_pan(true, true)
 	var zoom: float = game.view.camera.size
 	var angle: float = game.view.yaw
 	await game.end_turn()

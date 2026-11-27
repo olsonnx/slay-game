@@ -43,7 +43,7 @@ func open_shop(kind: String) -> void:
 			var name_label: Label = hud.label_at(button, Catalog.UNIT_NAMES[tier], Vector2(0, 66), 16)
 			name_label.size.x = 124
 			name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			var price: Label = hud.label_at(button, Loc.text("%d G") % Catalog.unit_price(tier), Vector2(0, 90), 14, Color("eed3a1"))
+			var price: Label = hud.label_at(button, (Loc.text("%d G + %d Ore") % [Catalog.unit_price(tier), Catalog.KNIGHT_ORE_COST] if tier == 3 else Loc.text("%d G") % Catalog.unit_price(tier)), Vector2(0, 90), 14, Color("eed3a1"))
 			price.name = "Cost"
 			price.size.x = 124
 			price.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -84,7 +84,7 @@ func open_shop(kind: String) -> void:
 			var cost: int = session.rules.tower_cost(session.player_faction) if kind_name == "tower" else Catalog.BRIDGE_COST if kind_name == "bridge" else Catalog.CITY_COST
 			var tip := Catalog.building_tooltip(kind_name, cost)
 			var button: Button = hud.button_at(hud.shop_items, "", Rect2(index * stride, 0, width, 111), actions["choose_building"].bind(kind_name), tip)
-			var name_label: Label = hud.label_at(button, kind_name.capitalize(), Vector2(0, 66), 16)
+			var name_label: Label = hud.label_at(button, ("Castle" if kind_name == "city" else kind_name.capitalize()), Vector2(0, 66), 16)
 			name_label.size.x = width
 			name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 			var price: Label = hud.label_at(button, Loc.text("%d G") % cost, Vector2(0, 90), 14, Color("eed3a1"))
@@ -133,9 +133,7 @@ func refresh_stats() -> void:
 			var value := "%+d" % data[field] if field == "profit" else str(data[field])
 			if owner < 0 and field != "hexes": value = "—"
 			var tint: Color = Color("ed9b91") if field == "profit" and data.profit < 0 else Color("bed099") if field == "profit" else hud.UiTheme.TEXT
-			var cell := ledger_cell(row,value,tint,column)
-			if field == "units" and owner >= 0:
-				cell.tooltip_text = Loc.text("%d Scouts · %d Soldiers · %d Knights") % data.tiers
+			ledger_cell(row,value,tint,column)
 			column += 1
 		var focus := preload("res://src/ui/tooltip_button.gd").new()
 		focus.name = "ViewCapital"
@@ -244,7 +242,7 @@ func show_world_tip() -> void:
 	elif preload("res://src/game/event_sites.gd").protected(cell):
 		feature = preload("res://src/game/event_sites.gd").structure_name(cell)
 	elif cell["building"] != "":
-		feature = cell["building"].capitalize()
+		feature = "Castle" if cell["building"] == "city" else cell["building"].capitalize()
 	elif cell["tree"] or cell["grave"]:
 		feature = "Tree" if cell["tree"] else "Grave"
 	var rows := PackedStringArray([Loc.text("%s · %s") % [owner_name, Loc.text(feature)]])
@@ -280,6 +278,9 @@ func show_world_tip() -> void:
 		rows.append(earnings)
 		if cell["tree"] or cell["grave"]:
 			rows.append(Loc.text("%s blocks income") % Loc.text("Tree" if cell["tree"] else "Grave"))
+		if cell.get("ore_source", false):
+			rows.append(Loc.text("Ore source · %d Ore / turn") % session.rules.ore_source_income(cell))
+		if cell.capital >= 0 or cell.building in ["city", "tower"]: rows.append(Loc.text("Tier %d / 3") % session.rules.building_tier(session.selection.hovered))
 		if cell.get("mana_source", false):
 			rows.append(Loc.text("Mana source · capacity +%d") % session.rules.mana_source_capacity(cell))
 	if session.rules.is_entrenched(session.selection.hovered):
@@ -319,6 +320,7 @@ func refresh_hud(economy = null) -> void:
 	var model = session.rules if economy == null else economy
 	var mana: Dictionary = model.mana_summary(session.player_faction)
 	hud.update_mana(mana["amount"], mana["income"], mana["capacity"], mana["regeneration"])
+	hud.update_ore(model.get_ore(session.player_faction), model.ore_income(session.player_faction))
 	var kingdom: Dictionary = session.active_kingdom(model)
 	if kingdom.is_empty() and (not model.cells.has(session.selection.active_hex) or model.cells[session.selection.active_hex]["owner"] != session.player_faction):
 		for candidate in model.kingdoms.values():
@@ -346,7 +348,7 @@ func refresh_hud(economy = null) -> void:
 	if board.wildlife != null and board.wildlife.is_playing: hud.round_label.text += " · " + Loc.text("World")
 	hud.update_turn_color(session.colors[session.active_faction])
 	hud.recruit_button.text = Loc.text(Catalog.UNIT_NAMES[session.selection.recruit_tier]) + " ×" if session.selection.action_mode == "recruit" and session.selection.recruit_tier > 0 else "Recruit"
-	hud.build_button.text = Loc.text(session.selection.action_mode.capitalize()) + " ×" if session.selection.action_mode in ["tower", "city", "road", "bridge"] else "Build"
+	hud.build_button.text = Loc.text("Castle" if session.selection.action_mode == "city" else session.selection.action_mode.capitalize()) + " ×" if session.selection.action_mode in ["tower", "city", "road", "bridge"] else "Build"
 	hud.spell_button.text = Loc.text(Spells.SPELLS[session.selection.chosen_spell]["name"]) + " ×" if session.selection.action_mode == "spell" and Spells.SPELLS.has(session.selection.chosen_spell) else "Spells"
 	for button in [hud.recruit_button, hud.build_button, hud.spell_button]:
 		button.disabled = actions["commands_locked"].call()

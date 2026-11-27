@@ -64,6 +64,8 @@ func reserve_checks() -> void:
 	for q in range(8): model.cells[Vector2i(q,0)]["value"] = 6
 	model.cells[Vector2i.ZERO]["capital"] = 0
 	model.cells[Vector2i(11,0)]["capital"] = 1
+	model.ore_by_faction[0] = 2
+	model.cells[Vector2i(6,0)]["building_tier"] = 2
 	model.cells[Vector2i(6,0)]["building"] = "city" # Deploy the reserve within reach of the frontier.
 	model.cells[Vector2i(2,0)]["unit"] = 1
 	model.cells[Vector2i(11,0)]["unit"] = 3

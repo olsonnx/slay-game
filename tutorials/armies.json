@@ -77,7 +77,8 @@
 				"road": false,
 				"tree": false,
 				"unit": 0.0,
-				"value": 2.0
+				"value": 6,
+				"ore_source": true
 			},
 			{
 				"building": "",
@@ -422,7 +423,8 @@
 				"road": false,
 				"tree": false,
 				"unit": 0.0,
-				"value": 2.0
+				"value": 2.0,
+				"building_tier": 2
 			},
 			{
 				"building": "",
@@ -688,12 +690,8 @@
 			"conditions": [],
 			"confirm": false,
 			"count": 1.0,
-			"criteria": {
-
-			},
-			"details": {
-
-			},
+			"criteria": {},
+			"details": {},
 			"exercise": "logistics",
 			"id": "step_104397690",
 			"kind": "read",
@@ -774,7 +772,8 @@
 						"road": false,
 						"tree": false,
 						"unit": 0.0,
-						"value": 2.0
+						"value": 6,
+						"ore_source": true
 					},
 					{
 						"building": "",
@@ -1119,7 +1118,8 @@
 						"road": false,
 						"tree": false,
 						"unit": 0.0,
-						"value": 2.0
+						"value": 2.0,
+						"building_tier": 2
 					},
 					{
 						"building": "",
@@ -1478,7 +1478,8 @@
 						"road": false,
 						"tree": false,
 						"unit": 0.0,
-						"value": 2.0
+						"value": 6,
+						"ore_source": true
 					},
 					{
 						"building": "",
@@ -1823,7 +1824,8 @@
 						"road": false,
 						"tree": false,
 						"unit": 0.0,
-						"value": 2.0
+						"value": 2.0,
+						"building_tier": 2
 					},
 					{
 						"building": "",
@@ -2108,7 +2110,7 @@
 				0.0
 			],
 			"task": "Recruit at your capital",
-			"text": "Open Recruit at the bottom left, choose Scout, then click the gold-ringed capital. The green area shows legal deployment and upgrade tiles on or beside cities and capitals. Your new Scout is ready immediately.",
+			"text": "Open Recruit at the bottom left, choose Scout, then click the gold-ringed capital. The green area shows legal deployment and upgrade tiles on or beside castles and capitals. Your new Scout is ready immediately.",
 			"title": "Recruit at your capital"
 		},
 		{
@@ -2181,12 +2183,8 @@
 			"conditions": [],
 			"confirm": false,
 			"count": 1.0,
-			"criteria": {
-
-			},
-			"details": {
-
-			},
+			"criteria": {},
+			"details": {},
 			"exercise": "logistics",
 			"id": "step_1564096663",
 			"kind": "end_turn",
@@ -2210,9 +2208,7 @@
 			"conditions": [],
 			"confirm": false,
 			"count": 1.0,
-			"criteria": {
-
-			},
+			"criteria": {},
 			"details": {
 				"source": [
 					-3.0,
@@ -2250,7 +2246,7 @@
 				0.0
 			],
 			"task": "Recruit a knight",
-			"text": "Choose Knight in Recruit and click the marked Soldier beside your capital. Paid upgrades use the same recruitment area and charge the difference in purchase price. An upgrade never restores a spent action.",
+			"text": "Choose Knight in Recruit and click the empty marked province beside your Capital. It costs 40 G and 2 Ore, paid once. The deposit produced Ore when you ended the turn. New recruits can move immediately. Upgrading an existing Soldier costs 20 G and 2 Ore and preserves a spent action.",
 			"title": "Recruit a Knight",
 			"wildlife_turn": false
 		},
@@ -2260,12 +2256,8 @@
 			"conditions": [],
 			"confirm": false,
 			"count": 1.0,
-			"criteria": {
-
-			},
-			"details": {
-
-			},
+			"criteria": {},
+			"details": {},
 			"exercise": "logistics",
 			"id": "step_2259545638",
 			"kind": "read",
@@ -2273,7 +2265,7 @@
 			"restrict_actions": false,
 			"target": null,
 			"task": "Learn about the unit range",
-			"text": "The stronger the unit the less distance it can cover.\n\nKnights have the shortest range at 3, Soldiers move 4, and Scouts move 5. Use cities and roads to get slower armies to the right front. ",
+			"text": "The stronger the unit the less distance it can cover.\n\nKnights have the shortest range at 3, Soldiers move 4, and Scouts move 5. Use castles and roads to get slower armies to the right front. ",
 			"title": "Unit range",
 			"wildlife_turn": false
 		},
@@ -2299,7 +2291,7 @@
 				0.0
 			],
 			"task": "Move the Knight",
-			"text": "Towers protect bordering tiles belonging to the kingdom. They can only be destroyed by knights. Try to destroy the tower that's protecting Ember's capital now.",
+			"text": "This tier-two tower requires a Knight. Tier-one towers fall to Soldiers; tier-three towers also absorb the first valid attack each turn. Destroy the marked tower.",
 			"title": "Move the Knight",
 			"wildlife_turn": false
 		}

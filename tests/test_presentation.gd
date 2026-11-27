@@ -95,6 +95,7 @@ func run() -> void:
 	game.click_hex(capital, "unit")
 	game.choose_unit(3)
 	game.active_kingdom()["gold"] = 100
+	game.rules.ore_by_faction[game.player_faction] = 2
 	game.refresh_ui()
 	game.click_hex(capital, "unit")
 	expect(game.cells[capital]["unit"] == 3 and not game.province_view.visible, "Recruitment upgrades do not open a province window")

@@ -127,6 +127,7 @@ func run() -> void:
 	var faction: int = bank["owner"]
 	# A single explicit fixture setup is logged as well, before exercising commands.
 	bank["gold"] = 500
+	model.ore_by_faction[faction] = 2
 	model.set_mana(faction, model.mana_capacity(faction))
 	model.record_replay("fixture_setup", faction)
 	var invalid_count := replay.sequence

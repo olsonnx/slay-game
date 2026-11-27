@@ -1,4 +1,5 @@
 extends Node3D
+const Catalog = preload("res://src/game/game_catalog.gd")
 const Loc = preload("res://src/localization/text.gd")
 const UiTheme = preload("res://src/ui/ui_theme.gd")
 const Tooltip = preload("res://src/ui/compact_tooltip.gd")
@@ -18,6 +19,8 @@ var toast_panel: Panel
 var recruit_button: Button
 var build_button: Button
 var spell_button: Button
+var ore_label: Label
+var ore_control: Control
 var mana_label: Label
 var mana_income_label: Label
 var mana_control: Control
@@ -178,8 +181,8 @@ func build_ui(actions: Dictionary, cue: Callable) -> void:
 	gold_delta_label.add_theme_constant_override("outline_size", 3)
 	gold_delta_label.add_theme_color_override("font_outline_color", Color("172c33"))
 	gold_delta_label.hide()
-	recruit_button = button_at(dock, "Recruit", Rect2(172, 16, 110, 50), actions["open_shop"].bind("recruit"), Loc.text("Choose a Scout, Soldier or Knight.\nRecruit on or beside a city or capital.\nNew recruits can move immediately.\nRecruitment uses that kingdom's gold."))
-	build_button = button_at(dock, "Build", Rect2(292, 16, 110, 50), actions["open_shop"].bind("build"), Loc.text("Choose a defensive tower or a recruitment city.\nBuild on a clear empty hex in your kingdom."))
+	recruit_button = button_at(dock, "Recruit", Rect2(172, 16, 110, 50), actions["open_shop"].bind("recruit"), Loc.text("Choose a Scout, Soldier or Knight.\nRecruit on or beside a castle or capital.\nNew recruits can move immediately.\nRecruitment uses that kingdom's gold."))
+	build_button = button_at(dock, "Build", Rect2(292, 16, 110, 50), actions["open_shop"].bind("build"), Loc.text("Choose a defensive tower or a recruitment castle.\nBuild on a clear empty hex in your kingdom."))
 	mana_control = preload("res://src/ui/tooltip_control.gd").new()
 	mana_control.position = Vector2(223, 59)
 	mana_control.size = Vector2(180, 52)
@@ -189,6 +192,12 @@ func build_ui(actions: Dictionary, cue: Callable) -> void:
 	mana_label = label_at(mana_control, "", Vector2(0, 17), 24, Color("c7b2fa"))
 	mana_income_label = label_at(mana_control, "", Vector2(40, 17), 24, Color("a89cc5"))
 	mana_control.hide()
+	ore_control = preload("res://src/ui/tooltip_control.gd").new()
+	ore_control.position = Vector2(281, 59)
+	ore_control.size = Vector2(122, 52)
+	dock.add_child(ore_control)
+	label_at(ore_control, Loc.text("ORE · NEXT TURN"), Vector2.ZERO, 10, Color("bda58c"))
+	ore_label = label_at(ore_control, "0 +0", Vector2(0,17), 20, Color("d3b494"))
 	spell_button = button_at(dock, "Spells", Rect2(412, 27, 110, 50), actions["open_shop"].bind("spells"), Loc.text("Spend shared faction mana on a spell."))
 	spell_button.hide()
 	turn_controls = Control.new()
@@ -302,8 +311,8 @@ func build_ui(actions: Dictionary, cue: Callable) -> void:
 func refresh_shortcuts() -> void:
 	shortcuts_changed.emit()
 	heatmap_button.tooltip_text = Loc.text("Province values\nShortcut: %s") % Keys.key_name("heatmap")
-	recruit_button.tooltip_text = Loc.text("Recruit on or beside cities / capitals using local gold\nNew recruits can move immediately\nShortcut: %s") % Keys.key_name("recruit")
-	build_button.tooltip_text = Loc.text("Build\nTower, city or bridge\nShortcut: %s") % Keys.key_name("build")
+	recruit_button.tooltip_text = Loc.text("Recruit in range of a Castle / Capital using local gold\nKnights also cost %d Ore\nNew recruits can move immediately\nShortcut: %s") % [Catalog.KNIGHT_ORE_COST, Keys.key_name("recruit")]
+	build_button.tooltip_text = Loc.text("Build\nTower, castle or bridge\nShortcut: %s") % Keys.key_name("build")
 	spell_button.tooltip_text = Loc.text("Spells\nUses faction mana\nShortcut: %s") % Keys.key_name("spells")
 	shop_panel.get_node("Close").tooltip_text = Loc.text("Cancel placement\nShortcut: %s") % Keys.key_name("cancel")
 	for card in shop_items.get_children():
@@ -333,7 +342,13 @@ func configure_rules_ui(_modern := true) -> void:
 	spell_button.visible = true
 	mana_control.visible = true
 	mana_label.visible = true
-	gold_control.size.x = 190
+	gold_control.size.x = 125
+	mana_control.position.x = 148
+	mana_control.size.x = 125
+	mana_label.add_theme_font_size_override("font_size", 20)
+	mana_income_label.add_theme_font_size_override("font_size", 20)
+	money_label.add_theme_font_size_override("font_size", 20)
+	income_label.add_theme_font_size_override("font_size", 20)
 	pin_bottom(economy_dock, 24, -144, 418, 120)
 	recruit_button.position = Vector2(15, 12)
 	recruit_button.size = Vector2(124, 38)
@@ -343,11 +358,26 @@ func configure_rules_ui(_modern := true) -> void:
 	spell_button.size = Vector2(124, 38)
 	pin_bottom(shop_panel, 24, -342, 418, 188)
 
+func fit_resource_pair(area: Control, amount: Label, forecast: Label) -> void:
+	var font := amount.get_theme_font("font")
+	var font_size := 20
+	while font_size > 10 and font.get_string_size(amount.text + forecast.text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + 10 > area.size.x:
+		font_size -= 1
+	amount.add_theme_font_size_override("font_size", font_size)
+	forecast.add_theme_font_size_override("font_size", font_size)
+	amount.size.x = amount.get_minimum_size().x
+	forecast.position.x = amount.size.x + 10
+
+func update_ore(amount: int, forecast: int) -> void:
+	ore_label.text = "%d %+d" % [amount, forecast]
+	UiTheme.fit_text(ore_label, ore_label.text, 122)
+	ore_control.tooltip_text = Loc.text("Shared faction Ore · no storage cap\nNext turn +%d Ore\n1 Ore per %d development on each controlled source\nKnights cost %d Ore; building upgrades cost %d / %d Ore") % [forecast, Catalog.ORE_DEVELOPMENT_PER_INCOME, Catalog.KNIGHT_ORE_COST, Catalog.BUILDING_UPGRADE_ORE[2], Catalog.BUILDING_UPGRADE_ORE[3]]
+
 func update_mana(amount: int, forecast: int, capacity: int, regeneration: int = 1) -> void:
 	mana_label.text = Loc.text("%d / %d") % [amount, capacity]
 	mana_income_label.text = Loc.text("%+d") % forecast
 	mana_label.size.x = mana_label.get_minimum_size().x
-	mana_income_label.position.x = mana_label.size.x + 10
+	fit_resource_pair(mana_control, mana_label, mana_income_label)
 	mana_control.tooltip_text = Loc.text("Faction mana %d / %d\nNext turn +%d mana · regen %d\nMana capacity: source +1 · capital / tree +2") % [amount, capacity, forecast, regeneration]
 
 func reset_gold_feedback() -> void:
@@ -364,7 +394,7 @@ func update_gold(amount: int, net: int, capital: Vector2i) -> void:
 	income_label.text = Loc.text("%+d G") % net
 	# Follow the actual text width rather than reserving a fixed amount column.
 	money_label.size.x = money_label.get_minimum_size().x
-	income_label.position.x = money_label.position.x + money_label.size.x + 10
+	fit_resource_pair(gold_control, money_label, income_label)
 	var delta := amount - previous_gold
 	if previous_gold >= 0 and previous_kingdom == capital and delta != 0:
 		if gold_tween != null and gold_tween.is_valid():

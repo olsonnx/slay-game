@@ -45,19 +45,23 @@ static func rebuild_kingdoms(state, affected_owners: Dictionary = {}) -> void:
 					connected[next] = true
 					pending.append(next)
 		var capital := NONE
+		var capital_tier := 1
 		var gold := 0
 		for coord in component:
 			if cells[coord]["capital"] == owner and component.size() >= 2:
 				if capital == NONE:
 					capital = coord
+					capital_tier = int(cells[coord].get("capital_tier", 1))
 				if old_by_capital.has(coord):
 					gold += old_by_capital[coord]["gold"]
 			cells[coord]["capital"] = -1
+			cells[coord]["capital_tier"] = 1
 		if component.size() == 1:
 			continue
 		if capital == NONE:
 			capital = replacement_capital(state, component, owner)
 		cells[capital]["capital"] = owner
+		cells[capital]["capital_tier"] = capital_tier
 		cells[capital]["tree"] = false
 		cells[capital]["grave"] = false
 		if not preload("res://src/game/event_sites.gd").protected(cells[capital]): cells[capital]["building"] = ""

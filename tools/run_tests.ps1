@@ -3,6 +3,7 @@ param([string]$Godot = "godot", [string]$From = "", [string]$Python = "python")
 $projectPath = Split-Path -Parent $PSScriptRoot
 $pythonExecutable = (Get-Command $Python -CommandType Application -ErrorAction Stop | Select-Object -First 1).Source
 $suites = @("test_ai", "test_game", "test_animation", "test_input", "test_audio", "test_review", "test_menus", "test_economy_ui", "test_turn_feedback", "test_modern", "test_presentation", "test_expansion", "test_resources_terrain", "test_map_sizes", "test_events_spells", "test_performance", "test_menu_background", "test_startup", "test_ui_layout", "test_playback_speed", "test_keys", "test_heatmap")
+$suites += "test_castles_ore"
 $suites += "test_logistics"
 $suites += "test_ai_optimization"
 $suites += "test_unified_ai"

@@ -97,7 +97,7 @@ func snapshot_policies() -> void:
 	model.cells[coord]["event"] = "unknown"
 	var before := Snapshots.capture(model)
 	var replay := Snapshots.replay_position(model)
-	expect(replay.keys() == ["cells", "kingdoms", "mana", "effects", "capital_relocations", "events", "rng", "difficulty", "faction_count"], "Replay schema preserves existing field order and appends dynamic faction count")
+	expect(replay.keys() == ["cells", "kingdoms", "mana", "effects", "capital_relocations", "events", "rng", "difficulty", "faction_count", "ore"], "Replay schema preserves existing field order and appends new Ore state")
 	var recorder := RefCounted.new()
 	model.replay_log = recorder
 	model.cells[coord]["owner"] = -1

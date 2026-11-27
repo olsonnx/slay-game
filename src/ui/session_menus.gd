@@ -238,9 +238,7 @@ func _ready() -> void:
 	var captions := ["Soldiers slain", "Soldiers lost", "Tiles conquered", "Capitals squashed", "Turns", "Time played"]
 	var keys := ["slain", "lost", "tiles", "capitals", "turns", "time"]
 	for index in range(keys.size()):
-		var caption := Hud.label_at(defeat_panel, captions[index], Vector2(24, 111 + index * 32), 17, Color("c5cdbb"))
-		caption.mouse_filter = Control.MOUSE_FILTER_PASS
-		caption.tooltip_text = Loc.text("All unit tiers. Losses include starvation; merging units is not a loss.") if index < 2 else Loc.text("Cumulative captures, including recaptured land and surrendered provinces.") if index == 2 else Loc.text("Real playing time, including AI turns and excluding pauses.") if index == 5 else ""
+		Hud.label_at(defeat_panel, captions[index], Vector2(24, 111 + index * 32), 17, Color("c5cdbb"))
 		var value := Hud.label_at(defeat_panel, "0", Vector2(318, 111 + index * 32), 18)
 		value.size = Vector2(138, 28)
 		value.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT

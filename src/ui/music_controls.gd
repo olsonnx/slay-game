@@ -70,7 +70,6 @@ func make_button(parent: Control, at: Vector2, tip: String) -> Button:
 
 func refresh() -> void:
 	title.text = music.track_title()
-	title.tooltip_text = title.text
 	pause_button.icon = play_icon if music.paused else pause_icon
 	pause_button.tooltip_text = Loc.text("Resume music") if music.paused else Loc.text("Pause music")
 	pause_button.accessibility_name = pause_button.tooltip_text

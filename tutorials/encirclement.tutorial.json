@@ -16,7 +16,10 @@
 				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 2,
+				"ore_source": false,
+				"building_tier": 1,
+				"capital_tier": 1
 			},
 			{
 				"building": "",
@@ -31,7 +34,10 @@
 				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 2,
+				"ore_source": false,
+				"building_tier": 1,
+				"capital_tier": 1
 			},
 			{
 				"building": "",
@@ -46,7 +52,10 @@
 				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 2,
+				"ore_source": false,
+				"building_tier": 1,
+				"capital_tier": 1
 			},
 			{
 				"building": "",
@@ -61,7 +70,10 @@
 				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 2,
+				"ore_source": false,
+				"building_tier": 1,
+				"capital_tier": 1
 			},
 			{
 				"building": "",
@@ -76,7 +88,10 @@
 				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 2,
+				"ore_source": false,
+				"building_tier": 1,
+				"capital_tier": 1
 			},
 			{
 				"building": "",
@@ -91,7 +106,10 @@
 				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 2,
+				"ore_source": false,
+				"building_tier": 1,
+				"capital_tier": 1
 			},
 			{
 				"building": "",
@@ -106,7 +124,10 @@
 				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 2,
+				"ore_source": false,
+				"building_tier": 1,
+				"capital_tier": 1
 			},
 			{
 				"building": "",
@@ -121,7 +142,10 @@
 				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 2,
+				"ore_source": false,
+				"building_tier": 1,
+				"capital_tier": 1
 			},
 			{
 				"building": "",
@@ -136,7 +160,10 @@
 				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 2,
+				"ore_source": false,
+				"building_tier": 1,
+				"capital_tier": 1
 			},
 			{
 				"building": "",
@@ -151,7 +178,10 @@
 				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 2,
+				"ore_source": false,
+				"building_tier": 1,
+				"capital_tier": 1
 			},
 			{
 				"building": "",
@@ -166,7 +196,10 @@
 				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 2,
+				"ore_source": false,
+				"building_tier": 1,
+				"capital_tier": 1
 			},
 			{
 				"building": "",
@@ -181,7 +214,10 @@
 				"road": false,
 				"tree": false,
 				"unit": 3,
-				"value": 2
+				"value": 2,
+				"ore_source": false,
+				"building_tier": 1,
+				"capital_tier": 1
 			},
 			{
 				"building": "",
@@ -196,7 +232,10 @@
 				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 2,
+				"ore_source": false,
+				"building_tier": 1,
+				"capital_tier": 1
 			},
 			{
 				"building": "",
@@ -211,7 +250,10 @@
 				"road": false,
 				"tree": false,
 				"unit": 3,
-				"value": 2
+				"value": 2,
+				"ore_source": false,
+				"building_tier": 1,
+				"capital_tier": 1
 			},
 			{
 				"building": "",
@@ -226,7 +268,10 @@
 				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 2,
+				"ore_source": false,
+				"building_tier": 1,
+				"capital_tier": 1
 			},
 			{
 				"building": "",
@@ -241,7 +286,10 @@
 				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 2,
+				"ore_source": false,
+				"building_tier": 1,
+				"capital_tier": 1
 			},
 			{
 				"building": "",
@@ -256,7 +304,10 @@
 				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 2,
+				"ore_source": false,
+				"building_tier": 1,
+				"capital_tier": 1
 			},
 			{
 				"building": "",
@@ -271,7 +322,10 @@
 				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 2,
+				"ore_source": false,
+				"building_tier": 1,
+				"capital_tier": 1
 			},
 			{
 				"building": "",
@@ -286,7 +340,10 @@
 				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 2,
+				"ore_source": false,
+				"building_tier": 1,
+				"capital_tier": 1
 			},
 			{
 				"building": "",
@@ -301,7 +358,10 @@
 				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 2,
+				"ore_source": false,
+				"building_tier": 1,
+				"capital_tier": 1
 			},
 			{
 				"building": "",
@@ -316,7 +376,10 @@
 				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 2,
+				"ore_source": false,
+				"building_tier": 1,
+				"capital_tier": 1
 			},
 			{
 				"building": "",
@@ -331,7 +394,10 @@
 				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 2,
+				"ore_source": false,
+				"building_tier": 1,
+				"capital_tier": 1
 			},
 			{
 				"building": "",
@@ -346,7 +412,10 @@
 				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 2,
+				"ore_source": false,
+				"building_tier": 1,
+				"capital_tier": 1
 			},
 			{
 				"building": "",
@@ -361,7 +430,10 @@
 				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 2,
+				"ore_source": false,
+				"building_tier": 1,
+				"capital_tier": 1
 			},
 			{
 				"building": "",
@@ -376,7 +448,10 @@
 				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 2,
+				"ore_source": false,
+				"building_tier": 1,
+				"capital_tier": 1
 			},
 			{
 				"building": "",
@@ -391,7 +466,10 @@
 				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 2,
+				"ore_source": false,
+				"building_tier": 1,
+				"capital_tier": 1
 			}
 		],
 		"factions": [
@@ -499,7 +577,10 @@
 						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 2,
+						"ore_source": false,
+						"building_tier": 1,
+						"capital_tier": 1
 					},
 					{
 						"building": "",
@@ -514,7 +595,10 @@
 						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 2,
+						"ore_source": false,
+						"building_tier": 1,
+						"capital_tier": 1
 					},
 					{
 						"building": "",
@@ -529,7 +613,10 @@
 						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 2,
+						"ore_source": false,
+						"building_tier": 1,
+						"capital_tier": 1
 					},
 					{
 						"building": "",
@@ -544,7 +631,10 @@
 						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 2,
+						"ore_source": false,
+						"building_tier": 1,
+						"capital_tier": 1
 					},
 					{
 						"building": "",
@@ -559,7 +649,10 @@
 						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 2,
+						"ore_source": false,
+						"building_tier": 1,
+						"capital_tier": 1
 					},
 					{
 						"building": "",
@@ -574,7 +667,10 @@
 						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 2,
+						"ore_source": false,
+						"building_tier": 1,
+						"capital_tier": 1
 					},
 					{
 						"building": "",
@@ -589,7 +685,10 @@
 						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 2,
+						"ore_source": false,
+						"building_tier": 1,
+						"capital_tier": 1
 					},
 					{
 						"building": "",
@@ -604,7 +703,10 @@
 						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 2,
+						"ore_source": false,
+						"building_tier": 1,
+						"capital_tier": 1
 					},
 					{
 						"building": "",
@@ -619,7 +721,10 @@
 						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 2,
+						"ore_source": false,
+						"building_tier": 1,
+						"capital_tier": 1
 					},
 					{
 						"building": "",
@@ -634,7 +739,10 @@
 						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 2,
+						"ore_source": false,
+						"building_tier": 1,
+						"capital_tier": 1
 					},
 					{
 						"building": "",
@@ -649,7 +757,10 @@
 						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 2,
+						"ore_source": false,
+						"building_tier": 1,
+						"capital_tier": 1
 					},
 					{
 						"building": "",
@@ -664,7 +775,10 @@
 						"road": false,
 						"tree": false,
 						"unit": 3,
-						"value": 2
+						"value": 2,
+						"ore_source": false,
+						"building_tier": 1,
+						"capital_tier": 1
 					},
 					{
 						"building": "",
@@ -679,7 +793,10 @@
 						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 2,
+						"ore_source": false,
+						"building_tier": 1,
+						"capital_tier": 1
 					},
 					{
 						"building": "",
@@ -694,7 +811,10 @@
 						"road": false,
 						"tree": false,
 						"unit": 3,
-						"value": 2
+						"value": 2,
+						"ore_source": false,
+						"building_tier": 1,
+						"capital_tier": 1
 					},
 					{
 						"building": "",
@@ -709,7 +829,10 @@
 						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 2,
+						"ore_source": false,
+						"building_tier": 1,
+						"capital_tier": 1
 					},
 					{
 						"building": "",
@@ -724,7 +847,10 @@
 						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 2,
+						"ore_source": false,
+						"building_tier": 1,
+						"capital_tier": 1
 					},
 					{
 						"building": "",
@@ -739,7 +865,10 @@
 						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 2,
+						"ore_source": false,
+						"building_tier": 1,
+						"capital_tier": 1
 					},
 					{
 						"building": "",
@@ -754,7 +883,10 @@
 						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 2,
+						"ore_source": false,
+						"building_tier": 1,
+						"capital_tier": 1
 					},
 					{
 						"building": "",
@@ -769,7 +901,10 @@
 						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 2,
+						"ore_source": false,
+						"building_tier": 1,
+						"capital_tier": 1
 					},
 					{
 						"building": "",
@@ -784,7 +919,10 @@
 						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 2,
+						"ore_source": false,
+						"building_tier": 1,
+						"capital_tier": 1
 					},
 					{
 						"building": "",
@@ -799,7 +937,10 @@
 						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 2,
+						"ore_source": false,
+						"building_tier": 1,
+						"capital_tier": 1
 					},
 					{
 						"building": "",
@@ -814,7 +955,10 @@
 						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 2,
+						"ore_source": false,
+						"building_tier": 1,
+						"capital_tier": 1
 					},
 					{
 						"building": "",
@@ -829,7 +973,10 @@
 						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 2,
+						"ore_source": false,
+						"building_tier": 1,
+						"capital_tier": 1
 					},
 					{
 						"building": "",
@@ -844,7 +991,10 @@
 						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 2,
+						"ore_source": false,
+						"building_tier": 1,
+						"capital_tier": 1
 					},
 					{
 						"building": "",
@@ -859,7 +1009,10 @@
 						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 2,
+						"ore_source": false,
+						"building_tier": 1,
+						"capital_tier": 1
 					},
 					{
 						"building": "",
@@ -874,7 +1027,10 @@
 						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 2,
+						"ore_source": false,
+						"building_tier": 1,
+						"capital_tier": 1
 					}
 				],
 				"factions": [

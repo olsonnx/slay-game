@@ -171,8 +171,8 @@ func run() -> void:
 		var actor: Node3D = board.unit_actors[target]
 		var landmark: Node3D = board.tile_nodes[target].get_node("Features/Landmark")
 		expect(actor.position == layout.unit_offset(r.cells[target]),"Every garrison rank stands beside its landmark")
-		expect(landmark.position == layout.LANDMARK_STRUCTURE_OFFSET,"Occupied landmarks make room for their garrison")
-		expect(actor.position.distance_to(landmark.position) > 0.8,"Garrison and landmark have distinct ground positions")
+		expect(landmark.position == layout.LANDMARK_STRUCTURE_OFFSET,"Occupied landmarks shift beside their full-size garrison")
+		expect(actor.position.distance_to(landmark.position) > 0.6,"Garrison and landmark have distinct ground positions")
 	r.cells[target].unit = 0
 	board.render_cells(r.cells)
 	expect(board.tile_nodes[target].get_node("Features/Landmark").position == Vector3.ZERO,"Unoccupied landmarks return to the tile center")

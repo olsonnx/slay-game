@@ -32,7 +32,8 @@
 				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 6,
+				"ore_source": true
 			},
 			{
 				"building": "",
@@ -77,7 +78,8 @@
 				"road": false,
 				"tree": false,
 				"unit": 0,
-				"value": 2
+				"value": 6,
+				"ore_source": true
 			},
 			{
 				"building": "",
@@ -599,7 +601,8 @@
 						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 6,
+						"ore_source": true
 					},
 					{
 						"building": "",
@@ -644,7 +647,8 @@
 						"road": false,
 						"tree": false,
 						"unit": 0,
-						"value": 2
+						"value": 6,
+						"ore_source": true
 					},
 					{
 						"building": "",
@@ -1130,9 +1134,38 @@
 				3,
 				0
 			],
-			"task": "Build a forward city",
-			"text": "Choose City in Build, then the marked province. A city costs 25 G and adds no income. It recruits on its own tile and all neighboring owned land. Captured cities survive and serve their new owner.",
-			"title": "Build a forward city"
+			"task": "Build a forward castle",
+			"text": "Build a Castle on the marked province for 25 G. A tier-one Castle recruits only on its own tile. Upgrade it with Ore to recruit next door. Captured Castles survive and serve their new owner.",
+			"title": "Build a forward castle"
+		},
+		{
+			"confirm": false,
+			"details": {},
+			"exercise": "logistics",
+			"restrict_actions": true,
+			"opponent_mode": "idle",
+			"id": "ore_income",
+			"kind": "end_turn",
+			"target": null,
+			"title": "Collect Ore",
+			"task": "End turn to collect Ore",
+			"text": "Your Ore sources produce 1 Ore for every 3 development on their tiles. End turn to collect 4 Ore. Ore is shared by your faction and has no storage cap."
+		},
+		{
+			"confirm": false,
+			"details": {},
+			"exercise": "logistics",
+			"restrict_actions": true,
+			"opponent_mode": "idle",
+			"id": "upgrade_castle",
+			"kind": "upgrade_building",
+			"target": [
+				3,
+				0
+			],
+			"title": "Upgrade your Castle",
+			"task": "Upgrade the forward Castle",
+			"text": "Click the marked Castle, then Upgrade to tier 2 in its details. It costs 2 Ore and expands recruitment to adjacent owned tiles. Tier 3 costs 4 Ore and adds another ring."
 		},
 		{
 			"details": {
@@ -1163,9 +1196,9 @@
 				3,
 				0
 			],
-			"task": "Connect your capital and city",
-			"text": "Click the blue-ringed capital to open its details, then press the road icon. Hover over the gold-ringed city to see the route and total cost; click to build. New pavement costs 1 G per tile, including the endpoints. Existing pavement is free. Roads cannot be removed.",
-			"title": "Connect your capital and city"
+			"task": "Connect your capital and castle",
+			"text": "Click the blue-ringed capital to open its details, then press the road icon. Hover over the gold-ringed castle to see the route and total cost; click to build. New pavement costs 1 G per tile, including the endpoints. Existing pavement is free. Roads cannot be removed.",
+			"title": "Connect your capital and castle"
 		},
 		{
 			"allow_turns": false,
@@ -1187,7 +1220,7 @@
 				0
 			],
 			"task": "March along the road",
-			"text": "Select your new Knight beside the capital and move it to the marked city. Connected friendly road steps cost half a movement point, so this six-hex march fits the Knight's range of 3. Bridges and attacks still cost a full point.",
+			"text": "Select your new Knight beside the capital and move it to the marked castle. Connected friendly road steps cost half a movement point, so this six-hex march fits the Knight's range of 3. Bridges and attacks still cost a full point.",
 			"title": "March along the road",
 			"wildlife_turn": false
 		},
@@ -1202,9 +1235,9 @@
 				4,
 				0
 			],
-			"task": "Recruit beside the forward city",
-			"text": "Choose Scout and use the marked tile beside your city. The recruitment area has expanded to this front. Cities provide a place to deploy, not extra income; development pays for your armies.",
-			"title": "Recruit beside the forward city"
+			"task": "Recruit beside the forward castle",
+			"text": "Choose Scout and use the marked tile beside your castle. The recruitment area has expanded to this front. Castles provide a place to deploy, not extra income; development pays for your armies.",
+			"title": "Recruit beside the forward castle"
 		},
 		{
 			"details": {

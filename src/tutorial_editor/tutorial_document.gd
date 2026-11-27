@@ -2,8 +2,8 @@ extends RefCounted
 ## Serializable authoring document; vectors are encoded as [q, r] in files.
 const Level = preload("res://src/editor/level_document.gd")
 const NONE := Vector2i(999,999)
-const ACTIONS := ["read","continue","any","recruit","move","build","spell","end_turn","select","inspect","develop","entrench","relocate_capital","road","rename_settlement","event","view","heatmap","stats","finance","status","kingdom","animal"]
-const TILE_ACTIONS := ["recruit","move","build","spell","select","inspect","develop","entrench","relocate_capital","road","rename_settlement","kingdom","animal"]
+const ACTIONS := ["read","continue","any","recruit","move","build","spell","end_turn","select","inspect","develop","upgrade_building","entrench","relocate_capital","road","rename_settlement","event","view","heatmap","stats","finance","status","kingdom","animal"]
+const TILE_ACTIONS := ["recruit","move","build","spell","select","inspect","develop","upgrade_building","entrench","relocate_capital","road","rename_settlement","kingdom","animal"]
 const PREDICATES := ["owner","unit","building","gold","mana","round","victory","value","clear","entrenched","isolated","no_unit","territory","income"]
 const ORDERS := ["move","recruit","build","spell","entrench","develop"]
 const MAX_SUBSTEPS := 20

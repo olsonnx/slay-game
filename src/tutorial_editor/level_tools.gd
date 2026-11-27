@@ -3,7 +3,7 @@ extends ScrollContainer
 signal brush_changed
 signal gold_changed(value: int)
 const TOOL_GROUPS := {
-	"Terrain":["Land","Water","Mountain","Tree","Grave","Mana source"],
+	"Terrain":["Land","Water","Mountain","Tree","Grave","Mana source","Ore source"],
 	"Kingdoms":["Owner","Value","Capital"],
 	"Armies":["Scout","Soldier","Knight"],
 	"Structures":["City","Tower","Bridge","Road"],
@@ -64,11 +64,11 @@ func heading(parent: Node, text: String) -> Label:
 	return label
 
 func tool_name() -> String:
-	return tool.get_item_text(tool.selected)
+	return "City" if tool.get_item_text(tool.selected) == "Castle" else tool.get_item_text(tool.selected)
 
 func populate_tools() -> void:
 	tool.clear()
-	for name in TOOL_GROUPS[group.get_item_text(group.selected)]: tool.add_item(name)
+	for name in TOOL_GROUPS[group.get_item_text(group.selected)]: tool.add_item("Castle" if name == "City" else name)
 	update_fields()
 	brush_changed.emit()
 

@@ -260,7 +260,10 @@ func construction_checks() -> void:
 	state.cells[city].moved = true
 	expect(state.recruit(city, 0, 2) and state.cells[city].moved, "An upgrade cannot restore an action already spent")
 	state.cells[Vector2i(3, 0)].unit = 1
-	expect(state.can_recruit(Vector2i(3, 0), 0, 2), "Owned neighbors of cities permit recruitment and upgrades")
+	expect(not state.can_recruit(Vector2i(3, 0), 0, 2), "Tier-one Castles recruit only on their own tile")
+	state.ore_by_faction[0] = 2
+	expect(state.upgrade_building(city, 0), "Upgrade the Castle before recruiting next door")
+	expect(state.can_recruit(Vector2i(3, 0), 0, 2), "Tier-two Castle allows recruitment and upgrades next door")
 	expect(not state.can_recruit(Vector2i(2, 0), 0, 1), "Recruitment cannot extend two steps from a hub")
 	expect(state.recruit(Vector2i(1, 0), 0, 1) and not state.cells[Vector2i(1, 0)].moved, "Recruits beside a capital can move immediately")
 	state.cells[home].unit = 0

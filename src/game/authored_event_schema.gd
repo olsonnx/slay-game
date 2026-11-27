@@ -157,7 +157,7 @@ static func choice_errors(items, path: String) -> PackedStringArray:
 				if kind == "recruit" and not numeric(effect.get("tier",1),1,3): errors.append(label+": army rank must be 1–3.")
 				if kind in ["neutralize","revolt"] and not numeric(effect.get("radius",1),0,4): errors.append(label+": territory radius must be 0–4.")
 				if kind == "temporary_effect" and effect.get("effect","") not in TEMPORARY: errors.append(label+": invalid temporary effect.")
-				if kind == "building" and effect.get("building","") not in ["city","tower"]: errors.append(label+": ordinary building must be a city or tower.")
+				if kind == "building" and effect.get("building","") not in ["city","tower"]: errors.append(label+": ordinary building must be a castle or tower.")
 				if kind == "disband" and not numeric(effect.get("refund_percent",100),0,100): errors.append(label+": refund must be 0–100 percent.")
 				if kind == "gold_percent" and not numeric(effect.get("percent",-100),-100,1000): errors.append(label+": treasury percent must be -100 to 1000.")
 			if landmarks > 1: errors.append(label+": use one structure effect per outcome.")

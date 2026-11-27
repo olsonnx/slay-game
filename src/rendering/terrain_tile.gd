@@ -114,13 +114,21 @@ static func populate(assets, tile: Node3D, coord: Vector2i, cell: Dictionary, co
 	if cell["grave"]:
 		assets.add_grave(features, Vector3(0.15, 0, 0))
 	if cell["building"] == "tower":
-		assets.add_tower(features, preload("res://src/rendering/tile_layout.gd").landmark_offset(cell), color)
+		var tower := Node3D.new()
+		tower.position = preload("res://src/rendering/tile_layout.gd").landmark_offset(cell)
+		tower.scale = Vector3.ONE * 0.68 * preload("res://src/rendering/tile_layout.gd").landmark_scale(cell)
+		features.add_child(tower)
+		assets.add_tower(tower, Vector3.ZERO, color)
 	elif cell["building"] == "city":
 		assets.add_city(features, preload("res://src/rendering/tile_layout.gd").landmark_offset(cell))
 	if cell["building"] == "monument":
 		assets.add_event_landmark(features, color, preload("res://src/rendering/tile_layout.gd").landmark_offset(cell), cell.get("site_source", ""))
 	if cell["capital"] >= 0:
-		assets.add_capital(features, Vector3(-0.20, 0, -0.12) if cell["unit"] > 0 or cell["grave"] or cell["tree"] else Vector3.ZERO, color)
+		assets.add_capital(features, preload("res://src/rendering/tile_layout.gd").landmark_offset(cell), color)
+	if cell["capital"] >= 0 or cell["building"] in ["city", "tower"]:
+		assets.add_structure_tier(features, cell)
+	assets.add_development(tile, cell)
+	if cell.get("ore_source", false): assets.add_ore_source(tile)
 	if cell.get("treasure", 0) > 0:
 		assets.add_treasure(features)
 	if cell.get("lair", "") != "":
@@ -130,7 +138,7 @@ static func populate(assets, tile: Node3D, coord: Vector2i, cell: Dictionary, co
 
 static func refresh(assets, tile: Node3D, coord: Vector2i, cell: Dictionary, mask := 0) -> void:
 	# Rebuild changed scenery while retaining the tile and its terrain buffers.
-	for name in ["Features", "ManaSource"]:
+	for name in ["Features", "ManaSource", "OreSource", "Development"]:
 		var old := tile.get_node_or_null(name)
 		if old != null:
 			tile.remove_child(old)

@@ -135,6 +135,7 @@ func capture_value(coord: Vector2i, faction: int) -> float:
 	if cell["building"] == "city": value += 14.0
 	if cell.get("road", false): value += 2.0
 	if cell["mana_source"]: value += 5.0
+	if cell.get("ore_source", false): value += 9.0 + model.ore_source_income(cell) * 3.0
 	if cell["building"] == "monument":
 		value += float(cell.get("site_income",0))*4.0+float(cell.get("site_mana",0))*8.0
 		if cell.get("site_steel",false): value += 12.0
@@ -200,9 +201,9 @@ func recruitment_jobs(coord: Vector2i) -> Dictionary:
 		if model.cells[member]["capital"] < 0 or not threats_here.has(member): continue
 		var needed: int = threats_here[member]["strength"]
 		if needed <= 1: continue
-		var permanent := 1
+		var permanent := 1 if model.building_tier(member) == 1 else 2
 		for next in neighbors(member):
-			if model.cells[next]["owner"] == faction and model.cells[next]["building"] == "tower": permanent = 2
+			if model.cells[next]["owner"] == faction and model.cells[next]["building"] == "tower": permanent = maxi(permanent, 1 if model.building_tier(next) == 1 else 2)
 		if permanent >= needed: continue
 		for source in available:
 			var protection: int = model.cells[source]["unit"] if source == member else mini(2, model.cells[source]["unit"]) if model.distance(source,member) == 1 and model.cells[source]["owner"] == faction else 0

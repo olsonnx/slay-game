@@ -49,7 +49,7 @@ func run() -> void:
 	game.refresh_ui()
 	game.open_shop("recruit")
 	for index in range(3):
-		expect(game.shop_items.get_child(index).get_node("Cost").text == "%d G" % [10, 20, 40][index], "Each recruitment card shows its purchase price")
+		expect(game.shop_items.get_child(index).get_node("Cost").text == ("40 G + 2 Ore" if index == 2 else "%d G" % [10, 20][index]), "Each recruitment card shows its purchase price")
 	game.open_shop("build")
 	expect(game.shop_items.get_child(0).get_node("Cost").text == "15 G" and game.shop_items.get_child(1).get_node("Cost").text == "25 G", "Building cards show tower and city costs")
 	game.cancel_action()

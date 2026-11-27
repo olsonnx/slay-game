@@ -91,7 +91,7 @@ static func economics(model) -> Array:
 	var result: Array = []
 	for bank in model.kingdoms.values():
 		result.append({"capital":bank["capital"], "faction":bank["owner"],
-			"gold":bank["gold"], "income":model.income(bank), "wages":model.upkeep(bank)})
+			"gold":bank["gold"], "ore":model.get_ore(bank["owner"]), "ore_income":model.ore_income(bank["owner"]), "income":model.income(bank), "wages":model.upkeep(bank)})
 	return result
 
 func start(model, metadata: Dictionary = {}, target_path := "") -> bool:
@@ -296,6 +296,7 @@ func capture_changes(model) -> Dictionary:
 	capture_dictionary("cells", model.cells, delta)
 	capture_dictionary("kingdoms", model.kingdoms, delta)
 	capture_dictionary("mana", model.mana_by_faction, delta)
+	capture_dictionary("ore", model.ore_by_faction, delta)
 	capture_dictionary("effects", model.effects_by_faction, delta)
 	capture_dictionary("capital_relocations", model.capital_relocations, delta)
 	var values := {"events":model.pending_events, "rng":str(model.rng.state), "difficulty":model.ai_difficulty, "faction_count":model.faction_count}

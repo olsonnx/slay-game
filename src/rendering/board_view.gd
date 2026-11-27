@@ -76,8 +76,8 @@ var water: MeshInstance3D
 var camera_pan_tween: Tween:
 	get: return navigation.camera_pan_tween
 	set(value): navigation.camera_pan_tween = value
-const VISUAL_FIELDS := ["owner", "unit", "moved", "capital", "tree", "grave", "building", "mana_source", "unit_owner", "fortified", "entrenched_by", "mountain", "barrier_by", "event", "treasure", "animal", "animal_home", "animal_target", "lair"]
-const PROP_FIELDS := ["capital", "tree", "grave", "building", "mana_source", "fortified", "entrenched_by", "barrier_by", "event", "treasure", "lair", "site_source"]
+const VISUAL_FIELDS := ["owner", "unit", "moved", "capital", "tree", "grave", "building", "value", "ore_source", "building_tier", "capital_tier", "tower_ward_used", "mana_source", "unit_owner", "fortified", "entrenched_by", "mountain", "barrier_by", "event", "treasure", "animal", "animal_home", "animal_target", "lair"]
+const PROP_FIELDS := ["capital", "tree", "grave", "building", "value", "ore_source", "building_tier", "capital_tier", "tower_ward_used", "mana_source", "fortified", "entrenched_by", "barrier_by", "event", "treasure", "lair", "site_source"]
 var cells: Dictionary = {}
 var focus: Vector3:
 	get: return navigation.focus
@@ -673,7 +673,7 @@ func scenery_state(cell: Dictionary) -> Array:
 
 func populate_tile_decorations(tile: Node3D, cell: Dictionary) -> void:
 	tile.set_meta("scenery_state", scenery_state(cell))
-	if cell.get("fortified", false) or cell.get("entrenched_by", -1) >= 0:
+	if cell.get("fortified", false) or cell.get("entrenched_by", -1) >= 0 or cell.get("building", "") == "tower" and cell.get("building_tier", 1) == 3 and not cell.get("tower_ward_used", false):
 		add_fortification(tile, cell.get("entrenched_by", -1) >= 0)
 	if cell.get("barrier_by", -1) >= 0:
 		add_barrier(tile)

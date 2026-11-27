@@ -173,7 +173,6 @@ func update_status(message := "") -> void:
 	document_status = Loc.text("EDITOR%s  /  %s  /  %d TILES  /  %s: %s") % [" *" if painting or document.dirty() else "", Loc.text("MAP"), document.cells.size(), Loc.text("Tiles" if active_tool() in Document.TILE_TOOLS else "Paint").to_upper(), Loc.text(active_tool()).to_upper()]
 	show_pointer_status(message)
 	ui.brush_label.text = Loc.text(active_tool())
-	ui.brush_label.tooltip_text = Loc.text(Document.Events.EVENTS[event_id]["title"]) if active_tool() == "Event" and Document.Events.EVENTS.has(event_id) else Loc.text(active_tool())
 
 func update_brush_preview(coord: Vector2i) -> void:
 	brush_preview.visible = not loading_map and not view.value_heatmap.active and document.in_bounds(coord)
@@ -312,6 +311,7 @@ func sample_at(position: Vector2) -> void:
 	elif cell["building"] != "": tool = str(cell["building"]).capitalize()
 	elif cell["tree"]: tool = "Tree"
 	elif cell["grave"]: tool = "Grave"
+	elif cell.get("ore_source", false): tool = "Ore source"
 	elif cell["mana_source"]: tool = "Mana source"
 	select_tool(tool)
 	update_status(Loc.text("Picked %s · value %d · %s") % [Loc.text(tool), cell["value"], Loc.text("Neutral") if cell["owner"] < 0 else document.factions[cell["owner"]]["name"]])

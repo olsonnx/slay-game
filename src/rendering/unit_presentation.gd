@@ -118,7 +118,9 @@ func refresh_unit(coord: Vector2i, cell: Dictionary) -> void:
 	if actor == null:
 		unit_actors[coord] = add_unit(tile_nodes[coord], cell["unit"], cell.get("unit_owner", -1) if cell["building"] == "bridge" else cell["owner"], cell["moved"], cell["capital"] >= 0)
 		unit_actors[coord].position = Layout.unit_offset(cell)
+		unit_actors[coord].scale = Vector3.ONE * Layout.unit_scale(cell)
 		return
+	actor.scale = Vector3.ONE * Layout.unit_scale(cell)
 	var owner: int = cell.get("unit_owner", -1) if cell["building"] == "bridge" else cell["owner"]
 	var state := [cell["unit"], owner, cell["moved"], cell["capital"] >= 0]
 	var position_wanted := Layout.unit_offset(cell)
@@ -148,7 +150,7 @@ func refresh_unit(coord: Vector2i, cell: Dictionary) -> void:
 	apply_readiness(actor, cell)
 
 func add_unit(parent: Node3D, tier: int, owner: int, moved: bool, on_capital: bool) -> Node3D:
-	var offset := Vector3(0.35, 0, 0.30) if on_capital else Vector3.ZERO
+	var offset := Layout.LANDMARK_UNIT_OFFSET if on_capital else Vector3.ZERO
 	var actor := Node3D.new()
 	actor.name = "Unit"
 	actor.set_meta("unit_role", true)

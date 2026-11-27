@@ -84,15 +84,22 @@ static func preparation(model, faction: int, queries = null) -> Array:
 			if tower_affordable and cell["unit"] == 0 and cell["capital"] < 0 and cell["building"] == "" and not cell["tree"] and not cell["grave"]:
 				var cover := 0.0
 				for next in [coord] + model.neighbors(coord):
-					if model.cells[next]["owner"] == faction and Analysis.endangered(model, next, danger) and danger[next]["strength"] <= 2:
+					if model.cells[next]["owner"] == faction and Analysis.endangered(model, next, danger) and danger[next]["strength"] <= 1:
 						cover += 65.0 if model.cells[next]["capital"] >= 0 else 12.0
 						cover += queries.supply_risk(next) * 0.8
 				if cover > 0 and model.can_build(coord, faction, "tower", capital):
 					add(result, "tower", coord, cover, {"capital": capital})
+			if model.can_upgrade_building(coord, faction):
+				var tier: int = model.building_tier(coord)
+				var benefit := 0.0
+				if cell.capital >= 0: benefit = 12.0 if tier == 1 else 8.0
+				elif cell.building == "city": benefit = 10.0 if tier == 1 else 6.0
+				elif cell.building == "tower" and Analysis.endangered(model, coord, danger): benefit = 65.0
+				if benefit > 0: add(result, "upgrade_building", coord, benefit, {"capital":capital})
 			if city_sites.has(coord) and model.can_build(coord, faction, "city", capital) and Analysis.safe_spending(kingdom, model.CITY_COST, 0, queries):
 				add(result, "city", coord, city_sites[coord], {"capital":capital})
 			if model.can_develop(coord, faction) and not cell["tree"] and not cell["grave"] and not urgent and Analysis.safe_spending(kingdom,model.development_cost(coord),1,queries):
-				add(result, "develop", coord, 2.0 / maxf(1.0, model.development_cost(coord)), {"capital": capital})
+				add(result, "develop", coord, (14.0 if cell.get("ore_source", false) and (cell.value + 1) % model.Catalog.ORE_DEVELOPMENT_PER_INCOME == 0 else 2.0) / maxf(1.0, model.development_cost(coord)), {"capital": capital})
 		result.append_array(Infrastructure.roads(model, kingdom, border, queries))
 		if kingdom["gold"] >= model.BRIDGE_COST + 10 and Analysis.safe_spending(kingdom,model.BRIDGE_COST,-model.Catalog.BRIDGE_UPKEEP,queries):
 			for site in model.bridge_targets(faction, capital):
@@ -185,6 +192,9 @@ static func movement_value(model, source: Vector2i, target: Vector2i, faction: i
 		if cell["mana_source"]:
 			score += 5.0
 			reason = "capture source"
+		if cell.get("ore_source", false):
+			score += 9.0 + model.ore_source_income(cell) * 3.0
+			reason = "capture Ore source"
 		if cell.get("treasure", 0) > 0:
 			score += cell["treasure"] * 0.6
 			reason = "collect treasure"
@@ -291,5 +301,6 @@ static func apply(model, action: Dictionary, faction: int) -> bool:
 		"road": return model.build_road(action["source"], action["coord"], faction)
 		"recruit": return model.recruit(action["coord"], faction, action["tier"], action["capital"])
 		"spell": return model.cast_spell(action["spell"], action["coord"], faction)
+		"upgrade_building": return model.upgrade_building(action["coord"], faction)
 		"develop": return model.develop(action["coord"], faction)
 		_: return model.build_structure(action["coord"], faction, action["kind"], action["capital"])

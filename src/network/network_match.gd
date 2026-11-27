@@ -100,7 +100,7 @@ func valid_command(sender: int, command: Dictionary) -> bool:
 	if not command.get("request") is int or command.request <= int(last_requests.get(sender, 0)): return false
 	if not command.get("revision") is int or command.revision != revision: return false
 	var kind = command.get("kind")
-	if kind not in ["move", "recruit", "spell", "city", "tower", "road", "bridge", "develop", "entrench", "relocate", "rename", "event", "end_turn"]: return false
+	if kind not in ["move", "recruit", "spell", "city", "tower", "road", "bridge", "develop", "entrench", "upgrade_building", "relocate", "rename", "event", "end_turn"]: return false
 	if kind == "event":
 		if game.shown_event.is_empty() or not command.get("choice") is int: return false
 		var definition: Dictionary = game.rules.event_definition(game.shown_event)
@@ -126,6 +126,7 @@ func valid_command(sender: int, command: Dictionary) -> bool:
 		"recruit": return command.get("tier") is int and command.tier in [1, 2, 3] and game.rules.can_recruit(coord, game.player_faction, command.tier, command.capital)
 		"spell": return command.get("spell") is String and game.Spells.SPELLS.has(command.spell) and game.rules.spell_targets(command.spell, game.player_faction, command.capital).has(coord)
 		"city", "tower", "bridge": return game.rules.can_build(coord, game.player_faction, kind, command.capital)
+		"upgrade_building": return game.rules.can_upgrade_building(coord, game.player_faction)
 		"develop": return game.rules.can_develop(coord, game.player_faction)
 		"entrench": return game.rules.can_entrench(coord, game.player_faction)
 		"relocate": return game.rules.can_relocate_capital(coord, game.player_faction)
@@ -144,6 +145,9 @@ func handle(sender: int, command: Dictionary) -> void:
 	var kind: String = command.kind
 	match kind:
 		"end_turn": await game.end_turn()
+		"upgrade_building":
+			game.rules.upgrade_building(command.coord, game.player_faction)
+			game.view.render_cells(game.cells)
 		"rename": game.rules.rename_settlement(command.coord, game.player_faction, command.name)
 		"event": game.resolve_shown_event(command.choice)
 		"develop", "entrench", "relocate":
@@ -185,7 +189,7 @@ func valid_state(data: Dictionary) -> bool:
 	if not position is Dictionary or position.get("snapshot_version") != Snapshot.VERSION: return false
 	for field in Snapshot.POSITION_FIELDS:
 		if not position.has(field): return false
-	for key in ["cells", "kingdoms", "mana", "effects", "capital_relocations", "configuration", "ai_last_decision"]:
+	for key in ["cells", "kingdoms", "mana", "ore", "effects", "capital_relocations", "configuration", "ai_last_decision"]:
 		if not position.get(key) is Dictionary: return false
 	if not position.get("events") is Array or position.cells.size() > 5000: return false
 	for field in Snapshot.CONFIGURATION:
@@ -199,6 +203,8 @@ func valid_state(data: Dictionary) -> bool:
 		for key in ["slain", "lost", "tiles", "capitals"]:
 			var amount = data.results[faction].get(key)
 			if not amount is int or amount < 0: return false
+	for faction in position.ore:
+		if not faction is int or faction < 0 or faction >= position.faction_count or not position.ore[faction] is int or position.ore[faction] < 0: return false
 	var config: Dictionary = position.configuration
 	for key in ["level_seed", "faction_count", "initial_kingdom_count", "ai_revision"]:
 		if not config[key] is int: return false
@@ -219,6 +225,9 @@ func valid_state(data: Dictionary) -> bool:
 		if cell.owner < -1 or cell.owner >= position.faction_count or cell.capital < -1 or cell.capital >= position.faction_count or cell.unit < 0 or cell.unit > 3: return false
 		for key in ["tree", "grave", "moved"]:
 			if not cell.get(key) is bool: return false
+		if not cell.get("ore_source", false) is bool or not cell.get("tower_ward_used", false) is bool: return false
+		for key in ["building_tier", "capital_tier"]:
+			if not cell.get(key, 1) is int or cell.get(key, 1) < 1 or cell.get(key, 1) > 3: return false
 		if cell.get("building") not in ["", "city", "tower", "road", "bridge", "monument"] or not cell.get("kingdom") is Vector2i: return false
 		if cell.get("animal", "") not in ["", "bear", "wolf", "boar"] or cell.get("lair", "") not in ["", "bear", "wolf", "boar"]: return false
 	for capital in position.kingdoms:

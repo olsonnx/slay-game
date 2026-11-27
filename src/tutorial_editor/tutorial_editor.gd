@@ -315,7 +315,6 @@ func update_preview() -> void:
 	canvas.queue_redraw()
 	var reading: Dictionary = inspector.substeps_editor.preview_page()
 	preview.text = step.title + "\n\n" + step.text + "\n\n" + step.task if reading.is_empty() else (reading.get("title","") if reading.get("title","") != "" else step.title) + "\n\n" + reading.text
-	file_label.tooltip_text = document.path
 	update_controls()
 	file_label.text = ("* " if document.dirty() else "") + (document.path if document.path != "" else "Unsaved tutorial") + " | " + document.data.title + " | Map: " + document.data.map.title
 

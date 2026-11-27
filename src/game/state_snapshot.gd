@@ -5,7 +5,7 @@ const VERSION := 1
 const POSITION_FIELDS := {
 	"cells": "cells", "kingdoms": "kingdoms", "mana": "mana_by_faction",
 	"effects": "effects_by_faction", "capital_relocations": "capital_relocations",
-	"events": "pending_events", "rng": "rng", "difficulty": "ai_difficulty", "faction_count": "faction_count"
+	"events": "pending_events", "rng": "rng", "difficulty": "ai_difficulty", "faction_count": "faction_count", "ore": "ore_by_faction"
 }
 const CONFIGURATION := ["human_factions", "faction_names", "rule_mode", "map_size",
 	"level_seed", "faction_count", "initial_kingdom_count", "ai_algorithm",
@@ -51,7 +51,7 @@ static func simulation(model):
 		var cell: Dictionary = model.cells[coord].duplicate()
 		cell["event"] = ""
 		copy.cells[coord] = cell
-	for key in ["kingdoms", "mana", "effects", "capital_relocations"]:
+	for key in ["kingdoms", "mana", "ore", "effects", "capital_relocations"]:
 		copy.set(POSITION_FIELDS[key], owned(model.get(POSITION_FIELDS[key])))
 	copy.rng.seed = 0
 	return copy
@@ -71,7 +71,7 @@ static func analysis_view(model):
 		if copy.cells[coord].get("event", "") != "":
 			copy.cells[coord] = copy.cells[coord].duplicate()
 			copy.cells[coord]["event"] = ""
-	for key in ["kingdoms", "mana", "effects", "capital_relocations"]:
+	for key in ["kingdoms", "mana", "ore", "effects", "capital_relocations"]:
 		copy.set(POSITION_FIELDS[key], model.get(POSITION_FIELDS[key]))
 	copy.rng.seed = 0
 	return copy

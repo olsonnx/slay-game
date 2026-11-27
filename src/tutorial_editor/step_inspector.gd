@@ -16,6 +16,7 @@ var row_buttons: Dictionary = {}
 var substeps_editor
 const FRIENDLY := {
 	"read":"No condition (read and continue)", "continue":"Continue after board conditions", "end_turn":"End a round",
+	"city":"Castle", "upgrade_building":"Upgrade a building",
 	"rename_settlement":"Name a settlement", "relocate_capital":"Relocate the capital",
 	"finance":"Open the gold tooltip", "status":"Open a status tooltip",
 	"kingdom":"Select a friendly kingdom", "animal":"Inspect a predator",
@@ -497,12 +498,12 @@ func update_rule_forms() -> void:
 	groups.cond_target.visible = kind in ["owner","unit","building","gold","value","clear","entrenched","isolated","no_unit"]
 	groups.cond_value.visible = kind not in ["clear","entrenched","victory","isolated","no_unit"]
 	groups.cond_faction.visible = kind in ["unit","gold","mana","victory","entrenched","isolated","territory","income"]
-	groups.cond_value.get_child(0).text = "Building (city, tower, bridge, road)" if kind == "building" else "Owner ID (-1 neutral, 0 player, 1–5 opponents)" if kind == "owner" else "Minimum required"
+	groups.cond_value.get_child(0).text = "Building (castle, tower, bridge, road)" if kind == "building" else "Owner ID (-1 neutral, 0 player, 1–5 opponents)" if kind == "owner" else "Minimum required"
 	groups.cond_target.get_child(0).text = "Kingdom tile (blank = faction total)" if kind == "gold" else "Condition tile"
 	var order := selected("op_kind")
 	groups.op_source.visible = order == "move"
 	groups.op_value.visible = order in ["recruit","build","spell"]
-	groups.op_value.get_child(0).text = {"recruit":"Army rank (1 Scout, 2 Soldier, 3 Knight)","build":"Building (city, tower, bridge)","spell":"Spell (trailblaze, summon, shatter)"}.get(order,"Parameter")
+	groups.op_value.get_child(0).text = {"recruit":"Army rank (1 Scout, 2 Soldier, 3 Knight)","build":"Building (castle, tower, bridge)","spell":"Spell (trailblaze, summon, shatter)"}.get(order,"Parameter")
 
 func update_row_buttons() -> void:
 	var condition_selected := not conditions.get_selected_items().is_empty()

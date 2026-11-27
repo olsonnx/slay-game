@@ -183,7 +183,8 @@ func roof_mesh(width: float, depth: float, height: float) -> ArrayMesh:
 func add_mana_source(tile: Node3D) -> void:
 	var source := Node3D.new()
 	source.name = "ManaSource"
-	source.position = Vector3(0.48, 0, -0.38)
+	source.position = preload("res://src/rendering/tile_layout.gd").MANA_OFFSET
+	source.scale = Vector3.ONE * 0.65
 	tile.add_child(source)
 	cylinder(source, Vector3(0, 0.04, 0), 0.25, 0.28, 0.08, Color("575778"), 6)
 	for index in range(3):
@@ -270,7 +271,7 @@ func add_capital(parent: Node3D, offset: Vector3, flag_color: Color) -> void:
 	var castle := Node3D.new()
 	castle.name = "CapitalCastle"
 	castle.position = offset
-	castle.scale = Vector3.ONE * (0.78 if offset != Vector3.ZERO else 1.0)
+	castle.scale = Vector3.ONE * 0.62 * (0.80 if offset != Vector3.ZERO else 1.0)
 	parent.add_child(castle)
 	shadow(castle, Vector3.ZERO, 1.65)
 	box(castle, Vector3(0, 0.07, 0), Vector3(1.25, 0.14, 1.10), Color("9e9c8a"))
@@ -289,21 +290,71 @@ func add_capital(parent: Node3D, offset: Vector3, flag_color: Color) -> void:
 	add_flag(castle, Vector3(0, 1.28, -0.10), flag_color)
 
 func add_city(parent: Node3D, offset: Vector3) -> void:
-	var town := Node3D.new()
-	town.name = "City"
-	town.position = offset
-	town.scale = Vector3.ONE * (0.76 if offset != Vector3.ZERO else 0.94)
-	parent.add_child(town)
-	shadow(town, Vector3.ZERO, 1.15)
-	# A small town hall and two cottages leave a readable central square.
-	for data in [[Vector3(0, 0, -0.20), Vector3(0.48, 0.55, 0.40)], [Vector3(-0.38, 0, 0.25), Vector3(0.32, 0.32, 0.32)], [Vector3(0.38, 0, 0.25), Vector3(0.32, 0.32, 0.32)]]:
-		var at: Vector3 = data[0]
-		var size: Vector3 = data[1]
-		box(town, at + Vector3(0, size.y * 0.5, 0), size, Color("e2cfaa"))
-		piece(town, roof_mesh(size.x + 0.10, size.z + 0.10, 0.22), at + Vector3(0, size.y, 0), Color("88584b"))
-		register_lighting_material(box(town, at + Vector3(0, size.y * 0.55, size.z * 0.5 + 0.01), Vector3(0.09, 0.12, 0.015), Color("f5d090")).material_override, "window")
-	box(town, Vector3(0, 0.70, -0.20), Vector3(0.16, 0.30, 0.16), Color("d2c9b0"))
-	piece(town, roof_mesh(0.24, 0.24, 0.16), Vector3(0, 0.86, -0.20), Color("88584b"))
+	# "city" remains the serialized identifier for existing maps.
+	var castle := Node3D.new()
+	castle.name = "Castle"
+	castle.position = offset
+	castle.scale = Vector3.ONE * 0.68 * (0.80 if offset != Vector3.ZERO else 1.0)
+	parent.add_child(castle)
+	shadow(castle, Vector3.ZERO, 1.25)
+	box(castle, Vector3(0, 0.24, 0), Vector3(0.80, 0.48, 0.65), Color("b9b5a5"))
+	for x in [-0.40, 0.40]:
+		for z in [-0.32, 0.32]:
+			cylinder(castle, Vector3(x, 0.38, z), 0.15, 0.18, 0.76, Color("d5cdb7"), 6)
+			for dx in [-0.08, 0.08]:
+				box(castle, Vector3(x + dx, 0.80, z), Vector3(0.08, 0.13, 0.20), Color("e2d9bf"))
+	box(castle, Vector3(0, 0.20, 0.334), Vector3(0.20, 0.36, 0.035), Color("615448"))
+	for x in [-0.30, 0, 0.30]:
+		box(castle, Vector3(x, 0.53, 0.30), Vector3(0.12, 0.13, 0.12), Color("e2d9bf"))
+
+func add_ore_source(tile: Node3D) -> void:
+	var ore := Node3D.new()
+	ore.name = "OreSource"
+	ore.position = preload("res://src/rendering/tile_layout.gd").ORE_OFFSET
+	tile.add_child(ore)
+	cylinder(ore, Vector3(0,0.025,0), 0.18,0.20,0.05,Color("75523c"),6)
+	for at in [Vector3(-0.08,0.11,0.02), Vector3(0.05,0.16,-0.04), Vector3(0.11,0.08,0.08)]:
+		var rock := cylinder(ore,at,0.07,0.12,0.20,Color("9b7352"),5)
+		rock.rotation_degrees = Vector3(12,18,15)
+		box(ore,at+Vector3(0,0.09,0.04),Vector3(0.07,0.035,0.06),Color("c9b298"))
+
+func add_development(tile: Node3D, cell: Dictionary) -> void:
+	var layout = preload("res://src/rendering/tile_layout.gd")
+	var houses := Node3D.new()
+	houses.name = "Development"
+	tile.add_child(houses)
+	# Stable scenery variation never touches the gameplay random stream.
+	var coord: Vector2i = tile.get_meta("hex", Vector2i.ZERO)
+	var variation := RandomNumberGenerator.new()
+	variation.seed = hash(Vector3i(coord.x, coord.y, 0xD3E))
+	var slots: Array[int] = layout.development_house_slots(coord, cell)
+	for index in range(slots.size()):
+		var house := Node3D.new()
+		house.name = "House%d" % (index + 1)
+		house.position = layout.DEVELOPMENT_OFFSETS[slots[index]] + Vector3(variation.randf_range(-0.022, 0.022), 0, variation.randf_range(-0.022, 0.022))
+		house.rotation_degrees.y = variation.randf_range(-28.0, 28.0)
+		house.position = layout.constrain_house_position(house.position, house.rotation.y)
+		house.scale = Vector3.ONE * layout.DEVELOPMENT_HOUSE_SCALE
+		houses.add_child(house)
+		box(house,Vector3(0,0.22,0),Vector3(0.62,0.44,0.54),Color("e1cba4"))
+		piece(house,roof_mesh(layout.DEVELOPMENT_ROOF_HALF_EXTENTS.x * 2,layout.DEVELOPMENT_ROOF_HALF_EXTENTS.y * 2,0.30),Vector3(0,0.44,0),Color("925b4a"))
+		box(house,Vector3(0,0.15,0.28),Vector3(0.16,0.30,0.02),Color("675141"))
+
+func add_structure_tier(parent: Node3D, cell: Dictionary) -> void:
+	var tier := preload("res://src/game/kingdom_construction.gd").building_tier(cell)
+	var trim := Node3D.new()
+	trim.name = "StructureTier%d" % tier
+	trim.position = preload("res://src/rendering/tile_layout.gd").landmark_offset(cell)
+	trim.scale = Vector3.ONE * preload("res://src/rendering/tile_layout.gd").landmark_scale(cell)
+	parent.add_child(trim)
+	for index in range(tier):
+		box(trim, Vector3((index - (tier - 1) * 0.5) * 0.11,0.06,0.45),Vector3(0.075,0.08,0.08),Color("e6c878"))
+	if tier >= 2:
+		for x in [-0.36,0.36]:
+			box(trim,Vector3(x,0.18,0),Vector3(0.08,0.30,0.50),Color("8d938d"))
+	if tier == 3:
+		for z in [-0.28,0.28]:
+			box(trim,Vector3(0,0.09,z),Vector3(0.72,0.13,0.07),Color("c4b99c"))
 
 func add_road_preview(parent: Node3D) -> void:
 	box(parent, Vector3(0, 0.025, 0), Vector3(1.7, 0.025, 0.30), Color("8d826a"))
@@ -406,14 +457,12 @@ func building_icon(kind: String) -> Texture2D:
 		for x in [6, 30]:
 			image.fill_rect(Rect2i(x, 7, 4, 29), Color("835f3e"))
 	elif kind == "city":
-		image.fill_rect(Rect2i(14, 13, 12, 21), stone)
-		image.fill_rect(Rect2i(17, 5, 6, 9), Color("b6a98c"))
-		for x in [2, 28]:
-			image.fill_rect(Rect2i(x, 25, 10, 11), stone)
-			for y in range(19, 26):
-				var width := (y - 18) * 2
-				image.fill_rect(Rect2i(x + 5 - width / 2, y, width, 1), Color("a56e55"))
-		image.fill_rect(Rect2i(18, 25, 5, 9), dark)
+		image.fill_rect(Rect2i(6, 15, 28, 21), stone)
+		for x in [3, 27]:
+			image.fill_rect(Rect2i(x, 9, 10, 27), stone)
+			for dx in [0, 7]: image.fill_rect(Rect2i(x + dx, 5, 3, 7), stone)
+		for x in [14, 20]: image.fill_rect(Rect2i(x, 12, 4, 5), stone)
+		image.fill_rect(Rect2i(17, 25, 6, 11), dark)
 	elif kind == "road":
 		image.fill_rect(Rect2i(3, 17, 34, 7), Color("9a8b71"))
 		for x in range(4, 38, 6): image.fill_rect(Rect2i(x, 18, 3, 5), Color("cabfa2"))
@@ -476,6 +525,7 @@ func add_event_landmark(parent: Node3D, flag_color: Color, offset: Vector3, sour
 	var model := Node3D.new()
 	model.name = "Landmark"
 	model.position = offset
+	model.scale = Vector3.ONE * (0.80 if offset != Vector3.ZERO else 1.0)
 	parent.add_child(model)
 	if source == "watchtower":
 		add_tower(model, Vector3.ZERO, flag_color)
@@ -500,6 +550,7 @@ func add_monument(parent: Node3D, flag_color: Color, offset := Vector3.ZERO) -> 
 	var model := Node3D.new()
 	model.name = "Landmark"
 	model.position = offset
+	model.scale = Vector3.ONE * (0.80 if offset != Vector3.ZERO else 1.0)
 	parent.add_child(model)
 	# One shared placeholder for all encounter and cleared-lair sites.
 	shadow(model, Vector3.ZERO, 1.0)

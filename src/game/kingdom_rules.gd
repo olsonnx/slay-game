@@ -30,6 +30,7 @@ var rule_mode: String:
 	get: return "modern"
 	set(_value): pass
 var mana_by_faction: Dictionary = {}
+var ore_by_faction: Dictionary = {}
 var map_size := "small"
 var faction_count := 4
 var initial_kingdom_count := 0
@@ -73,7 +74,7 @@ func uses_strategic_ai() -> bool:
 func make_cell(owner := -1) -> Dictionary:
 	return {"owner": owner, "unit": 0, "moved": false, "capital": -1,
 		"tree": false, "grave": false, "building": "", "kingdom": NONE,
-		"value": 1, "mana_source": false, "unit_owner": -1, "unit_home": NONE,
+		"value": 1, "mana_source": false, "ore_source": false, "building_tier": 1, "capital_tier": 1, "unit_owner": -1, "unit_home": NONE,
 		"fortified": false, "fortified_by": -1, "mountain": false,
 		"barrier_by": -1, "barrier_used": false, "event": ""}
 
@@ -165,6 +166,8 @@ func generate(seed_value: int = -1, size_id := "small", kingdom_count := 0) -> v
 	magic.generate_events(self)
 	preload("res://src/game/treasure_placement.gd").generate(self)
 	Wildlife.generate(self)
+	preload("res://src/game/mana_resources.gd").generate(self)
+	preload("res://src/game/ore_resources.gd").generate(self)
 
 func has_effect(faction: int, effect: String) -> bool:
 	return magic.has_effect(self, faction, effect)
@@ -221,6 +224,33 @@ func has_units(faction: int) -> bool:
 		if cells[coord]["unit"] > 0 and unit_faction(coord) == faction:
 			return true
 	return false
+
+func get_ore(faction: int) -> int:
+	return maxi(0, int(ore_by_faction.get(faction, 0)))
+
+func ore_source_income(cell: Dictionary) -> int:
+	return maxi(0, floori(float(cell.get("value", 1)) / Catalog.ORE_DEVELOPMENT_PER_INCOME)) if cell.get("ore_source", false) else 0
+
+func ore_income(faction: int) -> int:
+	var total := 0
+	for cell in cells.values():
+		if cell.owner == faction: total += ore_source_income(cell)
+	return total
+
+func building_tier(coord: Vector2i) -> int:
+	return Construction.building_tier(cells.get(coord, {}))
+
+func building_upgrade_cost(coord: Vector2i) -> int:
+	return Construction.upgrade_cost(self, coord)
+
+func can_upgrade_building(coord: Vector2i, faction: int) -> bool:
+	return Construction.can_upgrade(self, coord, faction)
+
+func upgrade_building(coord: Vector2i, faction: int) -> bool:
+	return Construction.upgrade(self, coord, faction)
+
+func structure_entrenched(coord: Vector2i) -> bool:
+	return cells.has(coord) and cells[coord].building == "tower" and building_tier(coord) == 3 and not cells[coord].get("tower_ward_used", false)
 
 func mana_source_capacity(cell: Dictionary) -> int:
 	return 2 if cell["capital"] >= 0 or cell["tree"] else 1
@@ -399,6 +429,7 @@ func build_structure(coord: Vector2i, faction: int, kind: String, capital := NON
 	return Construction.build_structure(self, coord, faction, kind, capital)
 
 func begin_turn(faction: int) -> int:
+	ore_by_faction[faction] = get_ore(faction) + ore_income(faction)
 	var mana := mana_summary(faction)
 	mana_by_faction[faction] = mini(mana["capacity"], mana["amount"] + mana["regeneration"])
 	# Graves left from a previous turn become trees. New deaths remain visible.
@@ -408,6 +439,7 @@ func begin_turn(faction: int) -> int:
 		if cell.get("barrier_by", -1) == faction:
 			cell["barrier_by"] = -1
 		if cell["owner"] == faction:
+			cell.erase("tower_ward_used")
 			cell["moved"] = false
 			if cell["grave"]:
 				cell["grave"] = false
@@ -440,7 +472,7 @@ func begin_turn(faction: int) -> int:
 func can_grow_tree(coord: Vector2i) -> bool:
 	if not cells.has(coord): return false
 	var cell: Dictionary = cells[coord]
-	return not is_mountain(coord) and not is_barrier(coord) and not has_wildlife(coord) and cell.unit == 0 and cell.capital < 0 and cell.building == "" and not cell.tree and not cell.grave and not cell.get("road", false) and cell.get("treasure", 0) == 0 and not cell.get("mana_source", false) and cell.get("event", "") == ""
+	return not is_mountain(coord) and not is_barrier(coord) and not has_wildlife(coord) and cell.unit == 0 and cell.capital < 0 and cell.building == "" and not cell.tree and not cell.grave and not cell.get("road", false) and cell.get("treasure", 0) == 0 and not cell.get("mana_source", false) and not cell.get("ore_source", false) and cell.get("event", "") == ""
 
 func spread_trees() -> int:
 	var growing: Dictionary = {}

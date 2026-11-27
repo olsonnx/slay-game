@@ -133,6 +133,7 @@ func _ready() -> void:
 	Gameplay.changed.connect(refresh_overlays)
 	province_view = ProvinceView.new()
 	hud.ui_root.add_child(province_view)
+	province_view.upgrade_requested.connect(upgrade_province_building)
 	province_view.develop_requested.connect(develop_province)
 	province_view.entrench_requested.connect(entrench_province)
 	province_view.relocate_requested.connect(relocate_province_capital)
@@ -374,6 +375,17 @@ func refresh_province(model = null) -> void:
 		return
 	var economy = session.rules if model == null else model
 	province_view.refresh(economy, session.selection.inspected_hex, not commands_locked(), session.player_faction)
+
+func upgrade_province_building() -> void:
+	if network_match != null and not network_match.executing:
+		network_match.submit({"kind":"upgrade_building", "coord":session.selection.inspected_hex})
+		return
+	if commands_locked() or not tutorial_permits("upgrade_building", session.selection.inspected_hex): return
+	if session.rules.upgrade_building(session.selection.inspected_hex, session.player_faction):
+		view.render_cells(cells)
+		Sound.play(&"action_place")
+		refresh_ui()
+		report_tutorial_action("upgrade_building", session.selection.inspected_hex)
 
 func develop_province() -> void:
 	if network_match != null and not network_match.executing:

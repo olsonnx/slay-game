@@ -45,7 +45,7 @@ func query_checks(model) -> void:
 		var tactical_change := query.defense_needs(faction) != query.threats(faction)
 		for action in old + current:
 			var target: Vector2i = action["coord"]
-			if model.has_wildlife(target): tactical_change = true
+			if model.has_wildlife(target) or model.cells[target].get("ore_source", false): tactical_change = true
 			if model.cells[target]["owner"] >= 0 and model.cells[target]["owner"] != faction and query.cut_value(target) > 0: tactical_change = true
 			if query.campaign_value(target,faction) > 0: tactical_change = true
 			for next in [target] + model.neighbors(target):
@@ -59,7 +59,7 @@ func query_checks(model) -> void:
 			var job := Vector3i(target.x,target.y,model.cells[action["source"]]["unit"])
 			if old_jobs.has(job): repeated_job = true
 			old_jobs[job] = true
-		expect(canonical_ties(current) == canonical_ties(old) or tactical_change or repeated_job, "Candidate equivalence holds outside intentional tactical/diversity changes")
+		expect(canonical_ties(current) == canonical_ties(old) or tactical_change or repeated_job, "Candidate equivalence holds outside intentional tactical, Ore and diversity changes")
 		expect(current.size() <= int(Analysis.profile(model)["candidates"]),"New tactics retain the candidate budget")
 		var jobs := {}
 		var departures := {}

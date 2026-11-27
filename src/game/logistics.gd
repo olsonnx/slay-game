@@ -10,9 +10,19 @@ static func recruitment_zone(state, coord: Vector2i, faction: int) -> bool:
 	if not state.cells.has(coord) or state.cells[coord].owner != faction: return false
 	var bank: Dictionary = state.kingdom_at(coord)
 	if bank.is_empty(): return false
-	for site in [coord] + state.neighbors(coord):
-		if state.cells[site].owner == faction and recruitment_hub(state.cells[site]): return true
+	# The maximum recruitment radius is two: inspect 19 cells, independent of kingdom size.
+	for q in range(-2, 3):
+		for r in range(maxi(-2, -q - 2), mini(2, -q + 2) + 1):
+			var site := coord + Vector2i(q, r)
+			if not state.cells.has(site): continue
+			var cell: Dictionary = state.cells[site]
+			if cell.owner != faction or cell.get("kingdom", Grid.NONE) != bank.capital or not recruitment_hub(cell): continue
+			if state.distance(coord, site) <= recruitment_range(cell): return true
 	return false
+
+static func recruitment_range(cell: Dictionary) -> int:
+	var tier := preload("res://src/game/kingdom_construction.gd").building_tier(cell)
+	return (1 if tier == 1 else 2) if cell.get("capital", -1) >= 0 else tier - 1
 
 static func tower_cost(state, faction: int) -> int:
 	var count := 0

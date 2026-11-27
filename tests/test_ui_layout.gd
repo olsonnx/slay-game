@@ -88,7 +88,7 @@ func run() -> void:
 		var last: Button = game.spell_button if modern else game.build_button
 		var right_padding: float = game.economy_dock.size.x - last.position.x - last.size.x
 		expect(is_equal_approx(first.position.x, right_padding), "Dock action row has equal side padding in both rulesets")
-		var resources: Control = game.mana_control if modern else game.gold_control
+		var resources: Control = game.hud.ore_control if modern else game.gold_control
 		expect(is_equal_approx(game.gold_control.position.x, game.economy_dock.size.x - resources.position.x - resources.size.x), "Resource hit areas have equal outer side padding")
 	game.configure_rules_ui(true)
 	for kind in ["recruit", "build", "spells"]:

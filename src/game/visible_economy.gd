@@ -57,5 +57,6 @@ static func project(rules, visible_cells: Dictionary, banks: Dictionary, mana: D
 			economy.cells[coord] = cell.duplicate(true)
 	economy.kingdoms = banks.duplicate(true)
 	economy.mana_by_faction = mana.duplicate()
+	economy.ore_by_faction = rules.ore_by_faction.duplicate()
 	economy.rebuild_kingdoms()
 	return economy

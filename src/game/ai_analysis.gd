@@ -54,7 +54,7 @@ static func evaluate(model, faction: int, queries = null) -> float:
 					loss += 85.0
 				if cell["building"] != "":
 					loss += 12.0
-				if (cell["fortified"] or model.is_entrenched(coord)) and danger[coord]["sources"].size() == 1:
+				if (cell["fortified"] or model.is_entrenched(coord) or model.structure_entrenched(coord)) and danger[coord]["sources"].size() == 1:
 					loss *= 0.3
 				score -= loss * risk * (0.55 if danger[coord].get("projected",false) else 1.0)
 		elif cell["owner"] >= 0:
@@ -85,7 +85,7 @@ static func evaluate(model, faction: int, queries = null) -> float:
 			score -= 150.0
 		elif net < 0:
 			score -= absf(net) * 2.0
-	score += model.get_mana(faction) * 1.5
+	score += model.get_mana(faction) * 1.5 + model.get_ore(faction) * 2.0 + model.ore_income(faction) * 5.0
 	if own_capitals > 0:
 		score += 25.0 + (own_capitals - 1) * 2.0
 	if land == 0:

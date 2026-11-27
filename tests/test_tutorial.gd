@@ -49,6 +49,8 @@ func target_for(game, step: Dictionary) -> Vector2i:
 				if not game.rules.can_build(at,0,step.details.building): continue
 			"spell":
 				if not game.rules.can_cast(step.details.spell,at,0): continue
+			"upgrade_building":
+				if not game.rules.can_upgrade_building(at,0): continue
 			"develop":
 				if not game.rules.can_develop(at,0): continue
 		return at
@@ -141,6 +143,9 @@ func perform(game, step: Dictionary) -> bool:
 			await game.click_hex(order.source,"unit")
 			await game.click_hex(order.target)
 		"end_turn": await game.end_turn()
+		"upgrade_building":
+			await game.click_hex(target,"terrain")
+			game.province_view.upgrade_button.pressed.emit()
 		"develop":
 			await game.click_hex(target,"terrain")
 			game.province_view.develop_button.pressed.emit()
@@ -301,12 +306,17 @@ func run() -> void:
 	await game.click_hex(Vector2i(-4,0))
 	expect(tutor.index == 0 and Snapshots.capture(game.rules) == initial,"Unrelated purchases do not spend or skip a guided objective")
 	game.cancel_action()
+	while tutor.current().kind == "read" or tutor.reading_substeps():
+		tutor.continue_lesson()
+		await process_frame
+	var cancelled_step: int = tutor.index
+	var cancelled_land: int = game.rules.territory(0)
 	var order := move_order(game,tutor.current())
 	await game.click_hex(order.source,"unit")
 	game.click_hex(order.target)
 	tutor.game.cancel_action()
 	await process_frame
-	expect(tutor.index == 0 and game.rules.territory(0) == initial_land,"Cancelled capture cannot tick its objective")
+	expect(tutor.index == cancelled_step and game.rules.territory(0) == cancelled_land,"Cancelled capture cannot tick its objective")
 	tutor.restart_lesson()
 	expect(tutor.index == 0 and tutor.goal_count == 0 and Snapshots.capture(game.rules) == initial,"Retry restores the whole exercise and its checks")
 	await app.restart_current_level()

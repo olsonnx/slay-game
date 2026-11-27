@@ -12,7 +12,7 @@ static func categories() -> Array:
 		{"id":"encirclement","title":Loc.text("Cutting off armies"),"description":Loc.text("Surround a Knight, cut its connection and let isolation defeat it.")},
 		{"id":"economy","title":Loc.text("Kingdoms and money"),"description":Loc.text("Understand income, wages and separate treasuries.")},
 		{"id":"construction","title":Loc.text("Defences and upkeep"),"description":Loc.text("Plan permanent towers and pay for bridges and defences.")},
-		{"id":"logistics","title":Loc.text("Cities and supply lines"),"description":Loc.text("Build forward cities, recruit nearby and connect useful roads.")},
+		{"id":"logistics","title":Loc.text("Castles and supply lines"),"description":Loc.text("Build forward castles, recruit nearby and connect useful roads.")},
 		{"id":"magic","title":Loc.text("Mana and spells"),"description":Loc.text("Use Summon, Trailblaze and Shatter with shared mana.")},
 		{"id":"exploration","title":Loc.text("Exploration and rewards"),"description":Loc.text("Collect treasure and try either encounter reward.")},
 		{"id":"practice","title":Loc.text("Your first match"),"description":Loc.text("Play a small real match. Choose your own strategy.")},
@@ -62,7 +62,7 @@ static func builtin_lessons(category := "armies") -> Array:
 	if category not in IDS: return []
 	if category == "encirclement": return preload("res://src/game/encirclement_tutorial.gd").runtime_steps()
 	if category == "practice":
-		return [goal("win", Loc.text("Defeat the enemy kingdom"), Loc.text("Play a real match using cities, limited movement, roads and infrastructure upkeep. Expand, establish recruitment sites, and take the enemy capital."), "any", NONE, {}, {"exercise":"practice", "restrict_actions":false, "conditions":[{"type":"victory", "faction":-1}]})]
+		return [goal("win", Loc.text("Defeat the enemy kingdom"), Loc.text("Play a real match using castles, limited movement, roads and infrastructure upkeep. Expand, establish recruitment sites, and take the enemy capital."), "any", NONE, {}, {"exercise":"practice", "restrict_actions":false, "conditions":[{"type":"victory", "faction":-1}]})]
 	var result: Array = preload("res://src/game/logistics_tutorial.gd").steps(category)
 	for entry in result: entry.title = entry.task
 	return result

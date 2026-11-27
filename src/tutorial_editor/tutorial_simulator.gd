@@ -44,7 +44,7 @@ static func run(document, before := -1) -> Dictionary:
 			var required: String = {"recruit":"tier","build":"building","spell":"spell","move":"source","road":"source","rename_settlement":"name"}.get(step.kind,"")
 			if required != "" and not step.get("details",{}).has(required):
 				return {"error":prefix + "This action allows multiple choices; use a manual playtest.","rules":rules,"round":round_number}
-			if (step.kind in ["recruit","move","build","spell","develop","entrench"] and step.target == rules.NONE) or (step.kind == "move" and order.get("source",rules.NONE) == rules.NONE):
+			if (step.kind in ["recruit","move","build","spell","develop","upgrade_building","entrench"] and step.target == rules.NONE) or (step.kind == "move" and order.get("source",rules.NONE) == rules.NONE):
 				return {"error":prefix + "Any-tile actions need a manual playtest; preview stopped here.","rules":rules,"round":round_number}
 			if not Actions.apply(rules,order,0).ok: return {"error":prefix + "Player action is illegal or unaffordable.","rules":rules,"round":round_number}
 		if not Conditions.matches(rules,round_number,step.get("conditions",[]),step.get("condition_mode","all")):

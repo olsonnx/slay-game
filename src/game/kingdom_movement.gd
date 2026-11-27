@@ -19,9 +19,9 @@ static func local_defense(state, coord: Vector2i) -> int:
 	var cell: Dictionary = cells[coord]
 	var strength: int = cell["unit"]
 	if cell["capital"] >= 0:
-		strength = maxi(strength, 1)
+		strength = maxi(strength, 1 if state.building_tier(coord) == 1 else 2)
 	if cell["building"] == "tower":
-		strength = maxi(strength, 2)
+		strength = maxi(strength, 1 if state.building_tier(coord) == 1 else 2)
 	return strength
 
 static func defense(state, coord: Vector2i) -> int:
@@ -171,7 +171,7 @@ static func move_unit(state, source: Vector2i, target: Vector2i) -> bool:
 
 static func fortification_blocks_attack(state, source: Vector2i, target: Vector2i) -> bool:
 	if state.has_wildlife(target): return false
-	if not state.cells[target].get("fortified", false) and not state.is_entrenched(target):
+	if not state.cells[target].get("fortified", false) and not state.is_entrenched(target) and not state.structure_entrenched(target):
 		return false
 	if state.is_bridge(target):
 		# Crossing or merging on neutral wood is not an attack on its garrison.
@@ -181,7 +181,7 @@ static func fortification_blocks_attack(state, source: Vector2i, target: Vector2
 static func blocked_landing(state, source: Vector2i, target: Vector2i, path: Array = []) -> Vector2i:
 	# Legacy structure wards retain their recorded behavior. Entrenchment lets
 	# the attacker hold the nearest available square on its actual approach.
-	if not state.is_entrenched(target): return source
+	if not state.is_entrenched(target) and not state.structure_entrenched(target): return source
 	if path.is_empty(): path = movement_path(state, source, target)
 	for index in range(path.size() - 2, -1, -1):
 		var coord: Vector2i = path[index]
@@ -202,6 +202,7 @@ static func apply_move(state, source: Vector2i, target: Vector2i, path: Array = 
 	var neutral_capture: bool = destination["owner"] == -1 and not state.is_bridge(target)
 	if fortification_blocks_attack(state, source, target):
 		var landing := blocked_landing(state, source, target, path)
+		if state.structure_entrenched(target): destination["tower_ward_used"] = true
 		destination.erase("entrenched_by")
 		destination["fortified"] = false
 		destination["fortified_by"] = -1
@@ -239,6 +240,9 @@ static func apply_move(state, source: Vector2i, target: Vector2i, path: Array = 
 	destination["grave"] = false
 	if capturing:
 		destination["capital"] = -1
+		destination["capital_tier"] = 1
+		if destination["building"] != "city": destination["building_tier"] = 1
+		destination.erase("tower_ward_used")
 		if destination["building"] != "city" and not preload("res://src/game/event_sites.gd").protected(destination): destination["building"] = ""
 	unit["unit"] = 0
 	unit["moved"] = false
@@ -248,6 +252,7 @@ static func apply_move(state, source: Vector2i, target: Vector2i, path: Array = 
 		var cell: Dictionary = state.cells[coord]
 		cell["owner"] = destination["owner"]
 		cell["capital"] = -1
+		cell["capital_tier"] = 1
 		cell["fortified"] = false
 		cell["fortified_by"] = -1
 		if cell["unit"] > 0:

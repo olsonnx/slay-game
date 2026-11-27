@@ -121,15 +121,14 @@ func row(page: Control, height := 52.0) -> Control:
 func heading(page: Control, text_value: String) -> void:
 	Hud.label_at(row(page,32),text_value,Vector2(0,6),14,Hud.UiTheme.ACCENT)
 
-func label(parent: Control, text_value: String, tip: String) -> void:
+func label(parent: Control, text_value: String) -> void:
 	var caption := Hud.label_at(parent,text_value,Vector2(0,10),14)
 	caption.size = Vector2(154,30)
 	caption.clip_text = true
-	caption.tooltip_text = tip
 
 func choose(page: Control, title: String, items: Array, tip := "") -> OptionButton:
 	var container := row(page)
-	label(container,title,tip)
+	label(container,title)
 	var button := Tips.Choice.new()
 	button.position = Vector2(160,0)
 	button.size = Vector2(248,38)
@@ -152,7 +151,7 @@ func check(page: Control, text_value: String, tip := "") -> CheckButton:
 
 func slider(page: Control, title: String, minimum: float, maximum: float, step_value: float, tip := "") -> Dictionary:
 	var container := row(page)
-	label(container,title,tip)
+	label(container,title)
 	var control := Tips.RangeSlider.new()
 	control.position = Vector2(160,9)
 	control.size = Vector2(180,24)

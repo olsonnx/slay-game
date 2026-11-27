@@ -12,7 +12,13 @@ static func development_cost(state, coord: Vector2i) -> int:
 		return 0
 	var value: int = cells[coord].get("value", 1)
 	var cost: int = state.DEVELOPMENT_BASE_COST * value * value
-	return ceili(cost * 0.5) if preload("res://src/game/event_sites.gd").has_aura(state, coord, "development_discount") else cost
+	var multiplier := 1.0
+	if preload("res://src/game/event_sites.gd").has_aura(state, coord, "development_discount"): multiplier *= 0.5
+	for site in [coord] + state.neighbors(coord):
+		if cells[site].owner == cells[coord].owner and cells[site].capital >= 0 and building_tier(cells[site]) == 3:
+			multiplier *= Catalog.CAPITAL_DEVELOPMENT_DISCOUNT
+			break
+	return ceili(cost * multiplier)
 
 static func capital_relocation_cost(state, faction: int) -> int:
 	return 10 * (1 + int(state.capital_relocations.get(faction, 0)))
@@ -32,6 +38,8 @@ static func relocate_capital(state, coord: Vector2i, faction: int) -> bool:
 	var former: Vector2i = bank["capital"]
 	var cost := capital_relocation_cost(state, faction)
 	bank["gold"] -= cost
+	cells[coord]["capital_tier"] = cells[former].get("capital_tier", 1)
+	cells[former]["capital_tier"] = 1
 	cells[former]["capital"] = -1
 	cells[coord]["fortified"] = cells[former]["fortified"]
 	cells[coord]["fortified_by"] = cells[former]["fortified_by"]
@@ -103,6 +111,8 @@ static func recruit(state, coord: Vector2i, faction: int, requested_tier := 0, c
 	var cell: Dictionary = cells[coord]
 	var spent: bool = cell["unit"] > 0 and cell["moved"]
 	kingdom["gold"] -= cost
+	var target_tier: int = cell["unit"] + 1 if requested_tier == 0 else requested_tier
+	if target_tier == 3: state.ore_by_faction[faction] = state.get_ore(faction) - Catalog.KNIGHT_ORE_COST
 	cell["unit"] = cell["unit"] + 1 if requested_tier == 0 else requested_tier
 	state.clear_terrain(coord, kingdom)
 	# A fresh recruit can move; upgrading never restores a spent action.
@@ -126,6 +136,7 @@ static func recruitment_cost(state, coord: Vector2i, faction: int, requested_tie
 	var target_tier: int = cell["unit"] + 1 if requested_tier == 0 else requested_tier
 	if target_tier <= cell["unit"] or target_tier > 3:
 		return -1
+	if target_tier == 3 and state.get_ore(faction) < Catalog.KNIGHT_ORE_COST: return -1
 	var cost: int = Catalog.unit_price(target_tier) - Catalog.unit_price(cell["unit"])
 	return cost if kingdom["gold"] >= cost else -1
 
@@ -168,6 +179,35 @@ static func build_structure(state, coord: Vector2i, faction: int, kind: String, 
 		return true
 	var kingdom: Dictionary = state.kingdom_at(coord)
 	kingdom["gold"] -= state.tower_cost(faction) if kind == "tower" else state.CITY_COST
+	cells[coord]["building_tier"] = 1
+	cells[coord].erase("tower_ward_used")
 	cells[coord]["building"] = kind
 	state.record_replay("build", faction, {"coord":coord, "building":kind, "capital":kingdom["capital"]})
+	return true
+
+# Capital tiers are separate so relocation and captured castles retain the correct identity.
+static func building_tier(cell: Dictionary) -> int:
+	return clampi(int(cell.get("capital_tier" if cell.get("capital", -1) >= 0 else "building_tier", 1)), 1, 3)
+
+static func upgrade_cost(state, coord: Vector2i) -> int:
+	if not state.cells.has(coord): return 0
+	var cell: Dictionary = state.cells[coord]
+	if cell.capital < 0 and cell.building not in ["city", "tower"]: return 0
+	var tier := building_tier(cell)
+	return Catalog.BUILDING_UPGRADE_ORE[tier + 1] if tier < 3 else 0
+
+static func can_upgrade(state, coord: Vector2i, faction: int) -> bool:
+	if not state.cells.has(coord) or state.is_barrier(coord) or state.has_wildlife(coord): return false
+	var cell: Dictionary = state.cells[coord]
+	var cost := upgrade_cost(state, coord)
+	return cell.owner == faction and not state.kingdom_at(coord).is_empty() and cost > 0 and state.get_ore(faction) >= cost
+
+static func upgrade(state, coord: Vector2i, faction: int) -> bool:
+	if not can_upgrade(state, coord, faction): return false
+	var cell: Dictionary = state.cells[coord]
+	var cost := upgrade_cost(state, coord)
+	state.ore_by_faction[faction] = state.get_ore(faction) - cost
+	cell["capital_tier" if cell.capital >= 0 else "building_tier"] = building_tier(cell) + 1
+	cell.erase("tower_ward_used")
+	state.record_replay("upgrade_building", faction, {"coord":coord, "tier":building_tier(cell), "ore_cost":cost})
 	return true

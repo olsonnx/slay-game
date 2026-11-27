@@ -68,7 +68,6 @@ func render() -> void:
 	elif tutor.failed: text = Loc.text("The opponent took your last capital. Retry this exercise to try a different opening. Expand into useful land, keep your armies paid, and reinforce where they can act.")
 	Ui.fit_text(explanation,text,294)
 	explanation_scroll.size = Vector2(312,minf(146,explanation.get_minimum_size().y))
-	explanation_scroll.tooltip_text = text
 	rows_scroll.position = Vector2(16,explanation_scroll.position.y+explanation_scroll.size.y+10)
 	rows.size.x = 294
 	if row_signature != indices:

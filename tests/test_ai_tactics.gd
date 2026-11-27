@@ -27,6 +27,8 @@ func line_board():
 	return model
 func purchase_checks() -> void:
 	var model = line_board()
+	model.ore_by_faction[0] = 2
+	model.cells[Vector2i(6,0)]["building_tier"] = 2
 	model.cells[Vector2i(6,0)]["building"] = "city" # Frontier purchases need a recruitment hub.
 	model.cells[Vector2i(7,0)]["unit"] = 1
 	model.cells[Vector2i(9,0)]["unit"] = 2

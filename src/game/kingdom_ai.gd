@@ -375,8 +375,11 @@ func preparation_records(before: Dictionary, faction: int) -> Array[Dictionary]:
 			kind = "entrench" if state.is_entrenched(coord) else "expire"
 		elif cell.get("fortified", false) != old.get("fortified", false):
 			kind = "spell" if cell.get("fortified", false) else "expire"
+		elif cell.get("tower_ward_used", false) != old.get("tower_ward_used", false):
+			kind = "entrench" if state.structure_entrenched(coord) else "expire"
 		elif cell.get("barrier_by", -1) != old.get("barrier_by", -1):
 			kind = "spell" if cell.get("barrier_by", -1) >= 0 else "expire"
+		if old.get("building_tier", 1) != cell.get("building_tier", 1) or old.get("capital_tier", 1) != cell.get("capital_tier", 1): kind = "build"
 		if kind != "":
 			actions.append({"kind": kind, "faction": faction, "coord": coord,
 				"before": old, "after": cell.duplicate(true)})

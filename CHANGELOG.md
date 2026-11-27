@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.3.0 — Castles and Ore
+
+- Cities are now visually distinct Castles, with three recruitment tiers.
+- Added uncapped, shared faction Ore: each controlled source produces 1 Ore per
+  3 development. Deposits are approximately 25% more common than mana sources.
+- Neutral mana sources receive a modest land-area bonus, capped at six extras;
+  Ore abundance follows the increased mana source count.
+- Knights require 2 Ore in addition to gold, including paid Soldier upgrades.
+- Castles, Towers and Capitals upgrade for 2 / 4 Ore. Tier-two defenses require
+  Knights; tier-three Towers absorb the first valid attack each owner turn.
+- Capital tier two expands recruitment; tier three halves development costs on
+  its own and adjacent friendly tiles. Bridges retain their existing rules.
+- Houses appear from development 3: levels 3–6 show one through four houses,
+  distributed randomly across three corners with up to two per corner and stable
+  rotation / position variation. Occupied buildings shrink beside full-size units.
+- Integrated Ore and tiers into AI, map files, undo, replay and multiplayer state.
+- Updated teaching scenarios for Ore income and Castle upgrades.
+
 ## 0.2.0P — Closed playtest preparation
 
 - Bridges can only be removed with Shatter; removed dismantling from province details, network commands and tutorial authoring.

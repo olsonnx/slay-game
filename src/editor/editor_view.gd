@@ -6,7 +6,7 @@ const Hud = preload("res://src/ui/game_hud.gd")
 const EventText = preload("res://src/ui/event_text.gd")
 const Events = preload("res://src/game/event_catalog.gd")
 const Catalog = preload("res://src/game/game_catalog.gd")
-const TOOL_GROUPS := {"Tiles": ["Land", "Mountain", "Bridge", "Water"], "Units": ["Capital", "Scout", "Soldier", "Knight"], "Build": ["City", "Road", "Tower", "Bear cave", "Wolf den", "Boar burrow"], "Paint": ["Owner", "Value", "Tree", "Grave", "Mana source", "Clear objects"]}
+const TOOL_GROUPS := {"Tiles": ["Land", "Mountain", "Bridge", "Water"], "Units": ["Capital", "Scout", "Soldier", "Knight"], "Build": ["City", "Road", "Tower", "Bear cave", "Wolf den", "Boar burrow"], "Paint": ["Owner", "Value", "Tree", "Grave", "Mana source", "Ore source", "Clear objects"]}
 signal action_requested(action: StringName, arguments: Array)
 signal focus_release_requested
 signal title_changed(value: String)
@@ -372,13 +372,14 @@ func render_context(tool: String, restart := false) -> void:
 		"Soldier": "Place a Soldier on owned land. Keeps capitals and mana sources; replaces other objects.",
 		"Knight": "Place a Knight on owned land. Keeps capitals and mana sources; replaces other objects.",
 		"Road": "Place a road on owned land. Connected friendly road steps cost half movement.",
-		"City": "Place a city on owned land. Uses that province's owner and keeps mana sources.",
+		"City": "Place a castle on owned land. Uses that province's owner and keeps mana sources.",
 		"Tower": "Place a tower on owned land. Uses that province's owner and keeps mana sources.",
 		"Bear cave": "Place a bear cave on neutral land. Replaces other objects. Its bear emerges on the first World turn.",
 		"Wolf den": "Place a wolf den on neutral land. Replaces other objects. Its wolf emerges on the first World turn.",
 		"Boar burrow": "Place a boar burrow on neutral land. Replaces other objects. Its boar emerges on the first World turn.",
 		"Tree": "Place trees on land. Replaces other objects and keeps mana sources.",
 		"Grave": "Place graves on land. Replaces other objects and keeps mana sources.",
+		"Ore source": Loc.text("Add an Ore deposit. Produces 1 Ore per %d development when controlled.") % Catalog.ORE_DEVELOPMENT_PER_INCOME,
 		"Mana source": "Add mana sources to land without replacing its units, buildings or decorations.",
 		"Clear objects": "Clear units, buildings, capitals, events and decorations. Keeps terrain, owner and value.",
 		"Player start": "Mark an owned province as the player's starting kingdom. The marker follows its current owner and keeps all objects."
@@ -512,8 +513,8 @@ func render_tools(group: String, rule_mode: String, active_tool: String, texture
 		button.toggle_mode = true
 		button.set_meta("tool", tool)
 		button.set_pressed_no_signal(active_tool == tool)
-		button.tooltip_text = Loc.text("%s · %d\nLeft: place · right: %s") % [Loc.text(tool), index + 1, Loc.text("delete tile" if tool in Document.TILE_TOOLS else "clear decorations")]
-		var label := Hud.label_at(button, tool, Vector2(0, 74), 14)
+		button.tooltip_text = Loc.text("%s · %d\nLeft: place · right: %s") % [Loc.text("Castle" if tool == "City" else tool), index + 1, Loc.text("delete tile" if tool in Document.TILE_TOOLS else "clear decorations")]
+		var label := Hud.label_at(button, "Castle" if tool == "City" else tool, Vector2(0, 74), 14)
 		label.size = Vector2(124, 20)
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		Hud.label_at(button, str(index + 1), Vector2(8, 5), 11, Color("9eb2a7"))
@@ -534,7 +535,7 @@ func render_tools(group: String, rule_mode: String, active_tool: String, texture
 			image.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			button.add_child(image)
 		else:
-			var symbols := {"Land": "⬡", "Mountain": "▲", "Tree": "♣", "Grave": "†", "Mana source": "◆", "Capital": "♜", "City": "⌂", "Road": "═", "Tower": "♜", "Bridge": "═", "Owner": "⚑", "Value": "123", "Water": "≈", "Clear objects": "×"}
+			var symbols := {"Land": "⬡", "Mountain": "▲", "Tree": "♣", "Grave": "†", "Mana source": "◆", "Ore source": "⬟", "Capital": "♜", "City": "⌂", "Road": "═", "Tower": "♜", "Bridge": "═", "Owner": "⚑", "Value": "123", "Water": "≈", "Clear objects": "×"}
 			var icon := Hud.label_at(button, symbols[tool], Vector2(0, 10), 38, Color("c8d3a1"))
 			icon.size = Vector2(124, 58)
 			icon.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

@@ -2,6 +2,7 @@ extends "res://src/ui/context_panel.gd"
 const Loc = preload("res://src/localization/text.gd")
 ## Small inspector with a pausable slide, independent of rule mutations.
 const Hud = preload("res://src/ui/game_hud.gd")
+signal upgrade_requested
 signal develop_requested
 signal entrench_requested
 signal relocate_requested
@@ -12,6 +13,7 @@ var title: Label
 var value_label: Label
 var income_label: Label
 var mana_label: Label
+var upgrade_button: Button
 var develop_button: Button
 var relocate_button: Button
 var entrench_button: Button
@@ -42,6 +44,12 @@ func _ready() -> void:
 	value_label = Hud.label_at(self, "", Vector2(16, 47), 23, Color("eed3a1"))
 	income_label = Hud.label_at(self, "", Vector2(224, 53), 16, Color("b5c6bd"))
 	mana_label = Hud.label_at(self, "", Vector2(16, 84), 13, Color("bdb0ed"))
+	upgrade_button = preload("res://src/ui/tooltip_button.gd").new()
+	upgrade_button.size = Vector2(386, 36)
+	Hud.UiTheme.style_button(upgrade_button)
+	upgrade_button.pressed.connect(func(): upgrade_requested.emit())
+	Sound.bind_button(upgrade_button)
+	add_child(upgrade_button)
 	develop_button = preload("res://src/ui/tooltip_button.gd").new()
 	develop_button.position = Vector2(16, 113)
 	develop_button.size = Vector2(386, 36)
@@ -114,7 +122,6 @@ func refresh(model, coord: Vector2i, can_act: bool, faction := 0) -> void:
 	var mountain: bool = model.is_mountain(coord)
 	var owner_name: String = model.faction_names[owner] if owner >= 0 else "Neutral"
 	title.text = "Mountains" if mountain else Loc.text("%s · %s") % [owner_name if owner >= 0 else Loc.text("Neutral"), Loc.text("Bridge" if bridge else "Province")]
-	tooltip_text = Loc.text("Province %d, %d") % [coord.x, coord.y]
 	var value: int = cell.get("value", 1)
 	value_label.text = "Impassable" if mountain else "Wooden crossing" if bridge else Loc.text("Value %d") % value
 	var blocked: bool = cell["tree"] or cell["grave"]
@@ -135,13 +142,14 @@ func refresh(model, coord: Vector2i, can_act: bool, faction := 0) -> void:
 		mana_label.text = Loc.text("Treasure chest · guaranteed %d G on capture") % cell["treasure"]
 	if model.is_entrenched(coord): mana_label.text = Loc.text("Entrenched · absorbs one attack until your next turn")
 	if cell["building"] == "city":
-		title.text = Loc.text("City")
-		mana_label.text += ("\n" if mana_label.text != "" else "") + Loc.text("Recruit here or next door · ready immediately · no bonus income")
+		title.text = Loc.text("Castle")
+		mana_label.text += ("\n" if mana_label.text != "" else "") + Loc.text("Recruitment range %d · ready immediately · no bonus income") % preload("res://src/game/logistics.gd").recruitment_range(cell)
 	if cell.capital >= 0: title.text = Loc.text("Capital")
 	if preload("res://src/game/logistics.gd").recruitment_hub(cell) and cell.get("settlement_name", "") != "":
 		title.text = cell.settlement_name
 	title.size.x = 340
 	title.clip_text = true
+	if cell["building"] == "tower": title.text = Loc.text("Tower")
 	if cell["building"] == "tower": mana_label.text += ("\n" if mana_label.text != "" else "") + Loc.text("Tower upkeep · 2 G / turn")
 	if bridge:
 		var payer: Dictionary = preload("res://src/game/logistics.gd").bridge_bank(model, cell)
@@ -162,6 +170,26 @@ func refresh(model, coord: Vector2i, can_act: bool, faction := 0) -> void:
 	develop_button.visible = not bridge and not mountain
 	develop_button.disabled = not can_act or not model.can_develop(coord, faction)
 	develop_button.text = Loc.text("Develop · %d G") % model.development_cost(coord) if value < model.MAX_VALUE else "Fully developed"
+	if cell.get("ore_source", false):
+		mana_label.text += ("\n" if mana_label.text != "" else "") + Loc.text("Ore source · %d Ore / turn · 1 per %d development") % [model.ore_source_income(cell), model.Catalog.ORE_DEVELOPMENT_PER_INCOME]
+	var structure: bool = cell.capital >= 0 or cell.building in ["city", "tower"]
+	upgrade_button.visible = structure and owner == faction
+	upgrade_button.disabled = not can_act or not model.can_upgrade_building(coord, faction)
+	if structure:
+		var tier: int = model.building_tier(coord)
+		mana_label.text += ("\n" if mana_label.text != "" else "") + Loc.text("Tier %d / 3") % tier
+		if cell.capital >= 0:
+			mana_label.text += Loc.text(" · recruitment range %d") % preload("res://src/game/logistics.gd").recruitment_range(cell)
+		if cell.building == "tower" or cell.capital >= 0:
+			mana_label.text += " · " + Loc.text("Requires Soldier" if tier == 1 else "Requires Knight")
+		if cell.building == "tower" and tier == 3: mana_label.text += "\n" + Loc.text("Entrenched each turn · absorbs one attack")
+		if cell.capital >= 0 and tier == 3: mana_label.text += "\n" + Loc.text("Development costs −50% here and on adjacent friendly tiles")
+		upgrade_button.text = Loc.text("Upgrade to tier %d · %d Ore") % [tier + 1, model.building_upgrade_cost(coord)] if tier < 3 else Loc.text("Fully upgraded · tier 3")
+		upgrade_button.tooltip_text = Loc.text("Fully upgraded") if tier == 3 else (
+			Loc.text("Tier 2 · requires a Knight to defeat · recruitment range 2") if cell.capital >= 0 and tier == 1 else
+			Loc.text("Tier 3 · development costs −50% here and on adjacent friendly tiles") if cell.capital >= 0 else
+			Loc.text("Tier %d · recruitment range %d") % [tier + 1, tier] if cell.building == "city" else
+			Loc.text("Tier 2 · requires a Knight to destroy") if tier == 1 else Loc.text("Tier 3 · absorbs the first valid attack each owner's turn"))
 	if owner != faction:
 		develop_button.text = Loc.text("Capture this province to develop it")
 	elif model.kingdom_at(coord).is_empty():
@@ -185,11 +213,14 @@ func refresh(model, coord: Vector2i, can_act: bool, faction := 0) -> void:
 	entrench_button.size.x = 120 if develop_button.visible else 386
 	if develop_button.visible or entrench_button.visible:
 		content_bottom = action_y + 36
+	if upgrade_button.visible:
+		upgrade_button.position = Vector2(16, content_bottom + 8)
+		content_bottom += 44
 	name_input.visible = model.can_rename_settlement(coord, faction)
 	title.visible = not name_input.visible
 	name_input.editable = can_act
 	if name_input.visible:
-		name_input.placeholder_text = Loc.text("Capital" if cell.capital >= 0 else "City")
+		name_input.placeholder_text = Loc.text("Capital" if cell.capital >= 0 else "Castle")
 		if name_coord != coord or not name_input.has_focus():
 			name_input.text = cell.get("settlement_name", "")
 			saved_name = name_input.text

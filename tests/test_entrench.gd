@@ -217,7 +217,7 @@ func ui_checks() -> void:
 		var landing: Vector2i = attack["landing"]
 		await game.view.animate_moves([attack],game.cells)
 		var expected: Vector3 = game.view.coord_position(landing)
-		if game.cells[landing]["capital"] >= 0: expected += Vector3(0.35,0,0.30)
+		expected += preload("res://src/rendering/tile_layout.gd").unit_offset(game.cells[landing])
 		expect(game.view.unit_actors.get(landing) == actor and not game.view.unit_actors.has(Vector2i.ZERO) and actor.global_position.is_equal_approx(expected), "Playback retains the attacker on its actual landing tile: "+scenario)
 		expect(game.view.cells == game.cells and game.view.unit_actors.has(Vector2i(3,0)), "Playback synchronizes the new landing and surviving defender: "+scenario)
 	game.rules = approach_fixture("occupied")

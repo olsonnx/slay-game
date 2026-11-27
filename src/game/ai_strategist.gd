@@ -57,7 +57,7 @@ func build_objective(coord: Vector2i) -> Dictionary:
 		for capital in enemy_capitals: distance_to_goal = mini(distance_to_goal, state.distance(coord, capital))
 		score += maxf(0.0, 14.0 - distance_to_goal * 1.2)
 		if cell["building"] == "city": score += 14.0
-		var reason := "take a recruitment city" if cell["building"] == "city" else "expand territory"
+		var reason := "take a recruitment castle" if cell["building"] == "city" else "expand territory"
 		if cell.get("treasure", 0) > 0:
 			score += cell["treasure"] * 0.6
 			reason = "collect treasure"
@@ -67,6 +67,9 @@ func build_objective(coord: Vector2i) -> Dictionary:
 		if cell.get("mana_source", false):
 			score += 7.0
 			reason = "secure mana source" if cell["capital"] < 0 else reason
+		if cell.get("ore_source", false):
+			score += 10.0 + state.ore_source_income(cell) * 3.0
+			reason = "secure Ore source" if cell["capital"] < 0 else reason
 		return {"priority": score, "reason": reason, "kind": "capture"}
 	if cell["unit"] > 0 and state.unit_faction(coord) != faction:
 		return {"priority": 12.0 + Analysis.UNIT_VALUE[cell["unit"]] * 0.4, "reason": "clear hostile crossing", "kind": "capture"}
@@ -168,8 +171,8 @@ func defence_without(source: Vector2i, protected: Vector2i) -> int:
 		var cell: Dictionary = state.cells[next]
 		if cell["owner"] != faction: continue
 		var local: int = 0 if next == source else cell["unit"]
-		if cell["capital"] >= 0: local = maxi(local, 1)
-		if cell["building"] == "tower": local = maxi(local, 2)
+		if cell["capital"] >= 0: local = maxi(local, 1 if state.building_tier(next) == 1 else 2)
+		if cell["building"] == "tower": local = maxi(local, 1 if state.building_tier(next) == 1 else 2)
 		if next != protected: local = mini(local, 2)
 		value = maxi(value, local)
 	var defended: Dictionary = state.cells[protected]
@@ -214,7 +217,7 @@ func tactical_score(source: Vector2i, target: Vector2i, goal: Dictionary) -> flo
 		# A trade gains no land immediately. Permit it only when a ready follower
 		# can use the opening and it is worth sacrificing the Knight.
 		var follower := false
-		var remaining_defence := 1 if cell["capital"] >= 0 else 2 if cell["building"] == "tower" else 0
+		var remaining_defence := (1 if state.building_tier(target) == 1 else 2) if cell["capital"] >= 0 or cell["building"] == "tower" else 0
 		for next in queries.neighbors(target):
 			if state.cells[next]["owner"] == cell["owner"]: remaining_defence = maxi(remaining_defence, state.local_defense(next))
 		for other in units:

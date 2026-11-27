@@ -220,7 +220,6 @@ func open_album() -> void:
 	progress_bar.max_value = maxi(1,catalogue.size())
 	progress_bar.value = collected
 	if album.dirty: progress_label.text += "  ·  " + Loc.text("Progress could not be saved.")
-	progress_label.tooltip_text = progress_label.text
 	refresh_cards()
 
 func needs_preparation() -> bool:

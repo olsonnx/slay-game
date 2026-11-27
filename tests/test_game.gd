@@ -17,6 +17,7 @@ func expect(condition: bool, description: String) -> void:
 func fixture(owners: Dictionary) -> void:
 	board.cells.clear()
 	board.kingdoms.clear()
+	board.ore_by_faction = {0:100,1:100,2:100,3:100}
 	for coord in owners:
 		board.cells[coord] = board.make_cell(owners[coord])
 	board.rebuild_kingdoms()
@@ -156,7 +157,8 @@ func run() -> void:
 
 	# Graves suppress income and can be removed by landing or recruitment.
 	fixture({a: 0, b: 0, c: 0, d: 0})
-	board.cells[b]["building"] = "city" # Forward hub covers the clearing/upgrade site.
+	board.cells[b]["building"] = "city"
+	board.cells[b]["building_tier"] = 2 # Forward hub covers the clearing/upgrade site.
 	board.cells[b]["grave"] = true
 	board.cells[c]["tree"] = true
 	expect(board.income(board.kingdom_at(a)) == 2, "Trees and graves do not earn income")
@@ -173,6 +175,7 @@ func run() -> void:
 	expect(not board.recruit(c, 0), "Tier three cannot upgrade further")
 	fixture({a: 0, b: 0, c: 0, d: 0})
 	board.cells[c]["building"] = "city" # Covers the later direct Knight deployment.
+	board.cells[c]["building_tier"] = 2
 	expect(board.recruit(b, 0, 2), "Soldier can be recruited directly from shop")
 	expect(board.cells[b]["unit"] == 2 and board.kingdom_at(b)["gold"] == 80, "Direct Soldier purchase costs twenty gold")
 	expect(board.recruit(b, 0, 3) and board.kingdom_at(b)["gold"] == 60, "Knight upgrade charges the twenty-gold price difference")
@@ -184,6 +187,7 @@ func run() -> void:
 	expect(not board.recruit(a, 0, 1), "Direct recruitment checks local funds")
 	fixture({a: 0, b: 0, c: 0, d: 0})
 	board.cells[b]["building"] = "city"
+	board.cells[b]["building_tier"] = 2
 	board.cells[b]["unit"] = 1
 	expect(board.recruit(b, 0, 2) and board.move_unit(b, c), "Scout upgraded to Soldier can move in the same turn")
 	var upgrade_gold: int = board.kingdom_at(c)["gold"]
@@ -227,6 +231,7 @@ func run() -> void:
 	board.cells[c]["grave"] = false
 	expect(not board.build_structure(e, 0, "city"), "Cannot construct on enemy land")
 	expect(board.build_structure(c, 0, "tower"), "Tower can be built")
+	expect(board.upgrade_building(c, 0), "Tier-two tower provides Knight-level protection")
 	expect(board.defense(b) == 2 and board.defense(c) == 2, "Tower protects self and adjacent friendly hexes")
 	board.cells[d]["unit"] = 2
 	expect(not board.can_move(d, c), "Equal strength cannot capture tower")

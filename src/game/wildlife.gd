@@ -35,7 +35,7 @@ static func generate(state) -> void:
 	var sites := []
 	for coord in state.cells:
 		var cell: Dictionary = state.cells[coord]
-		if cell.owner >= 0 or state.is_mountain(coord) or state.is_bridge(coord) or cell.mana_source or cell.event != "" or cell.get("treasure",0) > 0: continue
+		if cell.owner >= 0 or state.is_mountain(coord) or state.is_bridge(coord) or cell.mana_source or cell.get("ore_source", false) or cell.event != "" or cell.get("treasure",0) > 0: continue
 		var nearest := 100000
 		for home in homes: nearest = mini(nearest,state.distance(coord,home))
 		if nearest < HOME_CLEARANCE: continue
@@ -196,7 +196,7 @@ static func spawn_site(state, home: Vector2i) -> Vector2i:
 		var cell: Dictionary = state.cells[coord]
 		if state.is_mountain(coord) or state.is_bridge(coord) or state.is_barrier(coord): continue
 		if cell.owner >= 0 or cell.unit > 0 or cell.capital >= 0 or cell.building != "" or present(cell): continue
-		if cell.grave or cell.mana_source or cell.event != "" or cell.get("treasure",0) > 0: continue
+		if cell.grave or cell.mana_source or cell.get("ore_source", false) or cell.event != "" or cell.get("treasure",0) > 0: continue
 		sites.append(coord)
 	var clear_sites := sites.filter(func(coord):return not state.cells[coord].tree)
 	if not clear_sites.is_empty(): sites = clear_sites

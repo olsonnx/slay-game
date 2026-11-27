@@ -31,14 +31,14 @@ func run() -> void:
 	var manifest_path := dir + "/languages.json"
 	var settings_path := dir + "/settings.cfg"
 	# Synthetic markers exercise translation; these are not a shipped language.
-	var unit_template := "%s · strength %d\nCost %d G · upkeep −%d G / turn\n%s\nMove %d hexes · roads cost half\nRecruit on or beside cities / capitals; ready immediately"
+	var unit_template := "%s · strength %d\nCost %d G%s · upkeep −%d G / turn\n%s\nMove %d hexes · roads cost half\nRecruitment range depends on Castle / Capital tier"
 	write_json(pack_path, {"locale":"eo", "name":"TEST LANGUAGE Ω", "messages":{
 		"Quick Play":"TEST::PLAY Ω", "Language":"TEST::LANGUAGE", "Knight":"TEST::KNIGHT",
 		"City":"TEST::CITY",
 		"Save":"TEST::SAVE", "Space":"TEST::SPACE",
 		"Level %d":"TEST::LEVEL %d", "Tiny":"TEST::TINY", "%s · ~%s tiles":"TEST::MAP %s %s",
 		"Build":"", "Recruit":42, "Income %+d G / turn":"TEST::BROKEN %s", "UNKNOWN_TEST_KEY":"TEST::UNKNOWN",
-		unit_template:"TEST::UNIT %s %d %d %d %s %d"}})
+		unit_template:"TEST::UNIT %s %d %d%s %d %s %d"}})
 	write_json(manifest_path, [pack_path])
 	languages.settings_path = settings_path
 	languages.reload_languages(manifest_path)
@@ -67,7 +67,7 @@ func run() -> void:
 	expect(Loc.text("Level %d") % 12 == "TEST::LEVEL 12", "Dynamic messages translate before formatting")
 	expect(Loc.text("Build") == "Build" and Loc.text("Recruit") == "Recruit", "Blank and invalid entries fall back to readable English")
 	expect(Loc.text("Income %+d G / turn") % 3 == "Income +3 G / turn", "Rejected placeholders cannot break numeric formatting")
-	expect(Catalog.unit_tooltip(3).begins_with("TEST::UNIT TEST::KNIGHT 3 40 36"), "Unit descriptions translate their template and rank while retaining actual prices and wages")
+	expect(Catalog.unit_tooltip(3).begins_with("TEST::UNIT TEST::KNIGHT 3 40 + 2 Ore 36"), "Unit descriptions translate their template and rank while retaining actual prices and wages")
 	expect(Sizes.choice_label("small") == "TEST::MAP TEST::TINY 80", "Data-driven names are translated before being inserted into a caption")
 	var keys = root.get_node("Keys")
 	var key_code: int = keys.bindings["end_turn"]
